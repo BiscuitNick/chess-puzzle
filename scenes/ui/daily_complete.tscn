@@ -1,0 +1,90 @@
+[gd_scene load_steps=2 format=3 uid="uid://b2vnp8k4jl7qm"]
+
+[ext_resource type="Script" path="res://scripts/ui/daily_complete.gd" id="1_complete"]
+
+[node name="DailyComplete" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_complete")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.15, 0.15, 0.18, 0.95)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -220.0
+offset_right = 180.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Daily Complete!"
+horizontal_alignment = 1
+
+[node name="EmojiGridLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "🟩🟩⬛🟩🟩"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Score: 4.5 / 7.5"
+horizontal_alignment = 1
+
+[node name="StreakLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.6, 0.2, 1)
+theme_override_font_sizes/font_size = 18
+text = "🔥 Streak: 5 days"
+horizontal_alignment = 1
+
+[node name="CopiedLabel" type="Label" parent="VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 0.4, 1)
+text = "Copied to clipboard!"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ButtonContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ShareButton" type="Button" parent="VBoxContainer/ButtonContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 45)
+theme_override_font_sizes/font_size = 18
+text = "Share Results"
+
+[node name="ReviewButton" type="Button" parent="VBoxContainer/ButtonContainer"]
+layout_mode = 2
+text = "Review Puzzles"
+
+[node name="MenuButton" type="Button" parent="VBoxContainer/ButtonContainer"]
+layout_mode = 2
+text = "Main Menu"
