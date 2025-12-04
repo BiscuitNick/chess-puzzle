@@ -19,6 +19,7 @@ signal move_attempted(from: int, to: int)
 @export var last_move_color: Color = Color("#CDD26A", 0.5)
 @export var selected_color: Color = Color("#646D40", 0.7)
 @export var legal_move_color: Color = Color("#646D40", 0.6)
+@export var hint_color: Color = Color("#4A90D9", 0.8)
 
 # Board state
 var flipped: bool = false
@@ -26,6 +27,7 @@ var selected_square: int = -1
 var legal_move_squares: Array[int] = []
 var last_move_from: int = -1
 var last_move_to: int = -1
+var hint_square: int = -1
 
 # Animation state
 var is_animating: bool = false
@@ -94,6 +96,35 @@ func _draw() -> void:
 	# Draw legal move indicators
 	for square in legal_move_squares:
 		_draw_legal_move_indicator(square)
+
+	# Draw hint highlight (pulsing effect would require animation, using distinct color for now)
+	if hint_square >= 0:
+		_draw_hint_indicator(hint_square)
+
+
+func _draw_hint_indicator(square: int) -> void:
+	var screen_pos = board_to_screen(square)
+	# Draw a prominent border around the hint square
+	var half_size = square_size / 2.0
+	var rect = Rect2(
+		screen_pos.x - half_size,
+		screen_pos.y - half_size,
+		square_size,
+		square_size
+	)
+	# Draw thick border
+	draw_rect(rect, hint_color, false, 4.0)
+	# Draw corner accents
+	var corner_len = square_size * 0.25
+	var corners = [
+		[Vector2(rect.position.x, rect.position.y), Vector2(corner_len, 0), Vector2(0, corner_len)],
+		[Vector2(rect.end.x, rect.position.y), Vector2(-corner_len, 0), Vector2(0, corner_len)],
+		[Vector2(rect.position.x, rect.end.y), Vector2(corner_len, 0), Vector2(0, -corner_len)],
+		[Vector2(rect.end.x, rect.end.y), Vector2(-corner_len, 0), Vector2(0, -corner_len)]
+	]
+	for corner in corners:
+		draw_line(corner[0], corner[0] + corner[1], hint_color, 6.0)
+		draw_line(corner[0], corner[0] + corner[2], hint_color, 6.0)
 
 
 func _draw_square_highlight(square: int, color: Color) -> void:
@@ -228,6 +259,19 @@ func set_last_move(from: int, to: int) -> void:
 func clear_highlights() -> void:
 	selected_square = -1
 	legal_move_squares.clear()
+	hint_square = -1
+	queue_redraw()
+
+
+## Set hint highlight on a square (for practice mode hints).
+func set_hint_highlight(square: int) -> void:
+	hint_square = square
+	queue_redraw()
+
+
+## Clear hint highlight.
+func clear_hint_highlight() -> void:
+	hint_square = -1
 	queue_redraw()
 
 

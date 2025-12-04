@@ -1,0 +1,145 @@
+[gd_scene load_steps=2 format=3 uid="uid://c2ybxkph5vqmg"]
+
+[ext_resource type="Script" path="res://scripts/ui/practice_setup.gd" id="1_setup"]
+
+[node name="PracticeSetup" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_setup")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.15, 0.15, 0.18, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -250.0
+offset_right = 200.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Practice Mode"
+horizontal_alignment = 1
+
+[node name="MateDepthSection" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MateDepthLabel" type="Label" parent="VBoxContainer/MateDepthSection"]
+layout_mode = 2
+text = "Mate Depth"
+
+[node name="MateDepthOption" type="OptionButton" parent="VBoxContainer/MateDepthSection"]
+layout_mode = 2
+
+[node name="ChallengeToggle" type="CheckButton" parent="VBoxContainer/MateDepthSection"]
+layout_mode = 2
+text = "Challenge Mode (Mate in 6+)"
+
+[node name="RatingSection" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RatingLabel" type="Label" parent="VBoxContainer/RatingSection"]
+layout_mode = 2
+text = "Rating Range"
+
+[node name="MinRatingContainer" type="HBoxContainer" parent="VBoxContainer/RatingSection"]
+layout_mode = 2
+
+[node name="MinLabel" type="Label" parent="VBoxContainer/RatingSection/MinRatingContainer"]
+layout_mode = 2
+text = "Min:"
+
+[node name="MinRatingSlider" type="HSlider" parent="VBoxContainer/RatingSection/MinRatingContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 400.0
+max_value = 3000.0
+step = 50.0
+value = 800.0
+
+[node name="MinRatingLabel" type="Label" parent="VBoxContainer/RatingSection/MinRatingContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(50, 0)
+text = "800"
+horizontal_alignment = 2
+
+[node name="MaxRatingContainer" type="HBoxContainer" parent="VBoxContainer/RatingSection"]
+layout_mode = 2
+
+[node name="MaxLabel" type="Label" parent="VBoxContainer/RatingSection/MaxRatingContainer"]
+layout_mode = 2
+text = "Max:"
+
+[node name="MaxRatingSlider" type="HSlider" parent="VBoxContainer/RatingSection/MaxRatingContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 400.0
+max_value = 3000.0
+step = 50.0
+value = 1600.0
+
+[node name="MaxRatingLabel" type="Label" parent="VBoxContainer/RatingSection/MaxRatingContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(50, 0)
+text = "1600"
+horizontal_alignment = 2
+
+[node name="OrderSection" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="OrderLabel" type="Label" parent="VBoxContainer/OrderSection"]
+layout_mode = 2
+text = "Puzzle Order"
+
+[node name="OrderButtons" type="HBoxContainer" parent="VBoxContainer/OrderSection"]
+layout_mode = 2
+
+[node name="RandomButton" type="Button" parent="VBoxContainer/OrderSection/OrderButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+text = "Random"
+
+[node name="ProgressiveButton" type="Button" parent="VBoxContainer/OrderSection/OrderButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Progressive"
+
+[node name="Spacer" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StartButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 50)
+theme_override_font_sizes/font_size = 20
+text = "Start Practice"
+
+[node name="BackButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Back"
