@@ -1,0 +1,27 @@
+[gd_scene load_steps=2 format=3 uid="uid://bv5jk8n2wlqpx"]
+
+[ext_resource type="Script" path="res://scripts/ui/streak_counter.gd" id="1_counter"]
+
+[node name="StreakCounter" type="HBoxContainer"]
+custom_minimum_size = Vector2(150, 40)
+theme_override_constants/separation = 15
+script = ExtResource("1_counter")
+
+[node name="StreakContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="FlameIcon" type="Label" parent="StreakContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "🔥"
+
+[node name="StreakLabel" type="Label" parent="StreakContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "0"
+
+[node name="RatingLabel" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Rating: 1200"

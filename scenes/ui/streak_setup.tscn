@@ -1,0 +1,137 @@
+[gd_scene load_steps=2 format=3 uid="uid://dwkm3p4hnl8qv"]
+
+[ext_resource type="Script" path="res://scripts/ui/streak_setup.gd" id="1_setup"]
+
+[node name="StreakSetup" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_setup")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.15, 0.15, 0.18, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -280.0
+offset_right = 220.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="Title" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Streak Mode"
+horizontal_alignment = 1
+
+[node name="RulesLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Solve puzzles with increasing difficulty.
+One wrong move ends your run!"
+horizontal_alignment = 1
+
+[node name="DifficultySection" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DifficultyLabel" type="Label" parent="VBoxContainer/DifficultySection"]
+layout_mode = 2
+text = "Starting Difficulty"
+
+[node name="DifficultyButtons" type="HBoxContainer" parent="VBoxContainer/DifficultySection"]
+layout_mode = 2
+
+[node name="BeginnerButton" type="Button" parent="VBoxContainer/DifficultySection/DifficultyButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Beginner
+800"
+
+[node name="IntermediateButton" type="Button" parent="VBoxContainer/DifficultySection/DifficultyButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+text = "Intermediate
+1200"
+
+[node name="AdvancedButton" type="Button" parent="VBoxContainer/DifficultySection/DifficultyButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Advanced
+1600"
+
+[node name="ExpertButton" type="Button" parent="VBoxContainer/DifficultySection/DifficultyButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Expert
+2000"
+
+[node name="CustomButton" type="Button" parent="VBoxContainer/DifficultySection/DifficultyButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Custom"
+
+[node name="CustomSection" type="HBoxContainer" parent="VBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="CustomLabel" type="Label" parent="VBoxContainer/CustomSection"]
+layout_mode = 2
+text = "Starting Rating:"
+
+[node name="CustomSlider" type="HSlider" parent="VBoxContainer/CustomSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 400.0
+max_value = 2400.0
+step = 50.0
+value = 1200.0
+
+[node name="CustomValueLabel" type="Label" parent="VBoxContainer/CustomSection"]
+layout_mode = 2
+custom_minimum_size = Vector2(50, 0)
+text = "1200"
+horizontal_alignment = 2
+
+[node name="BestStreakLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.7, 0.3, 1)
+text = "Best: 0 streak"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StartButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 50)
+theme_override_font_sizes/font_size = 20
+text = "Start Streak"
+
+[node name="BackButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Back"
