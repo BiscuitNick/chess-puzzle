@@ -328,3 +328,507 @@ func restore_board_state(state: Dictionary) -> void:
 	fullmove_number = state["fullmove_number"]
 	_white_king_square = state["_white_king_square"]
 	_black_king_square = state["_black_king_square"]
+
+
+# =============================================================================
+# MOVE GENERATION
+# =============================================================================
+
+# Direction offsets for move generation (index-based)
+const DIR_N = -8   # North (toward rank 8)
+const DIR_S = 8    # South (toward rank 1)
+const DIR_E = 1    # East (toward h-file)
+const DIR_W = -1   # West (toward a-file)
+const DIR_NE = -7  # North-East
+const DIR_NW = -9  # North-West
+const DIR_SE = 9   # South-East
+const DIR_SW = 7   # South-West
+
+# Knight move offsets
+const KNIGHT_OFFSETS = [-17, -15, -10, -6, 6, 10, 15, 17]
+
+# All 8 directions for king and ray casting
+const ALL_DIRECTIONS = [DIR_N, DIR_S, DIR_E, DIR_W, DIR_NE, DIR_NW, DIR_SE, DIR_SW]
+const DIAGONAL_DIRECTIONS = [DIR_NE, DIR_NW, DIR_SE, DIR_SW]
+const ORTHOGONAL_DIRECTIONS = [DIR_N, DIR_S, DIR_E, DIR_W]
+
+
+## Check if a piece belongs to the given color.
+func _is_piece_color(piece: int, color: PieceColor) -> bool:
+	if color == PieceColor.WHITE:
+		return is_white_piece(piece)
+	return is_black_piece(piece)
+
+
+## Check if a piece is an enemy piece (opposite color).
+func _is_enemy_piece(piece: int, my_color: PieceColor) -> bool:
+	if piece == EMPTY:
+		return false
+	if my_color == PieceColor.WHITE:
+		return is_black_piece(piece)
+	return is_white_piece(piece)
+
+
+## Get pawn moves (single push, double push, diagonal captures, en passant).
+func get_pawn_moves(square: int, color: PieceColor) -> Array[int]:
+	var moves: Array[int] = []
+	var file = get_file(square)
+	var rank = get_rank(square)
+
+	# Direction depends on color (white moves up/negative, black moves down/positive)
+	var direction = DIR_N if color == PieceColor.WHITE else DIR_S
+	var start_rank = 6 if color == PieceColor.WHITE else 1  # Rank 2 for white, rank 7 for black
+	var promo_rank = 0 if color == PieceColor.WHITE else 7  # Rank 8 for white, rank 1 for black
+
+	# Single push
+	var single_target = square + direction
+	if single_target >= 0 and single_target < 64 and board[single_target] == EMPTY:
+		moves.append(single_target)
+
+		# Double push from starting rank
+		if rank == start_rank:
+			var double_target = square + direction * 2
+			if board[double_target] == EMPTY:
+				moves.append(double_target)
+
+	# Diagonal captures
+	var capture_dirs = [direction + DIR_W, direction + DIR_E]
+	for cap_dir in capture_dirs:
+		var target = square + cap_dir
+		if target < 0 or target > 63:
+			continue
+
+		# Check file wrapping (pawn can't capture across board edges)
+		var target_file = get_file(target)
+		if abs(target_file - file) != 1:
+			continue
+
+		# Regular capture
+		if _is_enemy_piece(board[target], color):
+			moves.append(target)
+
+		# En passant capture
+		if target == en_passant_square:
+			moves.append(target)
+
+	return moves
+
+
+## Get knight moves (L-shaped).
+func get_knight_moves(square: int, color: PieceColor) -> Array[int]:
+	var moves: Array[int] = []
+	var file = get_file(square)
+	var rank = get_rank(square)
+
+	for offset in KNIGHT_OFFSETS:
+		var target = square + offset
+		if target < 0 or target > 63:
+			continue
+
+		var target_file = get_file(target)
+		var target_rank = get_rank(target)
+
+		# Knight moves change file by 1-2 and rank by 1-2, total change must be 3
+		var file_diff = abs(target_file - file)
+		var rank_diff = abs(target_rank - rank)
+		if (file_diff == 1 and rank_diff == 2) or (file_diff == 2 and rank_diff == 1):
+			var target_piece = board[target]
+			if target_piece == EMPTY or _is_enemy_piece(target_piece, color):
+				moves.append(target)
+
+	return moves
+
+
+## Get moves along a ray (for sliding pieces).
+func _get_ray_moves(square: int, direction: int, color: PieceColor) -> Array[int]:
+	var moves: Array[int] = []
+	var file = get_file(square)
+	var current = square + direction
+
+	while current >= 0 and current < 64:
+		var current_file = get_file(current)
+
+		# Check for file wrapping on horizontal moves
+		if direction == DIR_E or direction == DIR_W:
+			if abs(current_file - file) != abs((current - square) / direction):
+				break
+		# Check for diagonal file wrapping
+		elif direction == DIR_NE or direction == DIR_SE:
+			if current_file != file + ((current - square) / direction):
+				break
+		elif direction == DIR_NW or direction == DIR_SW:
+			if current_file != file - abs((current - square) / direction):
+				break
+
+		var target_piece = board[current]
+		if target_piece == EMPTY:
+			moves.append(current)
+		elif _is_enemy_piece(target_piece, color):
+			moves.append(current)
+			break  # Can capture but not go further
+		else:
+			break  # Blocked by friendly piece
+
+		current += direction
+		file = current_file
+
+	return moves
+
+
+## Get bishop moves (diagonal rays).
+func get_bishop_moves(square: int, color: PieceColor) -> Array[int]:
+	var moves: Array[int] = []
+	for direction in DIAGONAL_DIRECTIONS:
+		moves.append_array(_get_ray_moves(square, direction, color))
+	return moves
+
+
+## Get rook moves (orthogonal rays).
+func get_rook_moves(square: int, color: PieceColor) -> Array[int]:
+	var moves: Array[int] = []
+	for direction in ORTHOGONAL_DIRECTIONS:
+		moves.append_array(_get_ray_moves(square, direction, color))
+	return moves
+
+
+## Get queen moves (combination of bishop and rook).
+func get_queen_moves(square: int, color: PieceColor) -> Array[int]:
+	var moves: Array[int] = []
+	for direction in ALL_DIRECTIONS:
+		moves.append_array(_get_ray_moves(square, direction, color))
+	return moves
+
+
+## Get king moves (one square in any direction, excluding castling).
+func get_king_moves(square: int, color: PieceColor) -> Array[int]:
+	var moves: Array[int] = []
+	var file = get_file(square)
+
+	for direction in ALL_DIRECTIONS:
+		var target = square + direction
+		if target < 0 or target > 63:
+			continue
+
+		var target_file = get_file(target)
+
+		# Check for file wrapping
+		if abs(target_file - file) > 1:
+			continue
+
+		var target_piece = board[target]
+		if target_piece == EMPTY or _is_enemy_piece(target_piece, color):
+			moves.append(target)
+
+	return moves
+
+
+## Get pseudo-legal moves for a piece (doesn't check if move leaves king in check).
+func get_pseudo_legal_moves(square: int) -> Array[int]:
+	var piece = board[square]
+	if piece == EMPTY:
+		return []
+
+	var color = get_piece_color(piece)
+	var piece_type = get_piece_type(piece)
+
+	match piece_type:
+		PieceType.PAWN:
+			return get_pawn_moves(square, color)
+		PieceType.KNIGHT:
+			return get_knight_moves(square, color)
+		PieceType.BISHOP:
+			return get_bishop_moves(square, color)
+		PieceType.ROOK:
+			return get_rook_moves(square, color)
+		PieceType.QUEEN:
+			return get_queen_moves(square, color)
+		PieceType.KING:
+			return get_king_moves(square, color)
+
+	return []
+
+
+# =============================================================================
+# ATTACK DETECTION
+# =============================================================================
+
+## Check if a square is attacked by any piece of the given color.
+func is_square_attacked(square: int, by_color: PieceColor) -> bool:
+	var file = get_file(square)
+	var rank = get_rank(square)
+
+	# Check pawn attacks
+	var pawn_dir = DIR_S if by_color == PieceColor.WHITE else DIR_N  # Opposite direction
+	var pawn = W_PAWN if by_color == PieceColor.WHITE else B_PAWN
+	for cap_offset in [pawn_dir + DIR_W, pawn_dir + DIR_E]:
+		var attacker_sq = square + cap_offset
+		if attacker_sq >= 0 and attacker_sq < 64:
+			var attacker_file = get_file(attacker_sq)
+			if abs(attacker_file - file) == 1 and board[attacker_sq] == pawn:
+				return true
+
+	# Check knight attacks
+	var knight = W_KNIGHT if by_color == PieceColor.WHITE else B_KNIGHT
+	for offset in KNIGHT_OFFSETS:
+		var attacker_sq = square + offset
+		if attacker_sq >= 0 and attacker_sq < 64:
+			var attacker_file = get_file(attacker_sq)
+			var file_diff = abs(attacker_file - file)
+			var rank_diff = abs(get_rank(attacker_sq) - rank)
+			if (file_diff == 1 and rank_diff == 2) or (file_diff == 2 and rank_diff == 1):
+				if board[attacker_sq] == knight:
+					return true
+
+	# Check king attacks
+	var king = W_KING if by_color == PieceColor.WHITE else B_KING
+	for direction in ALL_DIRECTIONS:
+		var attacker_sq = square + direction
+		if attacker_sq >= 0 and attacker_sq < 64:
+			var attacker_file = get_file(attacker_sq)
+			if abs(attacker_file - file) <= 1 and board[attacker_sq] == king:
+				return true
+
+	# Check sliding piece attacks (bishop, rook, queen)
+	var bishop = W_BISHOP if by_color == PieceColor.WHITE else B_BISHOP
+	var rook = W_ROOK if by_color == PieceColor.WHITE else B_ROOK
+	var queen = W_QUEEN if by_color == PieceColor.WHITE else B_QUEEN
+
+	# Diagonal rays (bishop/queen)
+	for direction in DIAGONAL_DIRECTIONS:
+		var current = square + direction
+		var current_file = file
+		while current >= 0 and current < 64:
+			var new_file = get_file(current)
+			if abs(new_file - current_file) != 1:
+				break
+			var piece = board[current]
+			if piece != EMPTY:
+				if piece == bishop or piece == queen:
+					return true
+				break  # Blocked by another piece
+			current_file = new_file
+			current += direction
+
+	# Orthogonal rays (rook/queen)
+	for direction in ORTHOGONAL_DIRECTIONS:
+		var current = square + direction
+		var current_file = file
+		while current >= 0 and current < 64:
+			var new_file = get_file(current)
+			# Check file wrapping for horizontal moves
+			if direction == DIR_E or direction == DIR_W:
+				if abs(new_file - current_file) != 1:
+					break
+			var piece = board[current]
+			if piece != EMPTY:
+				if piece == rook or piece == queen:
+					return true
+				break  # Blocked by another piece
+			current_file = new_file
+			current += direction
+
+	return false
+
+
+## Check if the given color's king is in check.
+func is_in_check(color: PieceColor = side_to_move) -> bool:
+	var king_square = get_king_square(color)
+	if king_square < 0:
+		return false  # King not found (shouldn't happen in valid position)
+	var enemy_color = PieceColor.BLACK if color == PieceColor.WHITE else PieceColor.WHITE
+	return is_square_attacked(king_square, enemy_color)
+
+
+# =============================================================================
+# LEGAL MOVE GENERATION
+# =============================================================================
+
+## Get all legal moves for a piece at the given square.
+func get_legal_moves(square: int) -> Array[int]:
+	var piece = board[square]
+	if piece == EMPTY:
+		return []
+
+	var color = get_piece_color(piece)
+	if color != side_to_move:
+		return []  # Not this player's piece
+
+	var pseudo_moves = get_pseudo_legal_moves(square)
+	var legal_moves: Array[int] = []
+
+	# Test each pseudo-legal move
+	var saved_state = copy_board_state()
+
+	for target in pseudo_moves:
+		# Make the move temporarily
+		_make_move_unchecked(square, target)
+
+		# Check if our king is in check after the move
+		if not is_in_check(color):
+			legal_moves.append(target)
+
+		# Restore state
+		restore_board_state(saved_state)
+
+	return legal_moves
+
+
+## Check if a specific move is legal.
+func is_move_legal(from: int, to: int) -> bool:
+	var legal_moves = get_legal_moves(from)
+	return to in legal_moves
+
+
+## Make a move without checking legality (internal use).
+func _make_move_unchecked(from: int, to: int, promotion: int = EMPTY) -> void:
+	var piece = board[from]
+	var color = get_piece_color(piece)
+	var piece_type = get_piece_type(piece)
+	var captured = board[to]
+
+	# Handle en passant capture
+	if piece_type == PieceType.PAWN and to == en_passant_square:
+		var captured_pawn_sq = to + (DIR_S if color == PieceColor.WHITE else DIR_N)
+		board[captured_pawn_sq] = EMPTY
+
+	# Move the piece
+	board[from] = EMPTY
+	board[to] = piece
+
+	# Handle pawn promotion
+	if piece_type == PieceType.PAWN:
+		var promo_rank = 0 if color == PieceColor.WHITE else 7
+		if get_rank(to) == promo_rank:
+			if promotion != EMPTY:
+				board[to] = promotion
+			else:
+				# Default to queen
+				board[to] = W_QUEEN if color == PieceColor.WHITE else B_QUEEN
+
+	# Update king position
+	if piece == W_KING:
+		_white_king_square = to
+	elif piece == B_KING:
+		_black_king_square = to
+
+
+## Make a move (validates legality first).
+func make_move(from: int, to: int, promotion: int = EMPTY) -> bool:
+	if not is_move_legal(from, to):
+		return false
+
+	var piece = board[from]
+	var color = get_piece_color(piece)
+	var piece_type = get_piece_type(piece)
+	var captured = board[to]
+
+	# Store en passant state before clearing
+	var old_en_passant = en_passant_square
+
+	# Clear en passant
+	en_passant_square = -1
+
+	# Handle en passant capture
+	if piece_type == PieceType.PAWN and to == old_en_passant:
+		var captured_pawn_sq = to + (DIR_S if color == PieceColor.WHITE else DIR_N)
+		board[captured_pawn_sq] = EMPTY
+		captured = W_PAWN if color == PieceColor.BLACK else B_PAWN  # For halfmove clock
+
+	# Set new en passant square for double pawn push
+	if piece_type == PieceType.PAWN:
+		var move_dist = abs(to - from)
+		if move_dist == 16:  # Double push
+			en_passant_square = from + (DIR_N if color == PieceColor.WHITE else DIR_S)
+
+	# Move the piece
+	board[from] = EMPTY
+	board[to] = piece
+
+	# Handle pawn promotion
+	if piece_type == PieceType.PAWN:
+		var promo_rank = 0 if color == PieceColor.WHITE else 7
+		if get_rank(to) == promo_rank:
+			if promotion != EMPTY:
+				board[to] = promotion
+			else:
+				board[to] = W_QUEEN if color == PieceColor.WHITE else B_QUEEN
+
+	# Update king position
+	if piece == W_KING:
+		_white_king_square = to
+		# Remove castling rights
+		castling_rights &= ~(CASTLE_K | CASTLE_Q)
+	elif piece == B_KING:
+		_black_king_square = to
+		castling_rights &= ~(CASTLE_k | CASTLE_q)
+
+	# Update castling rights if rook moves or is captured
+	if piece_type == PieceType.ROOK:
+		if from == 63:  # h1
+			castling_rights &= ~CASTLE_K
+		elif from == 56:  # a1
+			castling_rights &= ~CASTLE_Q
+		elif from == 7:  # h8
+			castling_rights &= ~CASTLE_k
+		elif from == 0:  # a8
+			castling_rights &= ~CASTLE_q
+
+	if to == 63:  # h1 captured
+		castling_rights &= ~CASTLE_K
+	elif to == 56:  # a1 captured
+		castling_rights &= ~CASTLE_Q
+	elif to == 7:  # h8 captured
+		castling_rights &= ~CASTLE_k
+	elif to == 0:  # a8 captured
+		castling_rights &= ~CASTLE_q
+
+	# Update halfmove clock
+	if piece_type == PieceType.PAWN or captured != EMPTY:
+		halfmove_clock = 0
+	else:
+		halfmove_clock += 1
+
+	# Update fullmove number
+	if color == PieceColor.BLACK:
+		fullmove_number += 1
+
+	# Switch side to move
+	side_to_move = PieceColor.BLACK if color == PieceColor.WHITE else PieceColor.WHITE
+
+	return true
+
+
+# =============================================================================
+# GAME STATE DETECTION
+# =============================================================================
+
+## Check if the current side to move has any legal moves.
+func has_legal_moves() -> bool:
+	for square in range(64):
+		var piece = board[square]
+		if piece != EMPTY and _is_piece_color(piece, side_to_move):
+			if get_legal_moves(square).size() > 0:
+				return true
+	return false
+
+
+## Check if the current position is checkmate.
+func is_checkmate() -> bool:
+	return is_in_check() and not has_legal_moves()
+
+
+## Check if the current position is stalemate.
+func is_stalemate() -> bool:
+	return not is_in_check() and not has_legal_moves()
+
+
+## Get all legal moves for the current side.
+func get_all_legal_moves() -> Dictionary:
+	var all_moves: Dictionary = {}
+	for square in range(64):
+		var piece = board[square]
+		if piece != EMPTY and _is_piece_color(piece, side_to_move):
+			var moves = get_legal_moves(square)
+			if moves.size() > 0:
+				all_moves[square] = moves
+	return all_moves

@@ -276,7 +276,7 @@
         "dependencies": [
           "2"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -284,9 +284,10 @@
             "description": "Implement pawn move generation including single pushes, double pushes from starting rank, and diagonal captures (excluding en passant which is Task 5).",
             "dependencies": [],
             "details": "Add get_pawn_moves(square: int, color: PieceColor) -> Array[int] to chess_logic.gd. Handle:\n- Single push: one square forward if empty (direction based on color: white moves toward lower indices, black toward higher)\n- Double push: two squares forward from starting rank (rank 2 for white/rank 7 for black) if both squares empty\n- Diagonal captures: can move diagonally forward if enemy piece present\n- Board edge handling: don't wrap around files (a-file can't capture left, h-file can't capture right)\n- Use helper to determine piece color from board array value (1-6 = white, 9-14 = black)\n\nNote: Pawn promotion detection and en passant are handled in Task 5. This subtask generates the target squares only, filtering for legality happens in subtask 8.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test pawn on e2 can move to e3, e4. Pawn on e4 can only move to e5. Pawn on d4 with enemy on e5 can capture. Pawn on a-file cannot capture left. Pawn blocked by piece cannot push.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:48:45.247Z"
           },
           {
             "id": 2,
@@ -294,9 +295,10 @@
             "description": "Implement knight move generation with all 8 possible L-shaped target squares, filtering for board bounds and friendly pieces.",
             "dependencies": [],
             "details": "Add get_knight_moves(square: int, color: PieceColor) -> Array[int] to chess_logic.gd. Knight moves in L-shape: 2 squares in one direction + 1 square perpendicular (or vice versa). From any square, compute 8 potential targets using offsets: (-17, -15, -10, -6, +6, +10, +15, +17) for a8=0 indexing.\n\nCritical: Prevent wrapping around board edges. Calculate file (square % 8) and rank (square / 8) before and after move. Reject moves where file changes by more than 2 or rank changes by more than 2.\n\nFilter results: include square if within bounds (0-63) AND (empty OR contains enemy piece). Use helper function to check if piece at square is enemy.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Knight on e4 (index 36) should have 8 valid target squares. Knight on a1 should have only 2 valid targets. Knight on h8 should have only 2 valid targets. Knight cannot capture friendly pieces.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:48:45.249Z"
           },
           {
             "id": 3,
@@ -304,9 +306,10 @@
             "description": "Implement ray-based move generation for sliding pieces (bishop, rook, queen) that traverse in straight lines until blocked by a piece or board edge.",
             "dependencies": [],
             "details": "Add helper functions to chess_logic.gd:\n- get_bishop_moves(square: int, color: PieceColor) -> Array[int]: diagonal rays (NE, NW, SE, SW)\n- get_rook_moves(square: int, color: PieceColor) -> Array[int]: orthogonal rays (N, S, E, W)\n- get_queen_moves(square: int, color: PieceColor) -> Array[int]: combines bishop + rook moves\n\nImplement generic ray casting function: get_ray_moves(square: int, direction: int, color: PieceColor) -> Array[int]\n- Direction offsets for 8 directions: N=-8, S=+8, E=+1, W=-1, NE=-7, NW=-9, SE=+9, SW=+7\n- For E/W moves, check file boundaries to prevent wrapping\n- Continue in direction until: hit board edge, hit friendly piece (stop before), or hit enemy piece (include that square, then stop)\n\nEnsure ray stops at board edges properly by checking file/rank after each step.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Rook on e4 in empty board should have 14 moves (7 on file + 7 on rank). Bishop on e4 should have 13 moves. Queen combines both. Verify rays stop at friendly pieces (not including square) and enemy pieces (including that square).",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:48:45.251Z"
           },
           {
             "id": 4,
@@ -314,9 +317,10 @@
             "description": "Implement king move generation for one square in any of 8 directions, excluding squares occupied by friendly pieces (castling handled in Task 5).",
             "dependencies": [],
             "details": "Add get_king_moves(square: int, color: PieceColor) -> Array[int] to chess_logic.gd. King can move one square in 8 directions using same direction offsets as queen but only one step.\n\nDirection offsets: N=-8, S=+8, E=+1, W=-1, NE=-7, NW=-9, SE=+9, SW=+7\n\nFor each direction:\n- Calculate target square\n- Check board bounds (0-63)\n- For E/W moves, check file doesn't wrap (king on a-file can't move west, h-file can't move east)\n- Include target if empty or enemy piece\n\nNote: This generates pseudo-legal moves only. Squares attacked by enemy pieces are filtered out in subtask 8 (legality filter). Castling moves are added in Task 5.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "King on e4 should have 8 possible target squares. King on a1 should have 3 targets. King on h8 should have 3 targets. King on e1 (corner) should have 5 targets. Cannot move to squares with friendly pieces.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:48:45.253Z"
           },
           {
             "id": 5,
@@ -329,9 +333,10 @@
               4
             ],
             "details": "Add is_square_attacked(square: int, by_color: PieceColor) -> bool to chess_logic.gd. This function checks if any piece of the specified color can attack the given square.\n\nEfficient approach - check from the target square outward:\n- Pawn attacks: check the two diagonal squares from which an enemy pawn could attack (direction depends on attacker color)\n- Knight attacks: check all 8 knight-distance squares for enemy knights\n- King attacks: check all 8 adjacent squares for enemy king\n- Sliding piece attacks: cast rays in all 8 directions. Diagonal rays can find bishop/queen, orthogonal rays can find rook/queen\n\nThis reverse lookup is more efficient than generating all enemy moves. Stop ray on first piece encountered - if it's the right type and color, square is attacked.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Position with white queen on e4: verify d3, d4, d5, e3, e5, f3, f4, f5, and all ray squares are attacked. Knight on f6 attacks e4, d5, g4, etc. Verify blocked pieces don't attack through other pieces.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:48:45.255Z"
           },
           {
             "id": 6,
@@ -341,9 +346,10 @@
               5
             ],
             "details": "Add is_in_check(color: PieceColor = side_to_move) -> bool to chess_logic.gd. Steps:\n\n1. Find king position: iterate through board array to find W_KING (6) or B_KING (14) based on color parameter (default to current side_to_move)\n2. Store king positions as member variables (king_squares: Dictionary) for efficiency, update when king moves\n3. Call is_square_attacked(king_square, enemy_color) where enemy_color is opposite of the king's color\n4. Return the result\n\nAdd helper function find_king(color: PieceColor) -> int that returns the square index of the king for the given color. Cache this in _king_squares dict and update it in make_move() when king moves.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Starting position: neither king in check. Position with rook giving check: is_in_check returns true. Position with knight giving check: returns true. Position with discovered check: returns true. Empty squares between king and attacker: returns true (no blocking).",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:48:45.256Z"
           },
           {
             "id": 7,
@@ -354,9 +360,10 @@
               8
             ],
             "details": "Add is_checkmate() -> bool and is_stalemate() -> bool to chess_logic.gd.\n\nis_checkmate():\n1. First check is_in_check() - if not in check, cannot be checkmate\n2. If in check, check if any piece of side_to_move has legal moves using get_legal_moves()\n3. If no legal moves exist while in check, return true\n\nis_stalemate():\n1. First check is_in_check() - if in check, cannot be stalemate\n2. If not in check, check if any piece of side_to_move has legal moves\n3. If no legal moves exist while NOT in check, return true\n\nHelper function get_all_legal_moves(color: PieceColor) -> Dictionary that returns {square: [legal_moves]} for all pieces of that color. Iterate through board, for each piece of correct color, call get_legal_moves().",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test back rank mate position (king on g8, rook delivers mate on 8th rank). Test smothered mate (knight mate with king blocked by own pieces). Test stalemate (king not in check but no legal moves). Verify checkmate with blocking possible returns false.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:48:45.258Z"
           },
           {
             "id": 8,
@@ -371,14 +378,16 @@
               6
             ],
             "details": "Add core API functions to chess_logic.gd:\n\nget_legal_moves(square: int) -> Array[int]:\n1. Get piece at square, return empty if no piece or wrong color\n2. Generate pseudo-legal moves using appropriate piece function (get_pawn_moves, etc.)\n3. Filter each candidate move: make_move on copy, check if king NOT in check, if legal add to result\n4. Return filtered array\n\nis_move_legal(from: int, to: int) -> bool:\n1. Get legal moves for 'from' square\n2. Return whether 'to' is in the legal moves array\n\nmake_move(from: int, to: int, promotion: PieceType = PieceType.NONE) -> void:\n1. Validate move is legal\n2. Update board array (move piece, clear source, handle capture)\n3. Toggle side_to_move\n4. Update halfmove_clock (reset on capture/pawn, else increment)\n5. Update fullmove_number after black moves\n6. Update king position cache if king moved\n\nHelper: copy_board_state() -> Dictionary for temporary move testing.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test pinned piece can only move along pin line. Test king cannot move into check. Test piece cannot move if it would expose king to check. Verify all legal moves in complex positions match expected count. Test make_move updates all state correctly.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:48:45.260Z"
           }
         ],
         "complexity": 8,
         "recommendedSubtasks": 8,
-        "expansionPrompt": "Break down into subtasks: 1) Implement pawn move generation (pushes, captures, double move), 2) Implement knight move generation, 3) Implement sliding piece logic (bishop/rook/queen rays), 4) Implement king move generation, 5) Implement attack detection for check verification, 6) Implement is_in_check() function, 7) Implement is_checkmate() and is_stalemate(), 8) Implement move legality filter (verify king not left in check)"
+        "expansionPrompt": "Break down into subtasks: 1) Implement pawn move generation (pushes, captures, double move), 2) Implement knight move generation, 3) Implement sliding piece logic (bishop/rook/queen rays), 4) Implement king move generation, 5) Implement attack detection for check verification, 6) Implement is_in_check() function, 7) Implement is_checkmate() and is_stalemate(), 8) Implement move legality filter (verify king not left in check)",
+        "updatedAt": "2025-12-04T20:48:45.260Z"
       },
       {
         "id": "5",
@@ -1526,9 +1535,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-12-04T20:45:19.929Z",
+      "lastModified": "2025-12-04T20:48:45.260Z",
       "taskCount": 17,
-      "completedCount": 2,
+      "completedCount": 3,
       "tags": [
         "master"
       ]
