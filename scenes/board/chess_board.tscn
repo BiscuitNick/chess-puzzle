@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://c3qfj8wmxkm4l"]
+
+[ext_resource type="Script" path="res://scripts/board/chess_board.gd" id="1_chess"]
+
+[node name="ChessBoard" type="Node2D"]
+script = ExtResource("1_chess")
+square_size = 80
+light_color = Color(0.941176, 0.85098, 0.709804, 1)
+dark_color = Color(0.709804, 0.533333, 0.388235, 1)
+highlight_color = Color(0.509804, 0.592157, 0.411765, 0.8)
+last_move_color = Color(0.803922, 0.823529, 0.415686, 0.5)
+selected_color = Color(0.392157, 0.427451, 0.25098, 0.7)
+legal_move_color = Color(0.392157, 0.427451, 0.25098, 0.6)

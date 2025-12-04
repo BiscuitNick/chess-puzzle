@@ -198,7 +198,7 @@
           "1",
           "2"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -206,9 +206,10 @@
             "description": "Set up the base scene file for the chess board with proper Node2D hierarchy and exported configuration variables.",
             "dependencies": [],
             "details": "Create scenes/board/chess_board.tscn with a Node2D root node named 'ChessBoard'. Attach scripts/board/chess_board.gd script to the root. Define all @export variables: square_size (int = 80), light_color (Color = #F0D9B5), dark_color (Color = #B58863), highlight_color (Color = #829769 with 0.8 alpha), last_move_color (Color = #CDD26A with 0.5 alpha). Add instance variables: flipped (bool = false), selected_square (int = -1), legal_move_squares (Array[int] = []). Create the basic directory structure scenes/board/ if it doesn't exist. The scene should be ready to receive child nodes for pieces and have proper signal connections prepared for input handling.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Open the scene in Godot editor, verify all exported properties appear in the inspector with correct default values. Confirm the script is properly attached and the scene loads without errors.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:12:20.046Z"
           },
           {
             "id": 2,
@@ -218,9 +219,10 @@
               1
             ],
             "details": "In chess_board.gd, implement _draw() function that iterates through 8 rows and 8 columns. For each square, determine color based on (row + col) % 2 - if even use light_color, if odd use dark_color. Use draw_rect() to draw each square at position (col * square_size, row * square_size) with size Vector2(square_size, square_size). Total board size will be 640x640 pixels with default square_size of 80. Ensure queue_redraw() is called when colors or square_size change. The coordinate system should have (0,0) at top-left representing a8 (when not flipped) or h1 (when flipped).",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run the scene and visually verify an 8x8 grid appears with alternating light brown (#F0D9B5) and dark brown (#B58863) squares. Verify the board is 640x640 pixels with default settings.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:12:20.049Z"
           },
           {
             "id": 3,
@@ -231,9 +233,10 @@
               2
             ],
             "details": "Create scenes/board/piece.tscn with Sprite2D root node. Add a script that accepts piece_type (String like 'K', 'q', 'P') and loads corresponding texture from assets/pieces/. Implement set_position(fen: String) in chess_board.gd that: 1) Clears existing piece children, 2) Parses only the board portion of FEN (before first space), 3) Iterates through FEN ranks (split by '/'), 4) For each character: if digit, skip that many squares; if letter, instantiate piece.tscn at correct position. Map FEN characters to piece sprites: K/k=king, Q/q=queen, R/r=rook, B/b=bishop, N/n=knight, P/p=pawn (uppercase=white, lowercase=black). Position pieces using board_to_screen() centered on squares.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Call set_position() with starting FEN 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'. Verify all 32 pieces appear in correct positions. Test with various FEN positions to confirm proper parsing.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:12:20.051Z"
           },
           {
             "id": 4,
@@ -244,9 +247,10 @@
               3
             ],
             "details": "Implement coordinate conversion functions in chess_board.gd. board_to_screen(square: int) -> Vector2: Convert 0-63 square index to screen position. When not flipped: file = square % 8, rank = 7 - (square / 8), return Vector2(file * square_size + square_size/2, rank * square_size + square_size/2). When flipped: invert both file and rank (7 - file, 7 - rank). screen_to_board(screen_pos: Vector2) -> int: Reverse conversion, return -1 if outside board bounds. flip_board(): Toggle flipped boolean, reposition all piece children using board_to_screen(), call queue_redraw(). Ensure all piece positions update correctly when flipping. Square index convention: 0=a1, 7=h1, 56=a8, 63=h8.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Set a position, verify pieces are in correct spots. Call flip_board(), verify all pieces move to mirrored positions (board appears from black's perspective). Test screen_to_board() by clicking squares and verifying correct square indices are returned in both orientations.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:12:20.053Z"
           },
           {
             "id": 5,
@@ -257,14 +261,16 @@
               4
             ],
             "details": "Extend _draw() in chess_board.gd to render highlights after base squares. Add variables: last_move_from (int = -1), last_move_to (int = -1). In _draw(): 1) After drawing base grid, if last_move_from >= 0, draw semi-transparent rectangle using last_move_color at that square position (accounting for flip state), same for last_move_to. 2) If selected_square >= 0, draw highlight_color rectangle at selected square. 3) For each square in legal_move_squares, draw a circle or dot indicator (use draw_circle with highlight_color at square center, radius ~10-15px). Add set_last_move(from: int, to: int) and clear_highlights() helper methods. Ensure queue_redraw() is called when any highlight state changes.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Set selected_square to various values and verify highlight appears at correct position. Set legal_move_squares array and verify indicators appear. Set last_move_from/to and verify both squares show last move highlighting. Test all highlights work correctly when board is flipped.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:12:20.055Z"
           }
         ],
         "complexity": 5,
         "recommendedSubtasks": 5,
-        "expansionPrompt": "Break down into subtasks: 1) Create chess_board.tscn scene structure with Node2D root, 2) Implement _draw() for 8x8 grid rendering with alternating colors, 3) Create piece.tscn and implement piece placement from FEN, 4) Implement board flipping with coordinate transformation, 5) Add highlight rendering for selected squares and last move"
+        "expansionPrompt": "Break down into subtasks: 1) Create chess_board.tscn scene structure with Node2D root, 2) Implement _draw() for 8x8 grid rendering with alternating colors, 3) Create piece.tscn and implement piece placement from FEN, 4) Implement board flipping with coordinate transformation, 5) Add highlight rendering for selected squares and last move",
+        "updatedAt": "2025-12-04T21:12:20.055Z"
       },
       {
         "id": "4",
@@ -1550,9 +1556,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-12-04T21:08:31.821Z",
+      "lastModified": "2025-12-04T21:12:20.056Z",
       "taskCount": 17,
-      "completedCount": 5,
+      "completedCount": 6,
       "tags": [
         "master"
       ]
