@@ -703,7 +703,7 @@
           "6",
           "7"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -711,9 +711,10 @@
             "description": "Create the PuzzleData class that encapsulates all puzzle information including FEN, solution moves, rating, and mate depth.",
             "dependencies": [],
             "details": "Create scripts/puzzle/puzzle_data.gd with class_name PuzzleData extending RefCounted:\n\n```gdscript\nclass_name PuzzleData\nextends RefCounted\n\nvar id: String\nvar fen: String\nvar solution_moves: Array[String]  # UCI format moves like 'e2e4'\nvar rating: int\nvar mate_in: int  # Number of moves to mate\nvar themes: Array[String]  # Optional: puzzle themes from Lichess\n\nfunc _init(puzzle_id: String = \"\", puzzle_fen: String = \"\", moves: Array[String] = [], puzzle_rating: int = 0, mate_depth: int = 0) -> void\nfunc get_move_count() -> int  # Returns solution_moves.size()\nfunc get_current_move(index: int) -> String  # Returns solution_moves[index] or empty if out of bounds\nfunc is_final_move(index: int) -> bool  # Returns true if index == solution_moves.size() - 1\n```\n\nThe solution_moves array contains all moves in the puzzle sequence, alternating between opponent setup moves and player solution moves. For a mate-in-2, this would typically be 3 moves: opponent move, player move, opponent move, player checkmate.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Create test_puzzle_data.gd: verify constructor sets all fields correctly, test get_move_count() returns correct length, test get_current_move() returns correct move and handles out-of-bounds, test is_final_move() returns true only for last index.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:20:25.150Z"
           },
           {
             "id": 2,
@@ -721,9 +722,10 @@
             "description": "Create the PuzzleController script with the complete state machine including all states, transitions, and core signals.",
             "dependencies": [],
             "details": "Create scripts/puzzle/puzzle_controller.gd extending Node:\n\n```gdscript\nclass_name PuzzleController\nextends Node\n\nenum GameMode { PRACTICE, SPRINT, STREAK, DAILY }\nenum PuzzleState { LOADING, PLAYER_TURN, OPPONENT_TURN, COMPLETED_SUCCESS, COMPLETED_FAILED, SHOWING_SOLUTION, GAME_OVER }\n\nvar current_mode: GameMode = GameMode.PRACTICE\nvar current_puzzle: PuzzleData\nvar current_state: PuzzleState = PuzzleState.LOADING\nvar move_index: int = 0\nvar attempt_count: int = 0\nvar streak_count: int = 0\nvar strikes: int = 0\n\nsignal state_changed(old_state: PuzzleState, new_state: PuzzleState)\nsignal puzzle_loaded(puzzle: PuzzleData)\nsignal move_made(from: int, to: int, is_correct: bool)\nsignal puzzle_completed(success: bool, attempts: int)\nsignal opponent_moving(from: int, to: int)\nsignal game_over(mode: GameMode, stats: Dictionary)\n\nfunc _set_state(new_state: PuzzleState) -> void  # Handles state transitions, emits state_changed\nfunc _can_transition_to(target_state: PuzzleState) -> bool  # Validates state transitions\n```\n\nDefine valid state transitions: LOADING -> PLAYER_TURN/OPPONENT_TURN, PLAYER_TURN -> OPPONENT_TURN/COMPLETED_SUCCESS/COMPLETED_FAILED, OPPONENT_TURN -> PLAYER_TURN/COMPLETED_SUCCESS, COMPLETED_FAILED -> PLAYER_TURN/SHOWING_SOLUTION/GAME_OVER, etc.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test all valid state transitions work correctly, test invalid transitions are rejected, verify state_changed signal emits with correct old and new states, verify all signals are properly defined.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:20:25.153Z"
           },
           {
             "id": 3,
@@ -734,9 +736,10 @@
               2
             ],
             "details": "Add to puzzle_controller.gd:\n\n```gdscript\nfunc load_puzzle(puzzle: PuzzleData) -> void:\n    _set_state(PuzzleState.LOADING)\n    current_puzzle = puzzle\n    move_index = 0\n    attempt_count = 0\n    \n    # Set initial position from FEN via ChessLogic autoload\n    ChessLogic.parse_fen(puzzle.fen)\n    \n    # Emit signal for UI to update board display\n    puzzle_loaded.emit(puzzle)\n    \n    # Check if first move is opponent (setup move) - determined by side to move in FEN\n    # If puzzle has opponent making first move, transition to OPPONENT_TURN and play it\n    if _is_opponent_first_move():\n        _set_state(PuzzleState.OPPONENT_TURN)\n        await _play_opponent_move()\n    else:\n        _set_state(PuzzleState.PLAYER_TURN)\n\nfunc _is_opponent_first_move() -> bool  # Check if the side to move in FEN is the opponent\nfunc reset_puzzle() -> void  # Reload current puzzle for retry\n```\n\nThe FEN in puzzle data represents position BEFORE any moves. Many Lichess puzzles start with an opponent move that sets up the tactic.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test load_puzzle() sets state to LOADING then transitions correctly, verify FEN is parsed via ChessLogic, test puzzles where opponent moves first vs player moves first, verify puzzle_loaded signal contains correct puzzle data.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:20:25.155Z"
           },
           {
             "id": 4,
@@ -744,9 +747,10 @@
             "description": "Create the PuzzleValidator class that interfaces with Stockfish to validate moves maintain mate-in-N and verify checkmate delivery.",
             "dependencies": [],
             "details": "Create scripts/puzzle/puzzle_validator.gd:\n\n```gdscript\nclass_name PuzzleValidator\nextends RefCounted\n\nvar stockfish_bridge  # Reference to StockfishBridge from Task 6\n\nfunc _init(bridge) -> void:\n    stockfish_bridge = bridge\n\n# Validate a player move maintains winning position\nfunc validate_move(fen: String, move_uci: String, expected_mate_in: int) -> Dictionary:\n    # Returns {valid: bool, is_checkmate: bool, new_mate_in: int, reason: String}\n    \nfunc is_checkmate(fen: String) -> bool:\n    # Check if position is checkmate\n    \nfunc get_mate_distance(fen: String) -> int:\n    # Use Stockfish to get mate distance from position (-1 if no forced mate)\n    # Parse 'info score mate N' from Stockfish output\n    \nfunc accepts_alternate_mate(expected_mate: int, actual_mate: int) -> bool:\n    # Return true if actual_mate <= expected_mate (faster mate is acceptable)\n```\n\nValidation logic: After player move, analyze with Stockfish. If move delivers checkmate, valid. If move maintains mate in equal or fewer moves than remaining expected moves, valid. Otherwise invalid.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test validate_move() correctly identifies checkmate delivery, test alternate mate detection (mate in 1 accepted when mate in 2 expected), test invalid moves are rejected, test slower mate is rejected.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:20:25.157Z"
           },
           {
             "id": 5,
@@ -758,9 +762,10 @@
               4
             ],
             "details": "Add to puzzle_controller.gd:\n\n```gdscript\nvar puzzle_validator: PuzzleValidator\n\nfunc submit_move(from: int, to: int, promotion: int = ChessLogic.EMPTY) -> void:\n    if current_state != PuzzleState.PLAYER_TURN:\n        return\n    \n    var move_uci = ChessLogic.squares_to_uci(from, to, promotion)\n    var current_fen = ChessLogic.to_fen()\n    var remaining_mate = _calculate_remaining_mate()\n    \n    # Validate with Stockfish\n    var result = await puzzle_validator.validate_move(current_fen, move_uci, remaining_mate)\n    \n    if result.valid:\n        # Make the move on board\n        ChessLogic.make_move(from, to, promotion)\n        move_index += 1\n        move_made.emit(from, to, true)\n        \n        if result.is_checkmate:\n            _handle_puzzle_success()\n        else:\n            _set_state(PuzzleState.OPPONENT_TURN)\n            await _play_opponent_move()\n    else:\n        attempt_count += 1\n        move_made.emit(from, to, false)\n        _handle_incorrect_move(result.reason)\n\nfunc _calculate_remaining_mate() -> int  # Calculate expected mate based on move_index\nfunc _handle_puzzle_success() -> void  # Transition to COMPLETED_SUCCESS, emit signals\nfunc _handle_incorrect_move(reason: String) -> void  # Mode-specific handling\n```",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test correct move advances move_index and transitions to OPPONENT_TURN, test incorrect move increments attempt_count and calls mode handler, test checkmate detection triggers success, verify move_made signal emits with correct is_correct value.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:20:25.160Z"
           },
           {
             "id": 6,
@@ -772,9 +777,10 @@
               5
             ],
             "details": "Add to puzzle_controller.gd:\n\n```gdscript\nfunc _play_opponent_move() -> void:\n    if current_state != PuzzleState.OPPONENT_TURN:\n        return\n    \n    var opponent_move: String\n    \n    # Check if we have a scripted move from puzzle solution\n    if move_index < current_puzzle.solution_moves.size():\n        opponent_move = current_puzzle.solution_moves[move_index]\n    else:\n        # Player found alternate solution - get Stockfish best response\n        var fen = ChessLogic.to_fen()\n        opponent_move = await puzzle_validator.stockfish_bridge.get_best_move(fen)\n    \n    # Parse and execute the move\n    var move_data = ChessLogic.uci_to_squares(opponent_move)\n    \n    # Emit signal for animation (UI handles timing)\n    opponent_moving.emit(move_data.from, move_data.to)\n    \n    # Wait for animation signal or timeout\n    await get_tree().create_timer(0.5).timeout  # Or await animation_completed signal\n    \n    # Make the move\n    ChessLogic.make_move(move_data.from, move_data.to, move_data.promotion)\n    move_index += 1\n    \n    # Check if opponent move delivers checkmate (puzzle failed due to alternate line)\n    if ChessLogic.is_checkmate():\n        _handle_puzzle_failed(\"Opponent delivered checkmate\")\n    else:\n        _set_state(PuzzleState.PLAYER_TURN)\n```",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test opponent plays scripted move when available, test Stockfish is queried for moves beyond solution length, verify opponent_moving signal emits correct squares, test checkmate by opponent triggers failure.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:20:25.162Z"
           },
           {
             "id": 7,
@@ -785,14 +791,16 @@
               5
             ],
             "details": "Add to puzzle_controller.gd:\n\n```gdscript\nconst MAX_STRIKES = 3\n\nfunc _handle_incorrect_move(reason: String) -> void:\n    match current_mode:\n        GameMode.PRACTICE:\n            # Unlimited retries, stay in PLAYER_TURN\n            pass  # Just show feedback, player can try again\n            \n        GameMode.SPRINT:\n            # Time-based, allow retry but penalize time (handled by sprint mode)\n            pass\n            \n        GameMode.STREAK:\n            # One mistake ends streak\n            _set_state(PuzzleState.COMPLETED_FAILED)\n            _handle_puzzle_failed(reason)\n            \n        GameMode.DAILY:\n            strikes += 1\n            if strikes >= MAX_STRIKES:\n                _set_state(PuzzleState.COMPLETED_FAILED)\n                _handle_puzzle_failed(\"Three strikes\")\n            # Otherwise stay in PLAYER_TURN for retry\n\nfunc _handle_puzzle_failed(reason: String) -> void:\n    puzzle_completed.emit(false, attempt_count)\n    \nfunc _handle_puzzle_success() -> void:\n    _set_state(PuzzleState.COMPLETED_SUCCESS)\n    puzzle_completed.emit(true, attempt_count)\n    \nfunc trigger_game_over() -> void:\n    _set_state(PuzzleState.GAME_OVER)\n    var stats = {\"streak\": streak_count, \"strikes\": strikes, \"mode\": current_mode}\n    game_over.emit(current_mode, stats)\n    \nfunc show_solution() -> void:\n    _set_state(PuzzleState.SHOWING_SOLUTION)\n    # Emit remaining solution moves for UI to animate\n```",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test PRACTICE mode allows unlimited retries without state change, test STREAK mode immediately fails on wrong move, test DAILY mode tracks strikes and fails at 3, verify puzzle_completed signal has correct success/fail status and attempt count, test game_over emits correct stats dictionary.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:20:25.164Z"
           }
         ],
         "complexity": 8,
         "recommendedSubtasks": 7,
-        "expansionPrompt": "Break down into subtasks: 1) Create puzzle_data.gd class with puzzle fields, 2) Implement PuzzleController state machine with all states, 3) Implement load_puzzle() and position setup, 4) Implement submit_move() with Stockfish validation flow, 5) Implement opponent response using Stockfish best move, 6) Create puzzle_validator.gd for mate-in-N verification, 7) Implement mode-specific result handling (retry, strike, game over)"
+        "expansionPrompt": "Break down into subtasks: 1) Create puzzle_data.gd class with puzzle fields, 2) Implement PuzzleController state machine with all states, 3) Implement load_puzzle() and position setup, 4) Implement submit_move() with Stockfish validation flow, 5) Implement opponent response using Stockfish best move, 6) Create puzzle_validator.gd for mate-in-N verification, 7) Implement mode-specific result handling (retry, strike, game over)",
+        "updatedAt": "2025-12-04T21:20:25.164Z"
       },
       {
         "id": "9",
@@ -1563,9 +1571,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-12-04T21:16:16.089Z",
+      "lastModified": "2025-12-04T21:20:25.164Z",
       "taskCount": 17,
-      "completedCount": 7,
+      "completedCount": 8,
       "tags": [
         "master"
       ]
