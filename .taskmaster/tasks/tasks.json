@@ -812,7 +812,7 @@
         "dependencies": [
           "8"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -820,9 +820,10 @@
             "description": "Create the practice_mode.gd script with settings Dictionary for mate_depth, rating range, and order mode, along with state variables for current_streak and puzzles_solved.",
             "dependencies": [],
             "details": "Create scripts/modes/practice_mode.gd extending Node:\n\n```gdscript\nclass_name PracticeMode\nextends Node\n\nvar current_settings: Dictionary = {\n    \"mate_depth\": 0,  # 0 = All, 1-5 = specific depth\n    \"min_rating\": 800,\n    \"max_rating\": 1600,\n    \"order\": \"random\",  # \"random\" or \"progressive\"\n    \"challenge_mode\": false  # Enables mate depth 6+\n}\nvar current_streak: int = 0\nvar puzzles_solved: int = 0\nvar hints_used: int = 0\nvar current_position_fen: String  # Store position before player move for rewind\n\nsignal settings_changed(settings: Dictionary)\nsignal streak_updated(streak: int)\nsignal puzzle_stats_updated(solved: int, hints: int)\n\nfunc start_game(settings: Dictionary) -> void:\n    current_settings = settings.duplicate()\n    current_streak = 0\n    puzzles_solved = 0\n    hints_used = 0\n    settings_changed.emit(current_settings)\n    load_next_puzzle()\n\nfunc _on_puzzle_loaded(puzzle: PuzzleData) -> void:\n    # Store initial position for potential rewind\n    current_position_fen = ChessLogic.to_fen()\n```\n\nConnect to PuzzleController signals (puzzle_loaded, move_made, puzzle_completed) for integration with the core game loop from Task 8.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify start_game() initializes all state variables correctly, signals emit with proper data, settings Dictionary contains all required keys with valid defaults.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:29:48.749Z"
           },
           {
             "id": 2,
@@ -832,9 +833,10 @@
               1
             ],
             "details": "Add to practice_mode.gd:\n\n```gdscript\nvar db: SQLite  # Reference to godot-sqlite instance\nvar puzzle_controller: PuzzleController\n\nfunc load_next_puzzle() -> void:\n    var puzzle = _query_next_puzzle()\n    if puzzle:\n        puzzle_controller.load_puzzle(puzzle)\n    else:\n        push_warning(\"No puzzles found matching criteria\")\n\nfunc _query_next_puzzle() -> PuzzleData:\n    var query: String\n    var params: Array = [current_settings.min_rating, current_settings.max_rating]\n    \n    # Build WHERE clause for mate depth\n    var mate_clause = \"\"\n    if current_settings.mate_depth > 0:\n        mate_clause = \" AND mate_in = ?\"\n        params.append(current_settings.mate_depth)\n    elif not current_settings.challenge_mode:\n        mate_clause = \" AND mate_in <= 5\"  # Exclude 6+ unless challenge mode\n    \n    # Build ORDER clause\n    var order_clause = \"ORDER BY RANDOM()\" if current_settings.order == \"random\" else \"ORDER BY rating ASC\"\n    \n    # Prefer unsolved puzzles with LEFT JOIN\n    query = \"\"\"\n        SELECT p.* FROM puzzles p\n        LEFT JOIN user_puzzle_history h ON p.id = h.puzzle_id\n        WHERE p.rating BETWEEN ? AND ?%s\n        AND (h.puzzle_id IS NULL OR h.result != 'solved')\n        %s\n        LIMIT 1\n    \"\"\" % [mate_clause, order_clause]\n    \n    db.query_with_bindings(query, params)\n    if db.query_result.size() > 0:\n        return _row_to_puzzle_data(db.query_result[0])\n    return null\n\nfunc _row_to_puzzle_data(row: Dictionary) -> PuzzleData:\n    return PuzzleData.new(row.id, row.fen, row.moves.split(\" \"), row.rating, row.mate_in)\n```",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test queries return puzzles within rating range, mate depth filter works for specific depths and 'All', progressive mode returns ascending ratings, unsolved puzzles are prioritized over solved ones.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:29:48.751Z"
           },
           {
             "id": 3,
@@ -844,9 +846,10 @@
               1
             ],
             "details": "Add to practice_mode.gd:\n\n```gdscript\nvar chess_board: ChessBoard  # Reference to board scene for highlighting\nvar hint_shown: bool = false\n\nsignal hint_displayed(square: int)\n\nfunc show_hint() -> void:\n    if hint_shown:\n        return  # Already showing hint, prevent multiple hints per move\n    \n    # Get current expected move from puzzle solution\n    var expected_move_index = puzzle_controller.move_index\n    var expected_move_uci = puzzle_controller.current_puzzle.get_current_move(expected_move_index)\n    \n    if expected_move_uci.is_empty():\n        return\n    \n    # Parse the expected move to get source square\n    var move_data = ChessLogic.uci_to_squares(expected_move_uci)\n    var hint_square = move_data.from\n    \n    # Highlight the piece that should move\n    chess_board.set_hint_highlight(hint_square)\n    hint_displayed.emit(hint_square)\n    \n    hints_used += 1\n    hint_shown = true\n    puzzle_stats_updated.emit(puzzles_solved, hints_used)\n\nfunc _on_move_made(from: int, to: int, is_correct: bool) -> void:\n    # Clear hint highlight after any move\n    chess_board.clear_hint_highlight()\n    hint_shown = false\n```\n\nRequires adding set_hint_highlight(square: int) and clear_hint_highlight() methods to ChessBoard (from Task 3) that render a distinct hint indicator (e.g., pulsing glow or arrow pointing to piece).",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify hint highlights correct piece based on solution move, hint counter increments, hint clears after player makes a move, multiple hint requests don't stack, hint works at different move indices in puzzle.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:29:48.753Z"
           },
           {
             "id": 4,
@@ -857,9 +860,10 @@
               3
             ],
             "details": "Add to practice_mode.gd:\n\n```gdscript\nsignal solution_started()\nsignal solution_move_shown(move_index: int, from: int, to: int)\nsignal solution_completed()\n\nfunc show_solution() -> void:\n    solution_started.emit()\n    \n    # Transition to SHOWING_SOLUTION state via PuzzleController\n    puzzle_controller.show_solution()\n    \n    # Get remaining solution moves\n    var current_index = puzzle_controller.move_index\n    var solution_moves = puzzle_controller.current_puzzle.solution_moves\n    \n    # Animate each remaining move sequentially\n    for i in range(current_index, solution_moves.size()):\n        var move_uci = solution_moves[i]\n        var move_data = ChessLogic.uci_to_squares(move_uci)\n        \n        # Emit signal for UI feedback\n        solution_move_shown.emit(i, move_data.from, move_data.to)\n        \n        # Animate the move on board\n        chess_board.animate_move(move_data.from, move_data.to)\n        await chess_board.move_animation_finished\n        \n        # Make the move in logic\n        ChessLogic.make_move(move_data.from, move_data.to, move_data.promotion)\n        \n        # Brief pause between moves for readability\n        await get_tree().create_timer(0.3).timeout\n    \n    solution_completed.emit()\n    \n    # Mark puzzle as failed (solution was shown)\n    puzzle_controller._handle_puzzle_failed(\"Solution revealed\")\n\nfunc skip_puzzle() -> void:\n    # Skip without showing solution, just load next\n    load_next_puzzle()\n```",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify solution shows all remaining moves in sequence with animations, each move is visually distinguishable, puzzle is marked as failed after solution reveal, skip_puzzle loads new puzzle without showing solution.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:29:48.755Z"
           },
           {
             "id": 5,
@@ -870,14 +874,16 @@
               2
             ],
             "details": "Create scenes/ui/practice_setup.tscn with Control root and scripts/ui/practice_setup.gd:\n\nUI Elements:\n1. Mate Depth Selector:\n   - OptionButton with items: \"All\", \"Mate in 1\", \"Mate in 2\", \"Mate in 3\", \"Mate in 4\", \"Mate in 5\"\n   - ID values 0-5 corresponding to mate depth (0 = All)\n\n2. Challenge Mode Toggle:\n   - CheckButton labeled \"Challenge Mode (Mate in 6+)\"\n   - When enabled, adds \"Mate in 6+\" to depth selector\n   - Disabled by default\n\n3. Rating Range Slider:\n   - HSlider with two handles or two linked HSliders\n   - Range: 400-3000\n   - Default: 800-1600\n   - Labels showing current min/max values\n\n4. Order Mode Toggle:\n   - Two RadioButtons in ButtonGroup: \"Random\" and \"Progressive\"\n   - Default: Random selected\n\n5. Start Button:\n   - Styled button that collects settings and starts game\n\n```gdscript\nextends Control\n\nsignal start_requested(settings: Dictionary)\n\n@onready var mate_depth_option: OptionButton = $MateDepthOption\n@onready var challenge_toggle: CheckButton = $ChallengeToggle\n@onready var min_rating_slider: HSlider = $MinRatingSlider\n@onready var max_rating_slider: HSlider = $MaxRatingSlider\n@onready var random_radio: RadioButton = $RandomRadio\n@onready var start_button: Button = $StartButton\n\nfunc _on_start_pressed() -> void:\n    var settings = {\n        \"mate_depth\": mate_depth_option.selected,\n        \"min_rating\": int(min_rating_slider.value),\n        \"max_rating\": int(max_rating_slider.value),\n        \"order\": \"random\" if random_radio.button_pressed else \"progressive\",\n        \"challenge_mode\": challenge_toggle.button_pressed\n    }\n    start_requested.emit(settings)\n```",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify all UI controls function correctly, rating sliders enforce min < max constraint, challenge mode toggle adds/removes 6+ option, start button emits settings Dictionary with correct values, UI is visually clear and usable.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:29:48.756Z"
           }
         ],
         "complexity": 5,
         "recommendedSubtasks": 5,
-        "expansionPrompt": "Break down into subtasks: 1) Create practice_mode.gd with settings and state, 2) Implement puzzle loading with SQLite filtering (rating, mate depth), 3) Implement hint system (highlight correct piece), 4) Implement solution reveal with move animation, 5) Create practice_setup.tscn with filter controls"
+        "expansionPrompt": "Break down into subtasks: 1) Create practice_mode.gd with settings and state, 2) Implement puzzle loading with SQLite filtering (rating, mate depth), 3) Implement hint system (highlight correct piece), 4) Implement solution reveal with move animation, 5) Create practice_setup.tscn with filter controls",
+        "updatedAt": "2025-12-04T21:29:48.756Z"
       },
       {
         "id": "10",
@@ -889,7 +895,7 @@
         "dependencies": [
           "8"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -897,9 +903,10 @@
             "description": "Create the core sprint_mode.gd script with all necessary state variables, signals, and base structure for timer countdown and strike tracking functionality.",
             "dependencies": [],
             "details": "Create scripts/modes/sprint_mode.gd extending Node. Include variables: time_remaining (float), time_limit (float for 60/180/300 seconds), strikes (int, default 0), puzzles_solved (int), puzzles_attempted (int), is_running (bool), current_difficulty (Dictionary with min/max rating). Define signals: timer_updated(time_remaining), strike_added(total_strikes), game_ended(reason, stats). Implement start_game(settings: Dictionary) to initialize state from passed time_limit and difficulty preset. Add difficulty presets as constants: EASY (800-1200), MEDIUM (1200-1600), HARD (1600-2200). Implement end_game(reason: String) that emits game_ended with final stats dictionary containing puzzles_solved, puzzles_attempted, strikes, and accuracy percentage.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify sprint_mode.gd initializes correctly with different time limits and difficulty presets. Test that all state variables reset properly on start_game(). Confirm signals are properly defined and can be connected.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:33:06.998Z"
           },
           {
             "id": 2,
@@ -909,9 +916,10 @@
               1
             ],
             "details": "In sprint_mode.gd, implement _process(delta) function that: only runs when is_running is true, decrements time_remaining by delta each frame, emits timer_updated signal with current time_remaining for UI updates, calls end_game('time') when time_remaining <= 0. Add start_timer() function called on first puzzle load (not on mode start). Implement pause_timer() and resume_timer() for pause menu support. Ensure timer precision by using float for all time calculations. Add format_time(seconds: float) -> String helper to convert remaining time to MM:SS format for display.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test timer counts down at correct rate by comparing elapsed real time vs timer value. Verify timer_updated signal fires every frame with accurate values. Confirm game ends exactly when timer reaches zero.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:33:07.001Z"
           },
           {
             "id": 3,
@@ -921,9 +929,10 @@
               1
             ],
             "details": "In sprint_mode.gd, implement on_move_result(is_correct: bool) function. On correct move (puzzle complete): increment puzzles_solved, increment puzzles_attempted, emit signal to load next puzzle immediately. On incorrect move: increment strikes, emit strike_added signal with total strikes, restart current puzzle from beginning (reset board to initial FEN), if strikes >= 3 call end_game('strikes'). Add get_current_stats() -> Dictionary returning live stats. Implement _get_next_puzzle() that queries puzzles within current difficulty rating range. Ensure puzzle restart preserves the same puzzle data but resets board state completely.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test that incorrect moves increment strike count and restart current puzzle. Verify game ends exactly at 3 strikes. Confirm correct moves advance to next puzzle without strike penalty. Test puzzle restart shows same puzzle with fresh board state.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:33:07.003Z"
           },
           {
             "id": 4,
@@ -931,9 +940,10 @@
             "description": "Create the visual UI components for displaying the countdown timer and the three-strike indicator during Sprint Mode gameplay.",
             "dependencies": [],
             "details": "Create scenes/components/timer_display.tscn: MarginContainer root with Label child showing MM:SS format. Add script timer_display.gd with update_time(seconds: float) function that formats and displays time. Implement color change when time < 30s (yellow) and < 10s (red with optional pulse animation). Create scenes/components/strike_indicator.tscn: HBoxContainer with 3 TextureRect children for strike icons (empty/filled states). Add script strike_indicator.gd with set_strikes(count: int) function that updates visual state of each icon. Use simple circle or X icons that change from gray (unused) to red (used) when strikes occur. Both components should be reusable and connect to sprint_mode signals for automatic updates.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test timer_display updates correctly when receiving time values. Verify color transitions occur at correct thresholds. Test strike_indicator shows correct number of filled strikes for 0, 1, 2, and 3 strike states.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:33:07.005Z"
           },
           {
             "id": 5,
@@ -944,14 +954,16 @@
               4
             ],
             "details": "Create scenes/ui/sprint_setup.tscn with VBoxContainer layout containing: Title label 'Sprint Mode', OptionButton or ButtonGroup for time limit (1 min, 3 min, 5 min), OptionButton or ButtonGroup for difficulty (Easy, Medium, Hard, Custom), custom rating range inputs (SpinBox for min/max) shown only when Custom selected, Start button. Add script sprint_setup.gd that emits start_requested(settings: Dictionary) signal. Create scenes/ui/sprint_results.tscn for game over: show puzzles_solved count, accuracy percentage (solved/attempted), strikes used with visual indicator, time limit used. Add best_score comparison by storing/loading from user_stats. Include 'Play Again' and 'Change Settings' buttons. Save high scores per time limit and difficulty combination.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test all UI controls respond correctly and pass proper values. Verify custom rating inputs appear only when Custom difficulty selected. Confirm game over screen displays all stats accurately and best score comparison works correctly.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:33:07.006Z"
           }
         ],
         "complexity": 5,
         "recommendedSubtasks": 5,
-        "expansionPrompt": "Break down into subtasks: 1) Create sprint_mode.gd with timer and strike tracking, 2) Implement countdown timer in _process(), 3) Implement three-strike system with puzzle restart, 4) Create timer_display.tscn and strike_indicator.tscn components, 5) Create sprint_setup.tscn with time limit and difficulty options"
+        "expansionPrompt": "Break down into subtasks: 1) Create sprint_mode.gd with timer and strike tracking, 2) Implement countdown timer in _process(), 3) Implement three-strike system with puzzle restart, 4) Create timer_display.tscn and strike_indicator.tscn components, 5) Create sprint_setup.tscn with time limit and difficulty options",
+        "updatedAt": "2025-12-04T21:33:07.006Z"
       },
       {
         "id": "11",
@@ -963,7 +975,7 @@
         "dependencies": [
           "8"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -971,9 +983,10 @@
             "description": "Create the core streak mode script with all necessary state variables for tracking streak count, ratings, and the failed puzzle reference.",
             "dependencies": [],
             "details": "Create scripts/modes/streak_mode.gd with the following state variables:\n- streak_count: int = 0 (number of consecutive puzzles solved)\n- start_rating: int (difficulty level selected at game start)\n- current_rating: int (rating of current/next puzzle to fetch)\n- peak_rating: int (highest rating puzzle successfully solved)\n- failed_puzzle: PuzzleData (stores puzzle that ended the run for review)\n- is_running: bool = false (game state flag)\n\nInclude signals:\n- streak_updated(count: int)\n- peak_rating_updated(rating: int)\n- game_over(final_stats: Dictionary)\n\nImplement initialization function that accepts starting difficulty preset or custom value, setting start_rating, current_rating, and peak_rating to that value. Include constants for starting difficulty presets: BEGINNER = 800, INTERMEDIATE = 1200, ADVANCED = 1600, EXPERT = 2000.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify state variables initialize correctly for each preset (800, 1200, 1600, 2000) and custom values. Test that signals are properly defined and can be connected.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:35:48.313Z"
           },
           {
             "id": 2,
@@ -983,9 +996,10 @@
               1
             ],
             "details": "Implement get_next_rating() -> int function that returns current_rating + randi_range(25, 50).\n\nAdd on_puzzle_solved() function that:\n1. Increments streak_count\n2. Updates peak_rating = max(peak_rating, current_rating) before incrementing\n3. Calls get_next_rating() to update current_rating for next puzzle\n4. Emits streak_updated and peak_rating_updated signals\n5. Triggers loading of next puzzle at new rating\n\nAdd load_next_puzzle() function that queries puzzle database for a puzzle at or near current_rating (within ±50 tolerance). Ensure puzzles are not repeated within the same streak run by tracking solved puzzle IDs in an array.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test get_next_rating() returns values in 25-50 range above current. Verify multiple solves progressively increase rating. Check peak_rating only updates when current exceeds previous peak.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:35:48.315Z"
           },
           {
             "id": 3,
@@ -995,9 +1009,10 @@
               1
             ],
             "details": "Implement on_move_result(is_correct: bool) function:\n- If is_correct: call on_puzzle_solved()\n- If not is_correct: immediately trigger end_game()\n\nImplement end_game() function that:\n1. Sets is_running = false\n2. Stores current puzzle as failed_puzzle for end screen review\n3. Compiles final_stats dictionary with: streak_count, start_rating, peak_rating, failed_puzzle\n4. Emits game_over signal with final_stats\n5. Transitions to game over screen\n\nEnsure streak mode disables all hint functionality:\n- Override or disable show_hint() to do nothing\n- Override or disable show_solution() during active gameplay\n- Remove any retry/undo move capability\n- No time limit per puzzle (remove timer if base mode has one)",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test that first wrong move immediately ends game. Verify hints and solution buttons are disabled/hidden during gameplay. Confirm no retry option appears after wrong move.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:35:48.317Z"
           },
           {
             "id": 4,
@@ -1009,9 +1024,10 @@
               3
             ],
             "details": "Create scenes/ui/streak_game_over.tscn with:\n- Final streak count display (large, prominent)\n- Rating progression: 'Start Rating → Peak Rating' (e.g., '1200 → 1475')\n- Failed puzzle preview (miniature board showing the position)\n- 'Show Solution' button that reveals the correct move sequence\n- Best streak comparison (if current > previous best, show 'New Record!')\n- 'Play Again' and 'Main Menu' buttons\n\nCreate scripts/ui/streak_game_over.gd:\n- Receives final_stats from game_over signal\n- Loads and displays failed_puzzle on mini board\n- show_solution() animates through correct moves on the failed puzzle\n- Saves best streak to persistent storage if current > saved\n- Retrieves best streak for comparison display\n\nStore best_streak in user://streak_stats.json with fields: best_streak, best_peak_rating, date_achieved.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify game over screen displays correct streak count and rating range. Test Show Solution button reveals correct moves. Confirm best streak updates when record is broken and persists across sessions.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:35:48.319Z"
           },
           {
             "id": 5,
@@ -1021,14 +1037,16 @@
               1
             ],
             "details": "Create scenes/ui/streak_setup.tscn with:\n- Title: 'Streak Mode'\n- Brief rules explanation: 'Solve puzzles with increasing difficulty. One wrong move ends your run!'\n- Starting difficulty selection:\n  - Radio buttons or dropdown: Beginner (800), Intermediate (1200), Advanced (1600), Expert (2000)\n  - Custom option with HSlider (range 400-2400, step 50) and value label\n- Current best streak display for selected difficulty\n- 'Start' button that initializes streak_mode with selected rating\n\nCreate scripts/ui/streak_setup.gd to handle preset selection, custom slider, and game initialization.\n\nCreate scenes/components/streak_counter.tscn:\n- Compact display showing current streak count (flame/fire icon + number)\n- Current puzzle rating indicator\n- Subtle animation on streak increment (scale bounce, glow effect)\n- Position: top-right corner during gameplay\n\nCreate scripts/components/streak_counter.gd that connects to streak_updated signal and updates display with animation.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test all preset buttons set correct starting rating. Verify custom slider bounds and step size. Test streak counter updates in real-time during gameplay with animation. Confirm setup screen loads best streak correctly.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:35:48.321Z"
           }
         ],
         "complexity": 5,
         "recommendedSubtasks": 5,
-        "expansionPrompt": "Break down into subtasks: 1) Create streak_mode.gd with rating progression state, 2) Implement get_next_rating() with +25-50 increment, 3) Implement immediate game over on wrong move, 4) Track and display failed puzzle for end screen, 5) Create streak_setup.tscn and streak_counter.tscn"
+        "expansionPrompt": "Break down into subtasks: 1) Create streak_mode.gd with rating progression state, 2) Implement get_next_rating() with +25-50 increment, 3) Implement immediate game over on wrong move, 4) Track and display failed puzzle for end screen, 5) Create streak_setup.tscn and streak_counter.tscn",
+        "updatedAt": "2025-12-04T21:35:48.321Z"
       },
       {
         "id": "12",
@@ -1040,7 +1058,7 @@
         "dependencies": [
           "8"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -1048,9 +1066,10 @@
             "description": "Create the daily puzzle generator script with the 5 rating bracket constants and the main get_daily_puzzles() function structure that returns an Array[PuzzleData].",
             "dependencies": [],
             "details": "Create scripts/puzzle/daily_generator.gd with:\n\n1. Define DAILY_RATING_BRACKETS constant array with 5 difficulty tiers:\n   - Puzzle 1: {\"min\": 800, \"max\": 1000} (Warm-up)\n   - Puzzle 2: {\"min\": 1000, \"max\": 1300} (Easy)\n   - Puzzle 3: {\"min\": 1300, \"max\": 1600} (Medium)\n   - Puzzle 4: {\"min\": 1600, \"max\": 1900} (Hard)\n   - Puzzle 5: {\"min\": 1900, \"max\": 2200} (Challenge)\n\n2. Implement get_date_string() helper function using Time.get_date_dict_from_system() that returns formatted date string \"%04d-%02d-%02d\"\n\n3. Implement get_daily_puzzles() function that:\n   - Gets current date string\n   - Iterates through 5 rating brackets\n   - Calls _get_deterministic_puzzle() for each bracket (stub initially)\n   - Returns Array[PuzzleData] with exactly 5 puzzles\n\n4. Add reference to DatabaseManager or SQLite for puzzle queries\n\n5. Include proper class_name declaration and extends Node",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Create test_daily_generator.gd with GUT. Test that get_date_string() returns correctly formatted date. Test that DAILY_RATING_BRACKETS has exactly 5 entries with valid min/max ranges. Test that get_daily_puzzles() returns an array of exactly 5 elements.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:38:03.198Z"
           },
           {
             "id": 2,
@@ -1060,9 +1079,10 @@
               1
             ],
             "details": "Implement _get_deterministic_puzzle(date_string: String, index: int, bracket: Dictionary) -> PuzzleData:\n\n1. Query SQLite for all puzzle IDs within the rating bracket:\n   SELECT id FROM puzzles WHERE rating BETWEEN bracket.min AND bracket.max\n\n2. For each puzzle ID, compute deterministic score:\n   - var hash_input = date_string + \"-\" + str(index) + \"-\" + puzzle_id\n   - var score = hash(hash_input)\n   - Store as {\"id\": puzzle_id, \"score\": score}\n\n3. Sort scored_ids by score using custom comparator:\n   scored_ids.sort_custom(func(a, b): return a.score < b.score)\n\n4. Select first puzzle ID: var selected_id = scored_ids[0].id\n\n5. Fetch full puzzle data:\n   SELECT * FROM puzzles WHERE id = selected_id\n\n6. Convert database row to PuzzleData object and return\n\nCRITICAL: Do NOT use SQLite RANDOM() as Godot's seed() does not affect SQLite's RNG. The hash-based approach ensures deterministic selection across all platforms and sessions.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test that calling get_daily_puzzles() multiple times on the same date returns identical puzzle arrays. Test that different dates produce different puzzle selections. Test that each puzzle falls within its expected rating bracket. Mock the current date to verify determinism.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:38:03.200Z"
           },
           {
             "id": 3,
@@ -1073,9 +1093,10 @@
               2
             ],
             "details": "Create scripts/modes/daily_mode.gd:\n\n1. Define class properties:\n   - var current_puzzle_index: int = 0\n   - var puzzle_results: Array[Dictionary] = [] # {\"solved\": bool, \"perfect\": bool}\n   - var daily_puzzles: Array[PuzzleData] = []\n   - var is_first_move: bool = true\n   - var had_wrong_move: bool = false\n   - signal daily_completed(results: Array, score: float)\n   - signal puzzle_failed(index: int)\n   - signal puzzle_solved(index: int, perfect: bool)\n\n2. Implement start_daily() function:\n   - Call DailyGenerator.get_daily_puzzles()\n   - Load first puzzle\n   - Reset all tracking variables\n\n3. Implement on_move_made(is_correct: bool):\n   - If is_first_move and not is_correct: mark puzzle as failed immediately, emit puzzle_failed\n   - If is_correct on final move: mark puzzle solved, track if perfect (no wrong moves in sequence)\n   - If wrong move during sequence: set had_wrong_move = true (affects perfect bonus)\n   - CRITICAL: No retry allowed - first move is final for puzzle result\n\n4. Implement advance_to_next_puzzle():\n   - Increment current_puzzle_index\n   - If index >= 5: emit daily_completed with all results\n   - Else: load next puzzle, reset move tracking\n\n5. Disable hint and solution buttons by setting flags:\n   - var hints_enabled: bool = false\n   - var solution_enabled: bool = false\n   - var skip_enabled: bool = false",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test that first wrong move immediately marks puzzle as failed with no retry option. Test that correct sequence with one wrong move in middle counts as solved but not perfect. Test that hints/solution/skip are disabled. Test that all 5 puzzles must be attempted (cannot skip).",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:38:03.202Z"
           },
           {
             "id": 4,
@@ -1085,9 +1106,10 @@
               3
             ],
             "details": "Extend user_data.gd or create daily state tracking:\n\n1. Add daily-specific persistent data structure:\n   - last_completed_date: String (YYYY-MM-DD format)\n   - current_daily_streak: int\n   - best_daily_streak: int\n   - days_played: int\n   - total_score: float\n   - perfect_days: int\n   - today_results: Array (5 puzzle results for current day)\n   - today_score: float\n\n2. Implement is_daily_completed_today() -> bool:\n   - Get current date string from Time.get_date_dict_from_system()\n   - Compare with last_completed_date\n   - Return true if dates match\n\n3. Implement check_daily_reset():\n   - Called on app launch and when returning to menu\n   - If current date != last_completed_date and last_completed_date != yesterday:\n     - Reset current_daily_streak to 0\n   - Clear any stale in-progress daily state\n\n4. Implement save_daily_completion(results: Array, score: float):\n   - Set last_completed_date to today\n   - Update current_daily_streak (increment if yesterday was completed, else reset to 1)\n   - Update best_daily_streak if current > best\n   - Increment days_played\n   - Add score to total_score\n   - If all 5 puzzles solved: increment perfect_days\n   - Persist to user_stats.json\n\n5. Add UI hook: when daily mode selected, check is_daily_completed_today() and show \"Already completed today\" message if true",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test that completing daily prevents replay on same day. Test that midnight reset allows new daily attempt. Test that streak increments when completing consecutive days. Test that streak resets to 1 when missing a day. Mock system time for date-based tests.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:38:03.204Z"
           },
           {
             "id": 5,
@@ -1098,9 +1120,10 @@
               4
             ],
             "details": "Add to daily_mode.gd or create share_text_generator.gd:\n\n1. Implement generate_share_text(results: Array, score: float, streak: int) -> String:\n   - Calculate day number: days since a fixed epoch date (e.g., 2024-01-01)\n   - Build emoji grid line:\n     * Green square (🟩) for solved puzzles\n     * Black square (⬛) for failed puzzles\n   - Format: \"Chess Puzzles Daily #[day_number]\"\n\n2. Build the complete share string:\n```\nChess Puzzles Daily #127\n⬛🟩🟩⬛🟩 (3/5)\n🔥 Streak: 2\n```\n\n3. Implement calculate_day_number() -> int:\n   - Define EPOCH_DATE = \"2024-01-01\" or similar\n   - Get current date\n   - Return days difference\n\n4. Implement get_solved_count(results: Array) -> int:\n   - Count results where solved == true\n\n5. Add score display option:\n   - Include score in share text: \"Score: 3.5/7.5\" (optional line)\n\n6. Connect to clipboard:\n   - Use DisplayServer.clipboard_set(share_text)\n   - Return true if successful",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test that emoji grid correctly shows green for solved and black for failed. Test that day number increments correctly each day. Test that streak count displays accurately. Test that solved count (X/5) is correct. Verify clipboard copy functionality works on target platforms.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:38:03.205Z"
           },
           {
             "id": 6,
@@ -1110,14 +1133,16 @@
               5
             ],
             "details": "Create scenes/ui/daily_complete.tscn:\n\n1. Scene structure:\n   - MarginContainer (root)\n     - VBoxContainer\n       - Label (\"Daily Challenge Complete\")\n       - GridContainer (5 puzzle result indicators)\n       - Label (Score display: \"3.5 / 7.5\")\n       - Label (Streak display: \"🔥 Streak: 2\")\n       - HSeparator\n       - HBoxContainer (buttons)\n         - Button (\"Share Results\")\n         - Button (\"Review Puzzles\")\n         - Button (\"Main Menu\")\n\n2. Create scripts/ui/daily_complete_screen.gd:\n   - var results: Array = []\n   - var score: float = 0.0\n   - var streak: int = 0\n\n3. Implement initialize(results: Array, score: float, streak: int):\n   - Store data\n   - Update puzzle result grid (5 squares with colors)\n   - Update score label\n   - Update streak label\n\n4. Implement _on_share_button_pressed():\n   - Call DailyMode.generate_share_text()\n   - Copy to clipboard via DisplayServer.clipboard_set()\n   - Show brief \"Copied!\" feedback (tooltip or label flash)\n\n5. Implement _on_review_button_pressed():\n   - Transition to review mode showing solved/failed puzzles with solutions\n\n6. Implement _on_menu_button_pressed():\n   - Return to main menu\n\n7. Style puzzle result grid:\n   - Use ColorRect or TextureRect for each of 5 squares\n   - Green (#6aaa64) for solved, dark gray (#3a3a3c) for failed\n   - Add subtle border or spacing between squares",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify UI displays correctly with various result combinations (all solved, all failed, mixed). Test share button copies correct text to clipboard. Test that clicking share shows visual feedback. Test navigation buttons transition to correct scenes. Test responsive layout on different window sizes.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:38:03.207Z"
           }
         ],
         "complexity": 6,
         "recommendedSubtasks": 6,
-        "expansionPrompt": "Break down into subtasks: 1) Create daily_generator.gd with rating brackets, 2) Implement deterministic hash-based puzzle selection, 3) Implement one-attempt-per-puzzle enforcement, 4) Track daily completion state with date check, 5) Implement share text generation with emoji grid, 6) Create daily_complete.tscn with share button and clipboard"
+        "expansionPrompt": "Break down into subtasks: 1) Create daily_generator.gd with rating brackets, 2) Implement deterministic hash-based puzzle selection, 3) Implement one-attempt-per-puzzle enforcement, 4) Track daily completion state with date check, 5) Implement share text generation with emoji grid, 6) Create daily_complete.tscn with share button and clipboard",
+        "updatedAt": "2025-12-04T21:38:03.207Z"
       },
       {
         "id": "13",
@@ -1129,7 +1154,7 @@
         "dependencies": [
           "1"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -1137,9 +1162,10 @@
             "description": "Create the user_data.gd autoload singleton with stats and settings dictionaries, initialize default values, and set up the autoload in project.godot.",
             "dependencies": [],
             "details": "Create scripts/autoload/user_data.gd with the following structure:\n\n```gdscript\nextends Node\n\nconst STATS_PATH = \"user://user_stats.json\"\nconst DB_PATH = \"user://puzzles.db\"\n\nvar stats: Dictionary = {\n    \"player_rating\": 1200,\n    \"total_puzzles_solved\": 0,\n    \"total_time_played\": 0,\n    \"practice\": {\"solved\": 0, \"failed\": 0, \"time_ms\": 0},\n    \"sprint\": {\"best_time\": 0, \"games_played\": 0, \"puzzles_solved\": 0},\n    \"streak\": {\"best_streak\": 0, \"current_streak\": 0, \"games_played\": 0},\n    \"daily\": {\"completed_dates\": [], \"current_streak\": 0, \"best_streak\": 0}\n}\n\nvar settings: Dictionary = {\n    \"sound_enabled\": true,\n    \"show_legal_moves\": true,\n    \"auto_flip_board\": true,\n    \"auto_promote_queen\": false,\n    \"animation_speed\": 1.0\n}\n\nvar db: SQLite\n\nfunc _ready() -> void:\n    _init_database()\n    _load_stats()\n    _load_settings()\n```\n\nRegister as autoload named 'UserData' in project.godot. Ensure the SQLite addon is properly referenced.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify autoload initializes without errors, default stats and settings are populated correctly, and the singleton is accessible globally via UserData.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:39:32.856Z"
           },
           {
             "id": 2,
@@ -1149,9 +1175,10 @@
               1
             ],
             "details": "Add database initialization and query methods to user_data.gd:\n\n```gdscript\nfunc _init_database() -> void:\n    db = SQLite.new()\n    db.path = DB_PATH\n    db.open_db()\n    db.query(\"\"\"\n        CREATE TABLE IF NOT EXISTS user_puzzle_history (\n            puzzle_id TEXT PRIMARY KEY,\n            result TEXT NOT NULL,\n            mode TEXT NOT NULL,\n            attempts INTEGER DEFAULT 1,\n            solved_at DATETIME,\n            time_spent_ms INTEGER\n        );\n    \"\"\")\n\nfunc save_puzzle_result(puzzle_id: String, result: String, mode: String, attempts: int, time_ms: int) -> void:\n    var now = Time.get_datetime_string_from_system()\n    db.query(\"\"\"\n        INSERT OR REPLACE INTO user_puzzle_history \n        (puzzle_id, result, mode, attempts, solved_at, time_spent_ms)\n        VALUES (?, ?, ?, ?, ?, ?)\n    \"\"\", [puzzle_id, result, mode, attempts, now, time_ms])\n    _update_aggregate_stats(mode, result, time_ms)\n\nfunc get_puzzle_history(puzzle_id: String) -> Dictionary:\n    db.query(\"SELECT * FROM user_puzzle_history WHERE puzzle_id = ?\", [puzzle_id])\n    return db.query_result[0] if db.query_result.size() > 0 else {}\n\nfunc get_accuracy_by_rating_range() -> Dictionary:\n    # Returns {\"1000-1200\": 0.75, \"1200-1400\": 0.60, ...}\n\nfunc get_solve_count_by_mate_depth() -> Dictionary:\n    # Returns {\"mate_in_1\": 50, \"mate_in_2\": 30, ...}\n```\n\nHandle database file creation in user:// directory on first run.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test saving puzzle results, verify data persists in SQLite, test queries return correct results, verify table creation on fresh install.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:39:32.858Z"
           },
           {
             "id": 3,
@@ -1161,9 +1188,10 @@
               1
             ],
             "details": "Add JSON file handling to user_data.gd:\n\n```gdscript\nfunc _load_stats() -> void:\n    if FileAccess.file_exists(STATS_PATH):\n        var file = FileAccess.open(STATS_PATH, FileAccess.READ)\n        var json = JSON.new()\n        if json.parse(file.get_as_text()) == OK:\n            var loaded = json.get_data()\n            # Merge with defaults to handle new fields\n            for key in loaded:\n                stats[key] = loaded[key]\n        file.close()\n\nfunc _save_stats() -> void:\n    var file = FileAccess.open(STATS_PATH, FileAccess.WRITE)\n    file.store_string(JSON.stringify(stats, \"  \"))\n    file.close()\n\nfunc get_stats_for_mode(mode: String) -> Dictionary:\n    return stats.get(mode, {})\n\nfunc _update_aggregate_stats(mode: String, result: String, time_ms: int) -> void:\n    stats[\"total_time_played\"] += time_ms\n    if result == \"solved\":\n        stats[\"total_puzzles_solved\"] += 1\n    if stats.has(mode):\n        stats[mode][\"time_ms\"] = stats[mode].get(\"time_ms\", 0) + time_ms\n        if result == \"solved\":\n            stats[mode][\"solved\"] = stats[mode].get(\"solved\", 0) + 1\n        else:\n            stats[mode][\"failed\"] = stats[mode].get(\"failed\", 0) + 1\n    _save_stats()\n\nfunc is_daily_completed_today() -> bool:\n    var today = Time.get_date_string_from_system()\n    return today in stats[\"daily\"][\"completed_dates\"]\n```\n\nEnsure atomic writes and handle corrupted JSON gracefully by falling back to defaults.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test stats persist across game restarts, verify mode-specific stats update correctly, test daily completion tracking with date handling, verify graceful fallback on corrupted JSON.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:39:32.860Z"
           },
           {
             "id": 4,
@@ -1173,9 +1201,10 @@
               1
             ],
             "details": "Add settings management to user_data.gd:\n\n```gdscript\nconst SETTINGS_PATH = \"user://user_settings.json\"\n\nconst SETTING_VALIDATORS = {\n    \"sound_enabled\": func(v): return typeof(v) == TYPE_BOOL,\n    \"show_legal_moves\": func(v): return typeof(v) == TYPE_BOOL,\n    \"auto_flip_board\": func(v): return typeof(v) == TYPE_BOOL,\n    \"auto_promote_queen\": func(v): return typeof(v) == TYPE_BOOL,\n    \"animation_speed\": func(v): return typeof(v) == TYPE_FLOAT and v >= 0.1 and v <= 3.0\n}\n\nfunc _load_settings() -> void:\n    if FileAccess.file_exists(SETTINGS_PATH):\n        var file = FileAccess.open(SETTINGS_PATH, FileAccess.READ)\n        var json = JSON.new()\n        if json.parse(file.get_as_text()) == OK:\n            var loaded = json.get_data()\n            for key in loaded:\n                if _validate_setting(key, loaded[key]):\n                    settings[key] = loaded[key]\n        file.close()\n\nfunc _save_settings() -> void:\n    var file = FileAccess.open(SETTINGS_PATH, FileAccess.WRITE)\n    file.store_string(JSON.stringify(settings, \"  \"))\n    file.close()\n\nfunc update_setting(key: String, value: Variant) -> bool:\n    if not _validate_setting(key, value):\n        push_warning(\"Invalid setting: %s = %s\" % [key, value])\n        return false\n    settings[key] = value\n    _save_settings()\n    return true\n\nfunc get_setting(key: String, default: Variant = null) -> Variant:\n    return settings.get(key, default)\n\nfunc _validate_setting(key: String, value: Variant) -> bool:\n    if SETTING_VALIDATORS.has(key):\n        return SETTING_VALIDATORS[key].call(value)\n    return true\n```\n\nEmit signal when settings change for UI updates.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test setting updates persist across sessions, verify validation rejects invalid values, test default fallback for missing settings, verify settings file corruption handling.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:39:32.862Z"
           },
           {
             "id": 5,
@@ -1185,14 +1214,16 @@
               2
             ],
             "details": "Add the unsolved puzzle query to user_data.gd:\n\n```gdscript\nfunc get_random_unsolved_puzzle(filters: Dictionary = {}) -> String:\n    var query = \"\"\"\n        SELECT p.puzzle_id \n        FROM puzzles p\n        LEFT JOIN user_puzzle_history h ON p.puzzle_id = h.puzzle_id\n        WHERE h.puzzle_id IS NULL\n    \"\"\"\n    var params = []\n    \n    # Apply optional filters\n    if filters.has(\"min_rating\"):\n        query += \" AND p.rating >= ?\"\n        params.append(filters[\"min_rating\"])\n    if filters.has(\"max_rating\"):\n        query += \" AND p.rating <= ?\"\n        params.append(filters[\"max_rating\"])\n    if filters.has(\"themes\") and filters[\"themes\"].size() > 0:\n        var theme_conditions = []\n        for theme in filters[\"themes\"]:\n            theme_conditions.append(\"p.themes LIKE ?\")\n            params.append(\"%\" + theme + \"%\")\n        query += \" AND (\" + \" OR \".join(theme_conditions) + \")\"\n    if filters.has(\"mate_in\"):\n        query += \" AND p.mate_in = ?\"\n        params.append(filters[\"mate_in\"])\n    \n    query += \" ORDER BY RANDOM() LIMIT 1\"\n    \n    db.query(query, params)\n    if db.query_result.size() > 0:\n        return db.query_result[0][\"puzzle_id\"]\n    \n    # Fallback: return any puzzle matching filters if all solved\n    return _get_any_puzzle_with_filters(filters)\n\nfunc _get_any_puzzle_with_filters(filters: Dictionary) -> String:\n    # Similar query without the LEFT JOIN condition\n```\n\nEnsure the query connects to the main puzzles.db that contains the puzzles table. Handle case where all puzzles in filter range are solved.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test query returns unsolved puzzles first, verify filters work correctly (rating range, themes, mate depth), test fallback behavior when all puzzles solved, verify query performance with large history.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:39:32.864Z"
           }
         ],
         "complexity": 5,
         "recommendedSubtasks": 5,
-        "expansionPrompt": "Break down into subtasks: 1) Create user_data.gd autoload with stats/settings dictionaries, 2) Implement SQLite user_puzzle_history table and queries, 3) Implement JSON stats file save/load for aggregates, 4) Implement settings persistence and retrieval, 5) Add query for random unsolved puzzle with LEFT JOIN"
+        "expansionPrompt": "Break down into subtasks: 1) Create user_data.gd autoload with stats/settings dictionaries, 2) Implement SQLite user_puzzle_history table and queries, 3) Implement JSON stats file save/load for aggregates, 4) Implement settings persistence and retrieval, 5) Add query for random unsolved puzzle with LEFT JOIN",
+        "updatedAt": "2025-12-04T21:39:32.864Z"
       },
       {
         "id": "14",
@@ -1208,7 +1239,7 @@
           "12",
           "13"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -1216,9 +1247,10 @@
             "description": "Implement the root scene (scenes/main.tscn) with centralized scene switching logic to manage navigation between all UI screens.",
             "dependencies": [],
             "details": "Create scenes/main.tscn as the root scene with a Control node structure. Implement scripts/ui/main.gd with methods: change_scene(scene_path: String), push_scene(scene_path: String) for modal overlays, pop_scene() for returning from overlays. Use a CanvasLayer or container node to hold the current active scene. Add transition animation support (fade, slide) with configurable duration. Maintain a scene stack for back navigation. Connect to GameManager autoload for accessing game state during transitions. Handle cleanup of previous scenes to prevent memory leaks. Add preloading for frequently accessed scenes (main_menu, puzzle_screen) to reduce load times.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify scene switching works from main menu to all screens and back. Test that scene stack properly handles multiple push/pop operations. Confirm no memory leaks occur during rapid scene changes. Test transition animations play correctly.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:42:18.151Z"
           },
           {
             "id": 2,
@@ -1228,9 +1260,10 @@
               1
             ],
             "details": "Create scenes/ui/main_menu.tscn with VBoxContainer layout containing: Practice button (navigates to practice_setup.tscn), Sprint button (navigates to sprint_setup.tscn), Streak button (navigates to streak_setup.tscn), Daily button (navigates directly to puzzle_screen with daily mode or shows 'completed today' message). Add secondary row with: Stats button, Settings button, Quit button. Implement scripts/ui/main_menu.gd with button signal connections. Style buttons with consistent theme (minimum 48px touch targets). Add game title/logo at top. Connect to UserData autoload to check if daily challenge is already completed today and update Daily button state accordingly. Add subtle hover/focus animations for desktop usability.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify all buttons navigate to correct screens. Test Daily button shows appropriate state when challenge is/isn't completed. Confirm keyboard navigation works (Tab between buttons, Enter to select). Test Quit button properly exits application.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:42:52.243Z"
           },
           {
             "id": 3,
@@ -1240,9 +1273,10 @@
               1
             ],
             "details": "Create scenes/ui/puzzle_screen.tscn with: ChessBoard instance centered in viewport, HUD container at top (Back button, puzzle info display), mode-specific HUD elements container, bottom action bar. Implement scripts/ui/puzzle_hud.gd with mode-aware display logic. For Practice mode: show Hint, Solution, Skip buttons, puzzle count, streak counter. For Sprint mode: show countdown timer (timer_display.tscn), strike indicators (strike_indicator.tscn - 3 circles), puzzles solved count. For Streak mode: show streak counter (streak_counter.tscn), current rating, rating progression (+X from start). For Daily mode: show daily progress indicator (daily_progress.tscn - 5 squares), puzzle X of 5, 'One attempt' warning. Add thinking_indicator.tscn that shows when engine analysis exceeds 150ms. Connect to PuzzleController signals for state updates. Implement dynamic show/hide of mode-specific elements based on GameManager.current_mode.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test that correct HUD elements appear for each mode. Verify timer updates correctly in Sprint mode. Confirm strike indicators update on wrong moves. Test thinking indicator appears/hides appropriately. Verify back button confirms quit in timed/streak modes.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:44:48.312Z"
           },
           {
             "id": 4,
@@ -1252,9 +1286,10 @@
               1
             ],
             "details": "Create scenes/ui/game_over_screen.tscn with dynamic layout system. Implement scripts/ui/game_over_screen.gd with show_results(mode: GameMode, stats: Dictionary) method. Sprint layout: 'TIME'S UP!' or 'STRUCK OUT!' header, puzzles solved, accuracy percentage (solves/attempts), strikes used, time remaining, 'New Best!' indicator if applicable. Streak layout: 'STREAK ENDED' header, final streak count, starting rating → peak rating reached, 'New Record!' indicator, 'Show Solution' and 'Replay Puzzle' buttons for the failed puzzle. Daily layout: 'DAILY #X COMPLETE' header, result grid (5 squares with colored results), score breakdown, perfect solve bonus display, 'Share' button (copies Wordle-style text to clipboard). Common elements: Replay Last Puzzle, Play Again (restart same mode), Main Menu buttons. Add celebratory animations for new records/high scores. Connect to UserData for comparing with previous bests.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test each mode displays correct layout and statistics. Verify 'New Best' indicators appear only when records are broken. Test Share button copies correct format to clipboard for Daily mode. Confirm Replay Last Puzzle loads the correct puzzle.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:45:48.893Z"
           },
           {
             "id": 5,
@@ -1264,9 +1299,10 @@
               1
             ],
             "details": "Create scenes/ui/stats_screen.tscn with TabContainer or accordion-style sections. Implement scripts/ui/stats_screen.gd with load_stats() method pulling from UserData autoload. Overall section at top: total puzzles solved, total time played, overall accuracy. Practice tab: puzzles solved/attempted, current streak, best streak, breakdown by mate depth (1-5, 6+), rating distribution chart if feasible. Sprint tab: best scores for each time limit (1/3/5 min), average puzzles per run, total runs. Streak tab: best streak count, highest rating reached, average streak length, total runs. Daily tab: days played, current daily streak, best daily streak, average score, perfect days count (7.5/7.5). Add Back button to return to main menu. Style with consistent fonts and colors. Consider using GridContainer for stat rows with label:value pairs.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify all statistics load correctly from UserData. Test that stats update after completing puzzles/runs. Confirm navigation between tabs works. Test Back button returns to main menu. Verify stats display correctly when all values are zero (new user).",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:46:52.599Z"
           },
           {
             "id": 6,
@@ -1276,9 +1312,10 @@
               1
             ],
             "details": "Create scenes/ui/settings_menu.tscn with ScrollContainer for settings list. Implement scripts/ui/settings_menu.gd with two-way binding to UserData.settings. Gameplay section: Show Legal Moves toggle (ON/OFF), Auto-Flip Board toggle (ON/OFF), Auto-Promote to Queen toggle (ON/OFF, default ON). Audio section: Sound Effects toggle (ON/OFF), Volume slider (0-100%). Animation section: Animation Speed selector (0.5x/1x/2x/Instant or slider). About section: Licenses button (navigates to licenses_screen.tscn), Version display label, Credits text or link. Implement immediate application of settings changes (no save button needed). Use CheckButton for toggles, HSlider for sliders. Connect setting changes to UserData.save_settings() for persistence. Add Back button to return to main menu.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test all toggles persist after closing and reopening settings. Verify animation speed changes take effect immediately. Test volume slider affects game audio. Confirm Licenses button navigates to licenses screen. Test settings persist after application restart.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:47:43.424Z"
           },
           {
             "id": 7,
@@ -1289,9 +1326,10 @@
               6
             ],
             "details": "Create scenes/ui/licenses_screen.tscn with ScrollContainer for license content. Display attributions for: Stockfish (GPLv3) with link to stockfishchess.org and GitHub source, 'View Full GPL License' button that expands/shows full GPLv3 text. Lichess Puzzle Database (CC0/Public Domain) with link to database.lichess.org. Godot Engine (MIT) with link to godotengine.org. Optional: Colin M.L. Burnett chess pieces (BSD) if using that set. Implement scripts/ui/licenses_screen.gd. Store full GPL v3 license text in a separate resource file or embedded string (approximately 35KB of text). Add collapsible sections or dedicated view for full license text. Include Back button to return to settings. This screen is legally required for distributing Stockfish binaries.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify all required licenses are displayed (especially GPL for Stockfish). Test that full GPL license text is accessible. Confirm all external links are correct. Test Back button returns to settings menu. Verify scroll functionality works for long license text.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:48:33.685Z"
           },
           {
             "id": 8,
@@ -1307,14 +1345,16 @@
               7
             ],
             "details": "Enhance main.gd scene switching with smooth transitions: fade transition (default, 200-300ms), slide transitions for hierarchical navigation (push right, pop left). Implement navigation state stack for proper back button handling throughout the app. Add confirmation dialogs for destructive navigation (leaving puzzle mid-game in Sprint/Streak modes). Implement mode setup screens (practice_setup.tscn, sprint_setup.tscn, streak_setup.tscn) with appropriate options from PRD: Practice setup (mate depth selector, rating range slider, random/progressive toggle), Sprint setup (time selector 1/3/5 min, difficulty preset, mate depth filter), Streak setup (starting difficulty selector, mate depth filter). Connect setup screens to GameManager.start_game(mode, settings) method. Add keyboard shortcut support (Escape for back/quit). Ensure all navigation paths are tested: main menu → setup → puzzle → game over → main menu, and settings/stats accessible from main menu with proper return.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test complete navigation flow through all modes end-to-end. Verify transitions animate smoothly without stuttering. Test back button/Escape key works correctly from all screens. Confirm quit confirmation appears in appropriate contexts. Test mode setup screens pass correct settings to GameManager.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:49:35.931Z"
           }
         ],
         "complexity": 7,
         "recommendedSubtasks": 8,
-        "expansionPrompt": "Break down into subtasks: 1) Create main.tscn with scene switching logic, 2) Implement main_menu.tscn with mode buttons, 3) Create puzzle_screen.tscn with mode-aware HUD, 4) Implement game_over_screen.tscn with mode-specific layouts, 5) Create stats_screen.tscn with per-mode statistics, 6) Create settings_menu.tscn with toggle controls, 7) Create licenses_screen.tscn for GPL compliance, 8) Implement screen transitions and navigation flow"
+        "expansionPrompt": "Break down into subtasks: 1) Create main.tscn with scene switching logic, 2) Implement main_menu.tscn with mode buttons, 3) Create puzzle_screen.tscn with mode-aware HUD, 4) Implement game_over_screen.tscn with mode-specific layouts, 5) Create stats_screen.tscn with per-mode statistics, 6) Create settings_menu.tscn with toggle controls, 7) Create licenses_screen.tscn for GPL compliance, 8) Implement screen transitions and navigation flow",
+        "updatedAt": "2025-12-04T21:49:35.931Z"
       },
       {
         "id": "15",
@@ -1571,9 +1611,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-12-04T21:20:25.164Z",
+      "lastModified": "2025-12-04T21:49:35.931Z",
       "taskCount": 17,
-      "completedCount": 8,
+      "completedCount": 14,
       "tags": [
         "master"
       ]

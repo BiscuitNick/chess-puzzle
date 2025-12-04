@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://cdailyprogress123"]
+
+[ext_resource type="Script" path="res://scripts/ui/daily_progress.gd" id="1_dprog"]
+
+[node name="DailyProgress" type="HBoxContainer"]
+theme_override_constants/separation = 8
+alignment = 1
+script = ExtResource("1_dprog")

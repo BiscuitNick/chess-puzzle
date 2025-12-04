@@ -1,0 +1,213 @@
+[gd_scene load_steps=9 format=3 uid="uid://cpuzzlescreen123"]
+
+[ext_resource type="Script" path="res://scripts/ui/puzzle_screen.gd" id="1_pscreen"]
+[ext_resource type="PackedScene" uid="uid://dlmdkp2p7cnjc" path="res://scenes/board/chess_board.tscn" id="2_board"]
+[ext_resource type="PackedScene" uid="uid://bxhmujrk4e7ry" path="res://scenes/components/timer_display.tscn" id="3_timer"]
+[ext_resource type="PackedScene" uid="uid://c55p1b4b0p0bm" path="res://scenes/components/strike_indicator.tscn" id="4_strike"]
+[ext_resource type="PackedScene" uid="uid://dijrdwv8hwrbf" path="res://scenes/components/streak_counter.tscn" id="5_streak"]
+[ext_resource type="Script" path="res://scripts/ui/daily_progress.gd" id="6_dprog"]
+[ext_resource type="Script" path="res://scripts/ui/thinking_indicator.gd" id="7_think"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_topbar"]
+bg_color = Color(0.15, 0.15, 0.18, 0.9)
+content_margin_left = 15.0
+content_margin_top = 8.0
+content_margin_right = 15.0
+content_margin_bottom = 8.0
+
+[node name="PuzzleScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_pscreen")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.1, 0.12, 1)
+
+[node name="TopBar" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_topbar")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TopBar"]
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="TopBar"]
+layout_mode = 2
+text = "< Back"
+
+[node name="Spacer" type="Control" parent="TopBar/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PuzzleInfo" type="Label" parent="TopBar"]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_font_sizes/font_size = 16
+text = "Mate in 2  |  Rating: 1200"
+horizontal_alignment = 2
+
+[node name="GameArea" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 50.0
+offset_bottom = -80.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ChessBoard" parent="GameArea" instance=ExtResource("2_board")]
+layout_mode = 2
+
+[node name="HUD" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -80.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="PracticeHUD" type="HBoxContainer" parent="HUD"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -20.0
+offset_right = 180.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="HintButton" type="Button" parent="HUD/PracticeHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Hint"
+
+[node name="SolutionButton" type="Button" parent="HUD/PracticeHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Solution"
+
+[node name="SkipButton" type="Button" parent="HUD/PracticeHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Skip"
+
+[node name="SprintHUD" type="HBoxContainer" parent="HUD"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 30
+
+[node name="SolvedLabel" type="Label" parent="HUD/SprintHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "Solved: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TimerDisplay" parent="HUD/SprintHUD" instance=ExtResource("3_timer")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StrikeIndicator" parent="HUD/SprintHUD" instance=ExtResource("4_strike")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StreakHUD" type="HBoxContainer" parent="HUD"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 30
+
+[node name="StreakCounter" parent="HUD/StreakHUD" instance=ExtResource("5_streak")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RatingLabel" type="Label" parent="HUD/StreakHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "Rating: 1200"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DailyHUD" type="HBoxContainer" parent="HUD"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 30
+
+[node name="PuzzleLabel" type="Label" parent="HUD/DailyHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "Puzzle 1 of 5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DailyProgress" type="HBoxContainer" parent="HUD/DailyHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+alignment = 1
+script = ExtResource("6_dprog")
+
+[node name="ThinkingIndicator" type="Control" parent="HUD"]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -40.0
+offset_right = 50.0
+grow_horizontal = 2
+grow_vertical = 0
+script = ExtResource("7_think")
+
+[node name="Label" type="Label" parent="HUD/ThinkingIndicator"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.65, 1)
+text = "Thinking..."
+horizontal_alignment = 1
+vertical_alignment = 1

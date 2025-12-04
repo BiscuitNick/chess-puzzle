@@ -1,0 +1,259 @@
+[gd_scene load_steps=2 format=3 uid="uid://cstatsscreen123"]
+
+[ext_resource type="Script" path="res://scripts/ui/stats_screen.gd" id="1_stats"]
+
+[node name="StatsScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_stats")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12, 0.12, 0.14, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Statistics"
+horizontal_alignment = 1
+
+[node name="TabBar" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="OverallTab" type="Button" parent="VBoxContainer/TabBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+text = "Overall"
+
+[node name="PracticeTab" type="Button" parent="VBoxContainer/TabBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Practice"
+
+[node name="SprintTab" type="Button" parent="VBoxContainer/TabBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Sprint"
+
+[node name="StreakTab" type="Button" parent="VBoxContainer/TabBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Streak"
+
+[node name="DailyTab" type="Button" parent="VBoxContainer/TabBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Daily"
+
+[node name="TabContent" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="OverallPanel" type="VBoxContainer" parent="VBoxContainer/TabContent"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="TotalPuzzlesLabel" type="Label" parent="VBoxContainer/TabContent/OverallPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Total Puzzles: 0"
+horizontal_alignment = 1
+
+[node name="TotalSolvedLabel" type="Label" parent="VBoxContainer/TabContent/OverallPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Puzzles Solved: 0"
+horizontal_alignment = 1
+
+[node name="AccuracyLabel" type="Label" parent="VBoxContainer/TabContent/OverallPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Accuracy: 0.0%"
+horizontal_alignment = 1
+
+[node name="TimePlayedLabel" type="Label" parent="VBoxContainer/TabContent/OverallPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Time Played: 0 min"
+horizontal_alignment = 1
+
+[node name="RatingLabel" type="Label" parent="VBoxContainer/TabContent/OverallPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Rating: 1200"
+horizontal_alignment = 1
+
+[node name="PracticePanel" type="VBoxContainer" parent="VBoxContainer/TabContent"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="SolvedLabel" type="Label" parent="VBoxContainer/TabContent/PracticePanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Solved: 0"
+horizontal_alignment = 1
+
+[node name="FailedLabel" type="Label" parent="VBoxContainer/TabContent/PracticePanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Failed: 0"
+horizontal_alignment = 1
+
+[node name="HintsLabel" type="Label" parent="VBoxContainer/TabContent/PracticePanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Hints Used: 0"
+horizontal_alignment = 1
+
+[node name="TimeLabel" type="Label" parent="VBoxContainer/TabContent/PracticePanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Time: 0 min"
+horizontal_alignment = 1
+
+[node name="SprintPanel" type="VBoxContainer" parent="VBoxContainer/TabContent"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="Best1MinLabel" type="Label" parent="VBoxContainer/TabContent/SprintPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Best 1 Min: 0"
+horizontal_alignment = 1
+
+[node name="Best3MinLabel" type="Label" parent="VBoxContainer/TabContent/SprintPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Best 3 Min: 0"
+horizontal_alignment = 1
+
+[node name="Best5MinLabel" type="Label" parent="VBoxContainer/TabContent/SprintPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Best 5 Min: 0"
+horizontal_alignment = 1
+
+[node name="GamesLabel" type="Label" parent="VBoxContainer/TabContent/SprintPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Games Played: 0"
+horizontal_alignment = 1
+
+[node name="StreakPanel" type="VBoxContainer" parent="VBoxContainer/TabContent"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="BestStreakLabel" type="Label" parent="VBoxContainer/TabContent/StreakPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Best Streak: 0"
+horizontal_alignment = 1
+
+[node name="PeakRatingLabel" type="Label" parent="VBoxContainer/TabContent/StreakPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Peak Rating: 0"
+horizontal_alignment = 1
+
+[node name="GamesLabel" type="Label" parent="VBoxContainer/TabContent/StreakPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Games Played: 0"
+horizontal_alignment = 1
+
+[node name="TotalPuzzlesLabel" type="Label" parent="VBoxContainer/TabContent/StreakPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Total Puzzles: 0"
+horizontal_alignment = 1
+
+[node name="DailyPanel" type="VBoxContainer" parent="VBoxContainer/TabContent"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="DaysPlayedLabel" type="Label" parent="VBoxContainer/TabContent/DailyPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Days Played: 0"
+horizontal_alignment = 1
+
+[node name="CurrentStreakLabel" type="Label" parent="VBoxContainer/TabContent/DailyPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Current Streak: 0 days"
+horizontal_alignment = 1
+
+[node name="BestStreakLabel" type="Label" parent="VBoxContainer/TabContent/DailyPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Best Streak: 0 days"
+horizontal_alignment = 1
+
+[node name="PerfectDaysLabel" type="Label" parent="VBoxContainer/TabContent/DailyPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Perfect Days: 0"
+horizontal_alignment = 1
+
+[node name="BackButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 45)
+text = "Back"
