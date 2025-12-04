@@ -26,4 +26,13 @@ node_modules/
 
 # Task files
 # tasks.json
-# tasks/ 
+# tasks/
+
+# Stockfish binaries (download separately)
+bin/stockfish/*/stockfish
+bin/stockfish/*/stockfish.exe
+
+# Generated data
+data/*.db
+data/*.csv
+data/*.csv.zst

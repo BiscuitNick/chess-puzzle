@@ -2,14 +2,14 @@
   "master": {
     "tasks": [
       {
-        "id": 1,
+        "id": "1",
         "title": "Project Setup and Asset Pipeline",
         "description": "Initialize the Godot project structure, install required plugins (godot-sqlite, GUT), acquire chess piece sprites, and set up the preprocessing pipeline for the Lichess puzzle database.",
         "details": "1. Create the full directory structure as specified in PRD (assets/, bin/, data/, scripts/, scenes/, tests/, tools/)\n2. Install godot-sqlite plugin from https://github.com/2shady4u/godot-sqlite (add to addons/)\n3. Install GUT testing framework from https://github.com/bitwes/Gut (add to addons/)\n4. Download chess piece sprites (12 pieces) from Lichess repository or use Colin M.L. Burnett set (BSD license)\n5. Create tools/preprocess_puzzles.py script that:\n   - Downloads Lichess puzzle CSV (https://database.lichess.org/lichess_db_puzzle.csv.zst)\n   - Filters for mateIn1-mateIn5 themes\n   - Validates move count matches mate depth (2*N-1 half-moves)\n   - Exports to SQLite database with schema: puzzles(id TEXT PRIMARY KEY, fen TEXT, moves TEXT, rating INTEGER, themes TEXT, mate_in INTEGER)\n6. Create tools/requirements.txt with python-chess>=1.9.0\n7. Download Stockfish binaries for Windows/macOS/Linux and place in bin/stockfish/",
         "testStrategy": "Verify directory structure exists, plugins load in Godot without errors, preprocessing script runs successfully on a subset of the Lichess database, SQLite database is created with correct schema and contains filtered puzzles.",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -17,8 +17,10 @@
             "description": "Create the full directory structure as specified in the PRD for the chess puzzle game project.",
             "dependencies": [],
             "details": "Create the following directories within the project root:\n- assets/pieces/ (for chess piece sprites)\n- assets/board/ (for board square images)\n- assets/ui/ (for UI elements)\n- assets/audio/ (for sound effects)\n- bin/stockfish/windows/, bin/stockfish/macos/, bin/stockfish/linux/ (for platform-specific Stockfish binaries)\n- data/ (for puzzles.db and user_stats.json)\n- scripts/autoload/, scripts/board/, scripts/puzzle/, scripts/modes/, scripts/ui/\n- scenes/board/, scenes/ui/, scenes/components/\n- tests/ (for GUT unit tests)\n- tools/ (for Python preprocessing scripts)\n\nUse mkdir -p to create nested directories. Verify structure matches PRD section 'Project Structure'.",
-            "status": "pending",
-            "testStrategy": "Run 'find . -type d' from project root and verify all expected directories exist. Check that the structure matches the PRD specification exactly."
+            "status": "done",
+            "testStrategy": "Run 'find . -type d' from project root and verify all expected directories exist. Check that the structure matches the PRD specification exactly.",
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:06:38.279Z"
           },
           {
             "id": 2,
@@ -28,8 +30,10 @@
               1
             ],
             "details": "Download godot-sqlite from https://github.com/2shady4u/godot-sqlite and install to the addons/ directory:\n1. Clone or download the latest release from the repository\n2. Copy the 'godot-sqlite' folder into res://addons/\n3. Enable the plugin in Project Settings > Plugins\n4. Verify the SQLite class is accessible in GDScript\n\nThe plugin provides SQLite class for database operations used by puzzle storage (puzzles table) and user history (user_puzzle_history table) as defined in the PRD data layer section.",
-            "status": "pending",
-            "testStrategy": "Open Godot editor, verify plugin appears in Project Settings > Plugins and can be enabled. Create a test script that instantiates SQLite and performs a basic query to confirm functionality."
+            "status": "done",
+            "testStrategy": "Open Godot editor, verify plugin appears in Project Settings > Plugins and can be enabled. Create a test script that instantiates SQLite and performs a basic query to confirm functionality.",
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:18:03.562Z"
           },
           {
             "id": 3,
@@ -39,8 +43,10 @@
               1
             ],
             "details": "Download GUT from https://github.com/bitwes/Gut and install to the addons/ directory:\n1. Download the latest release from the GUT repository\n2. Copy the 'gut' folder into res://addons/\n3. Enable the plugin in Project Settings > Plugins\n4. Configure GUT panel in the Godot editor\n5. Verify the test runner works with a simple test file\n\nGUT will be used for test files in tests/ directory including: test_fen_parser.gd, test_move_generation.gd, test_check_detection.gd, test_checkmate_detection.gd, test_special_moves.gd, test_puzzle_validation.gd, test_stockfish_integration.gd.",
-            "status": "pending",
-            "testStrategy": "Open Godot editor, verify GUT panel appears in the editor. Create a simple test file with one passing test and run it via the GUT panel or command line: godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/ -gexit"
+            "status": "done",
+            "testStrategy": "Open Godot editor, verify GUT panel appears in the editor. Create a simple test file with one passing test and run it via the GUT panel or command line: godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/ -gexit",
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:20:13.547Z"
           },
           {
             "id": 4,
@@ -50,8 +56,10 @@
               1
             ],
             "details": "Acquire all 12 chess piece sprites (6 pieces x 2 colors):\n- White pieces: king, queen, rook, bishop, knight, pawn\n- Black pieces: king, queen, rook, bishop, knight, pawn\n\nRecommended sources (BSD/MIT license):\n1. Lichess lila repository: https://github.com/lichess-org/lila\n2. Colin M.L. Burnett set from Wikimedia Commons (BSD license)\n\nNaming convention for assets/pieces/:\n- white_king.png, white_queen.png, white_rook.png, white_bishop.png, white_knight.png, white_pawn.png\n- black_king.png, black_queen.png, black_rook.png, black_bishop.png, black_knight.png, black_pawn.png\n\nEnsure images are appropriately sized (recommended 128x128 or 256x256 PNG with transparency).",
-            "status": "pending",
-            "testStrategy": "Verify all 12 PNG files exist in assets/pieces/ directory. Visually inspect each sprite in Godot's FileSystem panel to confirm they load correctly and have transparency."
+            "status": "done",
+            "testStrategy": "Verify all 12 PNG files exist in assets/pieces/ directory. Visually inspect each sprite in Godot's FileSystem panel to confirm they load correctly and have transparency.",
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:24:34.267Z"
           },
           {
             "id": 5,
@@ -61,8 +69,10 @@
               1
             ],
             "details": "Create tools/preprocess_puzzles.py with the following functionality:\n\n1. Download Lichess puzzle CSV from https://database.lichess.org/lichess_db_puzzle.csv.zst (use requests + zstandard or subprocess with wget/curl)\n\n2. Filter puzzles by themes containing mateIn1, mateIn2, mateIn3, mateIn4, or mateIn5\n\n3. Validate mate depth using move count formula: expected_moves = 2 * N - 1\n   - mateIn1: 1 move, mateIn2: 3 moves, mateIn3: 5 moves, mateIn4: 7 moves, mateIn5: 9 moves\n\n4. Export to SQLite database at data/puzzles.db with schema:\n   CREATE TABLE puzzles (\n       id TEXT PRIMARY KEY,\n       fen TEXT NOT NULL,\n       moves TEXT NOT NULL,\n       rating INTEGER NOT NULL,\n       themes TEXT,\n       mate_in INTEGER\n   );\n   CREATE INDEX idx_rating ON puzzles(rating);\n   CREATE INDEX idx_mate_in ON puzzles(mate_in);\n\n5. Command line arguments: --input, --output, --max-mate-depth, --validate-depths\n6. Log statistics: total processed, filtered, validated, discarded with reasons",
-            "status": "pending",
-            "testStrategy": "Run the script with a small subset of the Lichess CSV (first 10000 lines). Verify: SQLite database is created with correct schema, puzzles are filtered to mate themes only, move counts match mate depth, indexes exist. Query database to confirm data integrity."
+            "status": "done",
+            "testStrategy": "Run the script with a small subset of the Lichess CSV (first 10000 lines). Verify: SQLite database is created with correct schema, puzzles are filtered to mate themes only, move counts match mate depth, indexes exist. Query database to confirm data integrity.",
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:26:53.408Z"
           },
           {
             "id": 6,
@@ -72,8 +82,10 @@
               1
             ],
             "details": "Create tools/requirements.txt with the following dependencies:\n\npython-chess>=1.9.0    # For FEN parsing and move validation during preprocessing\nzstandard>=0.21.0      # For decompressing .zst Lichess database files (optional, can use system zstd)\nrequests>=2.28.0       # For downloading the puzzle database (optional)\n\nThe python-chess library is essential for:\n- Validating FEN strings\n- Optional Stockfish verification during preprocessing (validate_with_engine function)\n- Move notation parsing\n\nInclude brief comments explaining each dependency's purpose.",
-            "status": "pending",
-            "testStrategy": "Run 'pip install -r tools/requirements.txt' in a clean virtual environment. Verify all packages install successfully. Import python-chess in Python REPL to confirm it works."
+            "status": "done",
+            "testStrategy": "Run 'pip install -r tools/requirements.txt' in a clean virtual environment. Verify all packages install successfully. Import python-chess in Python REPL to confirm it works.",
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:10:57.039Z"
           },
           {
             "id": 7,
@@ -83,20 +95,26 @@
               1
             ],
             "details": "Download Stockfish binaries from https://stockfishchess.org/download/ for all three desktop platforms:\n\n1. bin/stockfish/windows/stockfish.exe - Windows x64 build\n2. bin/stockfish/macos/stockfish - macOS universal binary (x64 + ARM)\n3. bin/stockfish/linux/stockfish - Linux x64 build\n\nFor each binary:\n- Download the latest stable release\n- Extract and place in appropriate platform directory\n- Set executable permissions on macOS/Linux: chmod +x stockfish\n- Verify binary runs: ./stockfish and type 'uci' to confirm UCI protocol response\n\nNote for macOS: The binary will need code signing before distribution (codesign --deep --force --sign \"Developer ID\" stockfish). For development, you may need to allow it in System Preferences > Security.\n\nStockfish is GPLv3 licensed - ensure licenses_screen.tscn credits it properly.",
-            "status": "pending",
-            "testStrategy": "On each platform, run the stockfish binary directly and verify it responds to 'uci' command with 'uciok'. Test 'position fen [starting position]' and 'go depth 5' to confirm analysis works. Verify file permissions are correct."
+            "status": "done",
+            "testStrategy": "On each platform, run the stockfish binary directly and verify it responds to 'uci' command with 'uciok'. Test 'position fen [starting position]' and 'go depth 5' to confirm analysis works. Verify file permissions are correct.",
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:31:37.911Z"
           }
-        ]
+        ],
+        "complexity": 6,
+        "recommendedSubtasks": 7,
+        "expansionPrompt": "Break down into subtasks: 1) Create directory structure, 2) Install godot-sqlite plugin, 3) Install GUT testing framework, 4) Acquire chess piece sprites, 5) Create preprocess_puzzles.py script with download/filter/validate logic, 6) Create requirements.txt for Python dependencies, 7) Download and organize Stockfish binaries for all platforms",
+        "updatedAt": "2025-12-04T20:31:37.911Z"
       },
       {
-        "id": 2,
+        "id": "2",
         "title": "FEN Parser and Board State Representation",
         "description": "Implement the ChessLogic autoload singleton with FEN parsing capabilities and internal board state representation using a 64-element array.",
         "details": "Create scripts/autoload/chess_logic.gd as an autoload singleton:\n\n```gdscript\nclass_name ChessLogic\nextends Node\n\nenum PieceType { NONE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING }\nenum PieceColor { WHITE, BLACK }\n\nconst EMPTY = 0\nconst W_PAWN = 1, W_KNIGHT = 2, W_BISHOP = 3, W_ROOK = 4, W_QUEEN = 5, W_KING = 6\nconst B_PAWN = 9, B_KNIGHT = 10, B_BISHOP = 11, B_ROOK = 12, B_QUEEN = 13, B_KING = 14\n\nvar board: Array[int] = []  # 64 squares, index 0 = a8, index 63 = h1\nvar side_to_move: PieceColor\nvar castling_rights: int  # Bitmask: K=1, Q=2, k=4, q=8\nvar en_passant_square: int  # -1 if none\nvar halfmove_clock: int\nvar fullmove_number: int\n```\n\nImplement parse_fen(fen: String) to:\n- Split FEN into 6 fields\n- Parse piece placement (handle numbers as empty squares)\n- Set side_to_move from 'w'/'b'\n- Parse castling rights string to bitmask\n- Parse en passant square (convert algebraic to index)\n- Parse halfmove clock and fullmove number\n\nImplement helper functions:\n- get_piece(square: int) -> int\n- to_fen() -> String\n- uci_to_squares(uci: String) -> Dictionary",
         "testStrategy": "Create tests/test_fen_parser.gd with GUT tests: test_starting_position(), test_castling_rights_partial(), test_en_passant_square(), test_invalid_fen_throws(). Verify round-trip: parse_fen then to_fen returns equivalent FEN.",
         "priority": "high",
         "dependencies": [
-          1
+          "1"
         ],
         "status": "pending",
         "subtasks": [
@@ -107,7 +125,8 @@
             "dependencies": [],
             "details": "Create scripts/autoload/chess_logic.gd with:\n- class_name ChessLogic extending Node\n- PieceType enum: NONE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING\n- PieceColor enum: WHITE, BLACK\n- Piece constants: EMPTY=0, W_PAWN=1, W_KNIGHT=2, W_BISHOP=3, W_ROOK=4, W_QUEEN=5, W_KING=6, B_PAWN=9, B_KNIGHT=10, B_BISHOP=11, B_ROOK=12, B_QUEEN=13, B_KING=14\n- Board state variables: board (Array[int] of 64 elements), side_to_move, castling_rights (bitmask), en_passant_square, halfmove_clock, fullmove_number\n- Initialize board array in _ready() with 64 zeros\n- Register as autoload in project.godot under [autoload] section",
             "status": "pending",
-            "testStrategy": "Verify autoload loads correctly, check all constants have expected values, confirm board array initializes to 64 elements."
+            "testStrategy": "Verify autoload loads correctly, check all constants have expected values, confirm board array initializes to 64 elements.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -118,7 +137,8 @@
             ],
             "details": "Implement parse_fen(fen: String) -> void:\n- Split FEN string by spaces into 6 fields\n- Parse piece placement (field 0):\n  - Split by '/' to get 8 ranks\n  - Iterate each rank from a8 (index 0) to h1 (index 63)\n  - Map piece characters to constants: p=B_PAWN, n=B_KNIGHT, b=B_BISHOP, r=B_ROOK, q=B_QUEEN, k=B_KING (lowercase=black, uppercase=white)\n  - Handle digits 1-8 as consecutive empty squares\n- Parse side to move (field 1):\n  - 'w' sets side_to_move = PieceColor.WHITE\n  - 'b' sets side_to_move = PieceColor.BLACK\n- Add helper function algebraic_to_index(square: String) -> int for coordinate conversion (a8=0, h1=63)",
             "status": "pending",
-            "testStrategy": "Test with starting position FEN, verify each piece is at correct index, verify side_to_move is set correctly for both 'w' and 'b'."
+            "testStrategy": "Test with starting position FEN, verify each piece is at correct index, verify side_to_move is set correctly for both 'w' and 'b'.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -129,7 +149,8 @@
             ],
             "details": "Extend parse_fen() to parse remaining FEN fields:\n- Parse castling rights (field 2):\n  - Initialize castling_rights = 0\n  - 'K' adds 1 (white kingside)\n  - 'Q' adds 2 (white queenside)\n  - 'k' adds 4 (black kingside)\n  - 'q' adds 8 (black queenside)\n  - '-' means no castling rights\n- Parse en passant square (field 3):\n  - '-' sets en_passant_square = -1\n  - Otherwise convert algebraic notation to board index using algebraic_to_index()\n- Parse halfmove clock (field 4): int(fields[4])\n- Parse fullmove number (field 5): int(fields[5])\n- Add helper function index_to_algebraic(index: int) -> String for reverse conversion",
             "status": "pending",
-            "testStrategy": "Test partial castling rights (e.g., 'Kq'), verify bitmask values, test en passant squares on ranks 3 and 6, test halfmove and fullmove parsing."
+            "testStrategy": "Test partial castling rights (e.g., 'Kq'), verify bitmask values, test en passant squares on ranks 3 and 6, test halfmove and fullmove parsing.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -140,7 +161,8 @@
             ],
             "details": "Implement get_piece(square: int) -> int:\n- Return board[square] if square is valid (0-63)\n- Return EMPTY for invalid squares\n\nImplement to_fen() -> String:\n- Build piece placement string:\n  - Iterate ranks 0-7 (a8-h1)\n  - For each rank, count consecutive empty squares as digits\n  - Map piece constants back to FEN characters\n  - Join ranks with '/'\n- Add side to move: 'w' or 'b'\n- Build castling string from bitmask (or '-' if none)\n- Convert en_passant_square to algebraic (or '-' if -1)\n- Append halfmove_clock and fullmove_number\n- Join all fields with spaces\n\nAdd helper: piece_to_fen_char(piece: int) -> String for character mapping",
             "status": "pending",
-            "testStrategy": "Test round-trip: parse_fen() then to_fen() should return equivalent FEN. Test starting position, positions with en passant, various castling states."
+            "testStrategy": "Test round-trip: parse_fen() then to_fen() should return equivalent FEN. Test starting position, positions with en passant, various castling states.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -151,20 +173,24 @@
             ],
             "details": "Implement uci_to_squares(uci: String) -> Dictionary:\n- Parse first 2 characters as source square (e.g., 'e2')\n- Parse characters 3-4 as destination square (e.g., 'e4')\n- Convert both to board indices using algebraic_to_index()\n- Check for 5th character for promotion piece (q, r, b, n)\n- Return Dictionary with keys:\n  - 'from': int (source square index)\n  - 'to': int (destination square index)\n  - 'promotion': int (piece constant or EMPTY if no promotion)\n- Map promotion characters: 'q'->QUEEN, 'r'->ROOK, 'b'->BISHOP, 'n'->KNIGHT\n- Handle both white and black promotions based on destination rank\n\nAdd reverse function squares_to_uci(from: int, to: int, promotion: int = EMPTY) -> String",
             "status": "pending",
-            "testStrategy": "Test standard moves (e2e4), captures, castling notation (e1g1), and promotions (e7e8q). Verify correct index mapping and promotion piece detection."
+            "testStrategy": "Test standard moves (e2e4), captures, castling notation (e1g1), and promotions (e7e8q). Verify correct index mapping and promotion piece detection.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 5,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Break down into subtasks: 1) Create chess_logic.gd autoload singleton with piece constants and enums, 2) Implement parse_fen() to parse piece placement and side to move, 3) Implement castling rights and en passant parsing, 4) Implement get_piece() and to_fen() helper functions, 5) Implement uci_to_squares() for move notation conversion"
       },
       {
-        "id": 3,
+        "id": "3",
         "title": "Chess Board Rendering and Piece Display",
         "description": "Create the visual chess board with 8x8 grid rendering, piece sprite display from FEN positions, and board orientation based on side to move.",
         "details": "Create scenes/board/chess_board.tscn and scripts/board/chess_board.gd:\n\n```gdscript\nextends Node2D\n\n@export var square_size: int = 80\n@export var light_color: Color = Color(\"#F0D9B5\")\n@export var dark_color: Color = Color(\"#B58863\")\n@export var highlight_color: Color = Color(\"#829769\", 0.8)\n@export var last_move_color: Color = Color(\"#CDD26A\", 0.5)\n\nvar flipped: bool = false\nvar selected_square: int = -1\nvar legal_move_squares: Array[int] = []\n\nfunc set_position(fen: String) -> void\nfunc flip_board() -> void\nfunc screen_to_board(screen_pos: Vector2) -> int\nfunc board_to_screen(square: int) -> Vector2\n```\n\nCreate scenes/board/square.tscn - ColorRect for board squares\nCreate scenes/board/piece.tscn - Sprite2D for pieces\n\nImplement:\n- _draw() to render the 8x8 grid with alternating colors\n- set_position() to place piece sprites based on FEN\n- Board flipping logic that inverts coordinates in screen_to_board/board_to_screen\n- Highlight rendering for selected squares and last move",
         "testStrategy": "Visually verify board renders correctly with starting position FEN. Test board flipping shows black perspective. Verify various FEN positions display pieces in correct squares.",
         "priority": "high",
         "dependencies": [
-          1,
-          2
+          "1",
+          "2"
         ],
         "status": "pending",
         "subtasks": [
@@ -175,7 +201,8 @@
             "dependencies": [],
             "details": "Create scenes/board/chess_board.tscn with a Node2D root node named 'ChessBoard'. Attach scripts/board/chess_board.gd script to the root. Define all @export variables: square_size (int = 80), light_color (Color = #F0D9B5), dark_color (Color = #B58863), highlight_color (Color = #829769 with 0.8 alpha), last_move_color (Color = #CDD26A with 0.5 alpha). Add instance variables: flipped (bool = false), selected_square (int = -1), legal_move_squares (Array[int] = []). Create the basic directory structure scenes/board/ if it doesn't exist. The scene should be ready to receive child nodes for pieces and have proper signal connections prepared for input handling.",
             "status": "pending",
-            "testStrategy": "Open the scene in Godot editor, verify all exported properties appear in the inspector with correct default values. Confirm the script is properly attached and the scene loads without errors."
+            "testStrategy": "Open the scene in Godot editor, verify all exported properties appear in the inspector with correct default values. Confirm the script is properly attached and the scene loads without errors.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -186,7 +213,8 @@
             ],
             "details": "In chess_board.gd, implement _draw() function that iterates through 8 rows and 8 columns. For each square, determine color based on (row + col) % 2 - if even use light_color, if odd use dark_color. Use draw_rect() to draw each square at position (col * square_size, row * square_size) with size Vector2(square_size, square_size). Total board size will be 640x640 pixels with default square_size of 80. Ensure queue_redraw() is called when colors or square_size change. The coordinate system should have (0,0) at top-left representing a8 (when not flipped) or h1 (when flipped).",
             "status": "pending",
-            "testStrategy": "Run the scene and visually verify an 8x8 grid appears with alternating light brown (#F0D9B5) and dark brown (#B58863) squares. Verify the board is 640x640 pixels with default settings."
+            "testStrategy": "Run the scene and visually verify an 8x8 grid appears with alternating light brown (#F0D9B5) and dark brown (#B58863) squares. Verify the board is 640x640 pixels with default settings.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -198,7 +226,8 @@
             ],
             "details": "Create scenes/board/piece.tscn with Sprite2D root node. Add a script that accepts piece_type (String like 'K', 'q', 'P') and loads corresponding texture from assets/pieces/. Implement set_position(fen: String) in chess_board.gd that: 1) Clears existing piece children, 2) Parses only the board portion of FEN (before first space), 3) Iterates through FEN ranks (split by '/'), 4) For each character: if digit, skip that many squares; if letter, instantiate piece.tscn at correct position. Map FEN characters to piece sprites: K/k=king, Q/q=queen, R/r=rook, B/b=bishop, N/n=knight, P/p=pawn (uppercase=white, lowercase=black). Position pieces using board_to_screen() centered on squares.",
             "status": "pending",
-            "testStrategy": "Call set_position() with starting FEN 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'. Verify all 32 pieces appear in correct positions. Test with various FEN positions to confirm proper parsing."
+            "testStrategy": "Call set_position() with starting FEN 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'. Verify all 32 pieces appear in correct positions. Test with various FEN positions to confirm proper parsing.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -210,7 +239,8 @@
             ],
             "details": "Implement coordinate conversion functions in chess_board.gd. board_to_screen(square: int) -> Vector2: Convert 0-63 square index to screen position. When not flipped: file = square % 8, rank = 7 - (square / 8), return Vector2(file * square_size + square_size/2, rank * square_size + square_size/2). When flipped: invert both file and rank (7 - file, 7 - rank). screen_to_board(screen_pos: Vector2) -> int: Reverse conversion, return -1 if outside board bounds. flip_board(): Toggle flipped boolean, reposition all piece children using board_to_screen(), call queue_redraw(). Ensure all piece positions update correctly when flipping. Square index convention: 0=a1, 7=h1, 56=a8, 63=h8.",
             "status": "pending",
-            "testStrategy": "Set a position, verify pieces are in correct spots. Call flip_board(), verify all pieces move to mirrored positions (board appears from black's perspective). Test screen_to_board() by clicking squares and verifying correct square indices are returned in both orientations."
+            "testStrategy": "Set a position, verify pieces are in correct spots. Call flip_board(), verify all pieces move to mirrored positions (board appears from black's perspective). Test screen_to_board() by clicking squares and verifying correct square indices are returned in both orientations.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -222,19 +252,23 @@
             ],
             "details": "Extend _draw() in chess_board.gd to render highlights after base squares. Add variables: last_move_from (int = -1), last_move_to (int = -1). In _draw(): 1) After drawing base grid, if last_move_from >= 0, draw semi-transparent rectangle using last_move_color at that square position (accounting for flip state), same for last_move_to. 2) If selected_square >= 0, draw highlight_color rectangle at selected square. 3) For each square in legal_move_squares, draw a circle or dot indicator (use draw_circle with highlight_color at square center, radius ~10-15px). Add set_last_move(from: int, to: int) and clear_highlights() helper methods. Ensure queue_redraw() is called when any highlight state changes.",
             "status": "pending",
-            "testStrategy": "Set selected_square to various values and verify highlight appears at correct position. Set legal_move_squares array and verify indicators appear. Set last_move_from/to and verify both squares show last move highlighting. Test all highlights work correctly when board is flipped."
+            "testStrategy": "Set selected_square to various values and verify highlight appears at correct position. Set legal_move_squares array and verify indicators appear. Set last_move_from/to and verify both squares show last move highlighting. Test all highlights work correctly when board is flipped.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 5,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Break down into subtasks: 1) Create chess_board.tscn scene structure with Node2D root, 2) Implement _draw() for 8x8 grid rendering with alternating colors, 3) Create piece.tscn and implement piece placement from FEN, 4) Implement board flipping with coordinate transformation, 5) Add highlight rendering for selected squares and last move"
       },
       {
-        "id": 4,
+        "id": "4",
         "title": "Move Generation and Validation",
         "description": "Implement complete legal move generation for all piece types including sliding pieces, pawns, knights, and the king, with proper pin and check handling.",
         "details": "Extend scripts/autoload/chess_logic.gd with:\n\n```gdscript\nfunc get_legal_moves(square: int) -> Array[int]\nfunc is_move_legal(from: int, to: int) -> bool\nfunc make_move(from: int, to: int, promotion: PieceType = PieceType.NONE) -> void\nfunc is_in_check() -> bool\nfunc is_checkmate() -> bool\nfunc is_stalemate() -> bool\n```\n\nMove generation logic:\n- Pawn: single push, double push from start rank, diagonal captures, en passant\n- Knight: L-shaped moves (8 possible targets)\n- Bishop: diagonal rays until blocked\n- Rook: horizontal/vertical rays until blocked\n- Queen: combination of bishop + rook\n- King: one square in any direction\n\nFor each candidate move:\n1. Check target is empty or enemy piece\n2. Verify path is clear (sliding pieces)\n3. Make move on copy of board\n4. Verify king is not in check after move\n5. If valid, add to legal moves array\n\nImplement attack detection for check/checkmate by checking if any enemy piece can reach the king square.",
         "testStrategy": "Create tests/test_move_generation.gd with tests for each piece type: pawn pushes/captures, blocked pieces, knight moves, sliding piece rays. Create tests/test_check_detection.gd for simple check, double check, pinned pieces. Create tests/test_checkmate_detection.gd for back rank mate, smothered mate, stalemate distinction.",
         "priority": "high",
         "dependencies": [
-          2
+          "2"
         ],
         "status": "pending",
         "subtasks": [
@@ -245,7 +279,8 @@
             "dependencies": [],
             "details": "Add get_pawn_moves(square: int, color: PieceColor) -> Array[int] to chess_logic.gd. Handle:\n- Single push: one square forward if empty (direction based on color: white moves toward lower indices, black toward higher)\n- Double push: two squares forward from starting rank (rank 2 for white/rank 7 for black) if both squares empty\n- Diagonal captures: can move diagonally forward if enemy piece present\n- Board edge handling: don't wrap around files (a-file can't capture left, h-file can't capture right)\n- Use helper to determine piece color from board array value (1-6 = white, 9-14 = black)\n\nNote: Pawn promotion detection and en passant are handled in Task 5. This subtask generates the target squares only, filtering for legality happens in subtask 8.",
             "status": "pending",
-            "testStrategy": "Test pawn on e2 can move to e3, e4. Pawn on e4 can only move to e5. Pawn on d4 with enemy on e5 can capture. Pawn on a-file cannot capture left. Pawn blocked by piece cannot push."
+            "testStrategy": "Test pawn on e2 can move to e3, e4. Pawn on e4 can only move to e5. Pawn on d4 with enemy on e5 can capture. Pawn on a-file cannot capture left. Pawn blocked by piece cannot push.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -254,7 +289,8 @@
             "dependencies": [],
             "details": "Add get_knight_moves(square: int, color: PieceColor) -> Array[int] to chess_logic.gd. Knight moves in L-shape: 2 squares in one direction + 1 square perpendicular (or vice versa). From any square, compute 8 potential targets using offsets: (-17, -15, -10, -6, +6, +10, +15, +17) for a8=0 indexing.\n\nCritical: Prevent wrapping around board edges. Calculate file (square % 8) and rank (square / 8) before and after move. Reject moves where file changes by more than 2 or rank changes by more than 2.\n\nFilter results: include square if within bounds (0-63) AND (empty OR contains enemy piece). Use helper function to check if piece at square is enemy.",
             "status": "pending",
-            "testStrategy": "Knight on e4 (index 36) should have 8 valid target squares. Knight on a1 should have only 2 valid targets. Knight on h8 should have only 2 valid targets. Knight cannot capture friendly pieces."
+            "testStrategy": "Knight on e4 (index 36) should have 8 valid target squares. Knight on a1 should have only 2 valid targets. Knight on h8 should have only 2 valid targets. Knight cannot capture friendly pieces.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -263,7 +299,8 @@
             "dependencies": [],
             "details": "Add helper functions to chess_logic.gd:\n- get_bishop_moves(square: int, color: PieceColor) -> Array[int]: diagonal rays (NE, NW, SE, SW)\n- get_rook_moves(square: int, color: PieceColor) -> Array[int]: orthogonal rays (N, S, E, W)\n- get_queen_moves(square: int, color: PieceColor) -> Array[int]: combines bishop + rook moves\n\nImplement generic ray casting function: get_ray_moves(square: int, direction: int, color: PieceColor) -> Array[int]\n- Direction offsets for 8 directions: N=-8, S=+8, E=+1, W=-1, NE=-7, NW=-9, SE=+9, SW=+7\n- For E/W moves, check file boundaries to prevent wrapping\n- Continue in direction until: hit board edge, hit friendly piece (stop before), or hit enemy piece (include that square, then stop)\n\nEnsure ray stops at board edges properly by checking file/rank after each step.",
             "status": "pending",
-            "testStrategy": "Rook on e4 in empty board should have 14 moves (7 on file + 7 on rank). Bishop on e4 should have 13 moves. Queen combines both. Verify rays stop at friendly pieces (not including square) and enemy pieces (including that square)."
+            "testStrategy": "Rook on e4 in empty board should have 14 moves (7 on file + 7 on rank). Bishop on e4 should have 13 moves. Queen combines both. Verify rays stop at friendly pieces (not including square) and enemy pieces (including that square).",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -272,7 +309,8 @@
             "dependencies": [],
             "details": "Add get_king_moves(square: int, color: PieceColor) -> Array[int] to chess_logic.gd. King can move one square in 8 directions using same direction offsets as queen but only one step.\n\nDirection offsets: N=-8, S=+8, E=+1, W=-1, NE=-7, NW=-9, SE=+9, SW=+7\n\nFor each direction:\n- Calculate target square\n- Check board bounds (0-63)\n- For E/W moves, check file doesn't wrap (king on a-file can't move west, h-file can't move east)\n- Include target if empty or enemy piece\n\nNote: This generates pseudo-legal moves only. Squares attacked by enemy pieces are filtered out in subtask 8 (legality filter). Castling moves are added in Task 5.",
             "status": "pending",
-            "testStrategy": "King on e4 should have 8 possible target squares. King on a1 should have 3 targets. King on h8 should have 3 targets. King on e1 (corner) should have 5 targets. Cannot move to squares with friendly pieces."
+            "testStrategy": "King on e4 should have 8 possible target squares. King on a1 should have 3 targets. King on h8 should have 3 targets. King on e1 (corner) should have 5 targets. Cannot move to squares with friendly pieces.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -286,7 +324,8 @@
             ],
             "details": "Add is_square_attacked(square: int, by_color: PieceColor) -> bool to chess_logic.gd. This function checks if any piece of the specified color can attack the given square.\n\nEfficient approach - check from the target square outward:\n- Pawn attacks: check the two diagonal squares from which an enemy pawn could attack (direction depends on attacker color)\n- Knight attacks: check all 8 knight-distance squares for enemy knights\n- King attacks: check all 8 adjacent squares for enemy king\n- Sliding piece attacks: cast rays in all 8 directions. Diagonal rays can find bishop/queen, orthogonal rays can find rook/queen\n\nThis reverse lookup is more efficient than generating all enemy moves. Stop ray on first piece encountered - if it's the right type and color, square is attacked.",
             "status": "pending",
-            "testStrategy": "Position with white queen on e4: verify d3, d4, d5, e3, e5, f3, f4, f5, and all ray squares are attacked. Knight on f6 attacks e4, d5, g4, etc. Verify blocked pieces don't attack through other pieces."
+            "testStrategy": "Position with white queen on e4: verify d3, d4, d5, e3, e5, f3, f4, f5, and all ray squares are attacked. Knight on f6 attacks e4, d5, g4, etc. Verify blocked pieces don't attack through other pieces.",
+            "parentId": "undefined"
           },
           {
             "id": 6,
@@ -297,7 +336,8 @@
             ],
             "details": "Add is_in_check(color: PieceColor = side_to_move) -> bool to chess_logic.gd. Steps:\n\n1. Find king position: iterate through board array to find W_KING (6) or B_KING (14) based on color parameter (default to current side_to_move)\n2. Store king positions as member variables (king_squares: Dictionary) for efficiency, update when king moves\n3. Call is_square_attacked(king_square, enemy_color) where enemy_color is opposite of the king's color\n4. Return the result\n\nAdd helper function find_king(color: PieceColor) -> int that returns the square index of the king for the given color. Cache this in _king_squares dict and update it in make_move() when king moves.",
             "status": "pending",
-            "testStrategy": "Starting position: neither king in check. Position with rook giving check: is_in_check returns true. Position with knight giving check: returns true. Position with discovered check: returns true. Empty squares between king and attacker: returns true (no blocking)."
+            "testStrategy": "Starting position: neither king in check. Position with rook giving check: is_in_check returns true. Position with knight giving check: returns true. Position with discovered check: returns true. Empty squares between king and attacker: returns true (no blocking).",
+            "parentId": "undefined"
           },
           {
             "id": 7,
@@ -309,7 +349,8 @@
             ],
             "details": "Add is_checkmate() -> bool and is_stalemate() -> bool to chess_logic.gd.\n\nis_checkmate():\n1. First check is_in_check() - if not in check, cannot be checkmate\n2. If in check, check if any piece of side_to_move has legal moves using get_legal_moves()\n3. If no legal moves exist while in check, return true\n\nis_stalemate():\n1. First check is_in_check() - if in check, cannot be stalemate\n2. If not in check, check if any piece of side_to_move has legal moves\n3. If no legal moves exist while NOT in check, return true\n\nHelper function get_all_legal_moves(color: PieceColor) -> Dictionary that returns {square: [legal_moves]} for all pieces of that color. Iterate through board, for each piece of correct color, call get_legal_moves().",
             "status": "pending",
-            "testStrategy": "Test back rank mate position (king on g8, rook delivers mate on 8th rank). Test smothered mate (knight mate with king blocked by own pieces). Test stalemate (king not in check but no legal moves). Verify checkmate with blocking possible returns false."
+            "testStrategy": "Test back rank mate position (king on g8, rook delivers mate on 8th rank). Test smothered mate (knight mate with king blocked by own pieces). Test stalemate (king not in check but no legal moves). Verify checkmate with blocking possible returns false.",
+            "parentId": "undefined"
           },
           {
             "id": 8,
@@ -325,19 +366,23 @@
             ],
             "details": "Add core API functions to chess_logic.gd:\n\nget_legal_moves(square: int) -> Array[int]:\n1. Get piece at square, return empty if no piece or wrong color\n2. Generate pseudo-legal moves using appropriate piece function (get_pawn_moves, etc.)\n3. Filter each candidate move: make_move on copy, check if king NOT in check, if legal add to result\n4. Return filtered array\n\nis_move_legal(from: int, to: int) -> bool:\n1. Get legal moves for 'from' square\n2. Return whether 'to' is in the legal moves array\n\nmake_move(from: int, to: int, promotion: PieceType = PieceType.NONE) -> void:\n1. Validate move is legal\n2. Update board array (move piece, clear source, handle capture)\n3. Toggle side_to_move\n4. Update halfmove_clock (reset on capture/pawn, else increment)\n5. Update fullmove_number after black moves\n6. Update king position cache if king moved\n\nHelper: copy_board_state() -> Dictionary for temporary move testing.",
             "status": "pending",
-            "testStrategy": "Test pinned piece can only move along pin line. Test king cannot move into check. Test piece cannot move if it would expose king to check. Verify all legal moves in complex positions match expected count. Test make_move updates all state correctly."
+            "testStrategy": "Test pinned piece can only move along pin line. Test king cannot move into check. Test piece cannot move if it would expose king to check. Verify all legal moves in complex positions match expected count. Test make_move updates all state correctly.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 8,
+        "recommendedSubtasks": 8,
+        "expansionPrompt": "Break down into subtasks: 1) Implement pawn move generation (pushes, captures, double move), 2) Implement knight move generation, 3) Implement sliding piece logic (bishop/rook/queen rays), 4) Implement king move generation, 5) Implement attack detection for check verification, 6) Implement is_in_check() function, 7) Implement is_checkmate() and is_stalemate(), 8) Implement move legality filter (verify king not left in check)"
       },
       {
-        "id": 5,
+        "id": "5",
         "title": "Special Moves Implementation",
         "description": "Implement castling (kingside and queenside), en passant capture, and pawn promotion with proper validation of all edge cases.",
         "details": "Extend chess_logic.gd with special move handling:\n\nCastling:\n- Add can_castle_kingside(color) and can_castle_queenside(color)\n- Verify: rights exist, squares between king and rook empty, king not in check, king doesn't pass through attacked squares\n- When making castling move, also move the rook\n- Update castling rights when king or rook moves\n\nEn passant:\n- Set en_passant_square when pawn makes double push\n- Clear en_passant_square after any other move\n- Allow capture to en_passant_square from adjacent pawns\n- Remove captured pawn from correct square (not target square)\n\nPromotion:\n- Detect when pawn reaches final rank (rank 8 for white, rank 1 for black)\n- make_move() accepts optional promotion parameter\n- Transform pawn to specified piece type\n\nUpdate make_move() to:\n- Handle all special moves\n- Update castling rights on any king/rook move\n- Update en_passant_square appropriately\n- Increment halfmove clock (reset on pawn move or capture)\n- Increment fullmove number after black moves",
         "testStrategy": "Create tests/test_special_moves.gd with: test_kingside_castle(), test_queenside_castle(), test_castle_through_check_illegal(), test_en_passant(), test_pawn_promotion(). Verify castling updates both king and rook positions, en passant removes captured pawn correctly.",
         "priority": "high",
         "dependencies": [
-          4
+          "4"
         ],
         "status": "pending",
         "subtasks": [
@@ -348,7 +393,8 @@
             "dependencies": [],
             "details": "Add to chess_logic.gd:\n\n1. Ensure castling_rights bitmask constant definitions:\n   - CASTLE_K = 1 (white kingside)\n   - CASTLE_Q = 2 (white queenside)\n   - CASTLE_k = 4 (black kingside)\n   - CASTLE_q = 8 (black queenside)\n\n2. Implement can_castle_kingside(color: PieceColor) -> bool:\n   - Check appropriate right bit is set (K for white, k for black)\n   - Verify king is on starting square (e1/e8)\n   - Verify kingside rook is on starting square (h1/h8)\n   - Verify squares f1/f8 and g1/g8 are empty\n   - Verify king is not currently in check using is_in_check()\n   - Verify f1/f8 and g1/g8 are not attacked using is_square_attacked()\n\n3. Implement can_castle_queenside(color: PieceColor) -> bool:\n   - Check appropriate right bit is set (Q for white, q for black)\n   - Verify king on starting square (e1/e8)\n   - Verify queenside rook on starting square (a1/a8)\n   - Verify squares b1/b8, c1/c8, d1/d8 are empty\n   - Verify king is not in check\n   - Verify d1/d8 and c1/c8 are not attacked (king passes through d, lands on c)\n\n4. Integrate with get_king_moves() to include castling target squares (g1/g8 and c1/c8) when valid",
             "status": "pending",
-            "testStrategy": "Test castling validation with: fresh starting position (both sides valid), position after king moved (invalid), position with rook captured (invalid), king in check (invalid), path through check (invalid), blocked path (invalid). Use FEN positions for each case."
+            "testStrategy": "Test castling validation with: fresh starting position (both sides valid), position after king moved (invalid), position with rook captured (invalid), king in check (invalid), path through check (invalid), blocked path (invalid). Use FEN positions for each case.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -359,7 +405,8 @@
             ],
             "details": "Modify make_move(from: int, to: int, promotion: PieceType = EMPTY) to handle kingside castling:\n\n1. Add detection logic at start of make_move():\n   - Check if moving piece is a king\n   - Check if move is exactly 2 squares to the right (to = from + 2)\n   - For white: from=e1(60), to=g1(62), rook from=h1(63), rook to=f1(61)\n   - For black: from=e8(4), to=g8(6), rook from=h8(7), rook to=f8(5)\n\n2. Execute compound move:\n   - Move king: board[from] = EMPTY, board[to] = KING\n   - Move rook: board[rook_from] = EMPTY, board[rook_to] = ROOK\n\n3. Update castling rights:\n   - Clear both kingside and queenside rights for the castling color\n   - For white: castling_rights &= ~(CASTLE_K | CASTLE_Q)\n   - For black: castling_rights &= ~(CASTLE_k | CASTLE_q)\n\n4. Update other state:\n   - Clear en_passant_square = -1\n   - Reset halfmove_clock = 0 (optional, some engines don't reset on castle)\n   - Switch side_to_move\n   - Increment fullmove_number if black just moved",
             "status": "pending",
-            "testStrategy": "Test kingside castling execution: verify king ends on g1/g8, rook ends on f1/f8, both original squares are empty, castling rights cleared for that color, en passant square cleared. Test with white and black separately."
+            "testStrategy": "Test kingside castling execution: verify king ends on g1/g8, rook ends on f1/f8, both original squares are empty, castling rights cleared for that color, en passant square cleared. Test with white and black separately.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -370,7 +417,8 @@
             ],
             "details": "Modify make_move() to handle queenside castling:\n\n1. Add detection logic (in addition to kingside check):\n   - Check if moving piece is a king\n   - Check if move is exactly 2 squares to the left (to = from - 2)\n   - For white: from=e1(60), to=c1(58), rook from=a1(56), rook to=d1(59)\n   - For black: from=e8(4), to=c8(2), rook from=a8(0), rook to=d8(3)\n\n2. Execute compound move:\n   - Move king: board[from] = EMPTY, board[to] = KING\n   - Move rook: board[rook_from] = EMPTY, board[rook_to] = ROOK\n\n3. Update castling rights (same as kingside - clear both for color):\n   - For white: castling_rights &= ~(CASTLE_K | CASTLE_Q)\n   - For black: castling_rights &= ~(CASTLE_k | CASTLE_q)\n\n4. Update state same as kingside:\n   - Clear en_passant_square\n   - Switch side_to_move\n   - Increment fullmove_number if black moved\n\n5. Consider refactoring castling logic into helper:\n   - _execute_castle(king_from, king_to, rook_from, rook_to, color)",
             "status": "pending",
-            "testStrategy": "Test queenside castling execution: verify king ends on c1/c8, rook ends on d1/d8, a-file and e-file squares empty, castling rights cleared. Verify b1/b8 remains empty (rook jumps over it). Test white and black separately."
+            "testStrategy": "Test queenside castling execution: verify king ends on c1/c8, rook ends on d1/d8, a-file and e-file squares empty, castling rights cleared. Verify b1/b8 remains empty (rook jumps over it). Test white and black separately.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -379,7 +427,8 @@
             "dependencies": [],
             "details": "Implement en passant in chess_logic.gd:\n\n1. En passant square tracking in make_move():\n   - On ANY move, first clear: en_passant_square = -1\n   - Detect pawn double push: piece is pawn AND abs(from - to) == 16\n   - Set en_passant_square to the skipped square:\n     - White pawn from rank 2 to rank 4: en_passant_square = from - 8\n     - Black pawn from rank 7 to rank 5: en_passant_square = from + 8\n\n2. Integrate with get_pawn_moves(square, color):\n   - Check if en_passant_square != -1\n   - Check if pawn is on correct rank (rank 5 for white, rank 4 for black)\n   - Check if en_passant_square is diagonally adjacent to pawn\n   - Add en_passant_square to legal move targets if valid\n\n3. Execute en passant capture in make_move():\n   - Detect: pawn moves diagonally AND target square == en_passant_square\n   - Calculate captured pawn square:\n     - White capturing: captured = en_passant_square + 8 (one rank below target)\n     - Black capturing: captured = en_passant_square - 8 (one rank above target)\n   - Remove captured pawn: board[captured] = EMPTY\n   - Move capturing pawn normally: board[from] = EMPTY, board[to] = pawn\n\n4. Reset halfmove_clock on en passant (it's a pawn move and capture)",
             "status": "pending",
-            "testStrategy": "Test en passant: 1) Double push sets correct en_passant_square, 2) Single push clears it, 3) Non-pawn move clears it, 4) Adjacent pawn can capture to en_passant_square, 5) Captured pawn removed from correct square (not target), 6) En passant only available immediately after double push. Use FEN: rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6"
+            "testStrategy": "Test en passant: 1) Double push sets correct en_passant_square, 2) Single push clears it, 3) Non-pawn move clears it, 4) Adjacent pawn can capture to en_passant_square, 5) Captured pawn removed from correct square (not target), 6) En passant only available immediately after double push. Use FEN: rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -388,7 +437,8 @@
             "dependencies": [],
             "details": "Implement pawn promotion in make_move():\n\n1. Add promotion detection after pawn move execution:\n   - Check if moved piece is a pawn\n   - Check if destination rank is promotion rank:\n     - White pawn: to/8 == 0 (rank 8, indices 0-7)\n     - Black pawn: to/8 == 7 (rank 1, indices 56-63)\n\n2. Handle promotion parameter:\n   - make_move() already accepts promotion: PieceType = EMPTY\n   - If pawn reaches final rank:\n     - If promotion == EMPTY, default to QUEEN (for auto-promotion scenarios)\n     - Validate promotion is valid: QUEEN, ROOK, BISHOP, or KNIGHT\n     - Transform: board[to] = promotion piece with correct color\n\n3. Piece transformation logic:\n   - Get color of the pawn being promoted\n   - Convert promotion type to correct colored piece:\n     - White: W_QUEEN=5, W_ROOK=4, W_BISHOP=3, W_KNIGHT=2\n     - Black: B_QUEEN=13, B_ROOK=12, B_BISHOP=11, B_KNIGHT=10\n   - Set board[to] = colored_promotion_piece instead of pawn\n\n4. Handle promotion with capture:\n   - Normal capture logic still applies (captured piece removed)\n   - Then apply promotion transformation\n\n5. Consider returning promotion info in move result or signal for UI:\n   - UI may need to prompt player for promotion choice\n   - This subtask focuses on the logic; UI integration is separate",
             "status": "pending",
-            "testStrategy": "Test promotion: 1) White pawn to 8th rank transforms to queen by default, 2) Explicit promotion to each piece type works (Q/R/B/N), 3) Black pawn to 1st rank promotes correctly, 4) Promotion with capture works, 5) Invalid promotion type defaults to queen, 6) Non-final-rank pawn moves don't promote. Use FEN: 8/P7/8/8/8/8/p7/8 w - -"
+            "testStrategy": "Test promotion: 1) White pawn to 8th rank transforms to queen by default, 2) Explicit promotion to each piece type works (Q/R/B/N), 3) Black pawn to 1st rank promotes correctly, 4) Promotion with capture works, 5) Invalid promotion type defaults to queen, 6) Non-final-rank pawn moves don't promote. Use FEN: 8/P7/8/8/8/8/p7/8 w - -",
+            "parentId": "undefined"
           },
           {
             "id": 6,
@@ -402,19 +452,23 @@
             ],
             "details": "Finalize make_move() to handle all game state updates:\n\n1. Refactor make_move() flow order:\n   a) Store move metadata (piece type, captured piece, etc.)\n   b) Handle special moves in priority order:\n      - Check for castling (king moves 2 squares)\n      - Check for en passant (pawn to en_passant_square)\n      - Check for promotion (pawn to final rank)\n   c) Execute standard move if not special\n   d) Update game state variables\n\n2. Castling rights updates on ANY king/rook move:\n   - If white king moves from e1: clear CASTLE_K and CASTLE_Q\n   - If black king moves from e8: clear CASTLE_k and CASTLE_q\n   - If rook moves from h1: clear CASTLE_K\n   - If rook moves from a1: clear CASTLE_Q\n   - If rook moves from h8: clear CASTLE_k\n   - If rook moves from a8: clear CASTLE_q\n   - Also clear if rook is captured on starting square!\n\n3. Halfmove clock management:\n   - Reset to 0 on pawn move OR capture\n   - Increment by 1 otherwise\n   - Used for 50-move rule detection\n\n4. Fullmove number:\n   - Increment after black moves: if side_to_move == WHITE (after switch)\n   - fullmove_number starts at 1\n\n5. Side to move:\n   - Toggle: side_to_move = BLACK if WHITE else WHITE\n   - Do this AFTER all other updates\n\n6. En passant square (ensure proper ordering):\n   - Clear at start of move\n   - Set only if double pawn push",
             "status": "pending",
-            "testStrategy": "Integration tests: 1) Play through a game with all special moves verifying state at each step, 2) Test rook capture on starting square clears opponent's castling rights, 3) Verify halfmove clock resets on pawn/capture, increments otherwise, 4) Verify fullmove number increments only after black moves, 5) Test FEN export after special moves produces valid FEN. Use Lichess puzzle positions that require special moves."
+            "testStrategy": "Integration tests: 1) Play through a game with all special moves verifying state at each step, 2) Test rook capture on starting square clears opponent's castling rights, 3) Verify halfmove clock resets on pawn/capture, increments otherwise, 4) Verify fullmove number increments only after black moves, 5) Test FEN export after special moves produces valid FEN. Use Lichess puzzle positions that require special moves.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 7,
+        "recommendedSubtasks": 6,
+        "expansionPrompt": "Break down into subtasks: 1) Implement castling rights tracking and validation, 2) Implement kingside castling move execution, 3) Implement queenside castling move execution, 4) Implement en passant capture validation and execution, 5) Implement pawn promotion detection and piece transformation, 6) Update make_move() to handle all special cases and update game state"
       },
       {
-        "id": 6,
+        "id": "6",
         "title": "Stockfish Engine Integration",
         "description": "Implement the StockfishProcess class for desktop platforms using UCI protocol over stdin/stdout, with threaded analysis to prevent UI blocking.",
         "details": "Create scripts/autoload/engine_interface.gd (abstract base):\n```gdscript\nclass_name EngineInterface\nextends Node\n\nsignal analysis_complete(result: Dictionary)\nsignal ready\nsignal thinking_started\nsignal thinking_finished\n\nfunc analyze_position(fen: String, depth: int = 15) -> Dictionary\nfunc get_best_move(fen: String) -> String\nfunc is_mate_in_n(fen: String, n: int) -> bool\n```\n\nCreate scripts/autoload/stockfish_process.gd (desktop implementation):\n- Use OS.create_process() to spawn Stockfish binary\n- Implement UCI protocol: 'uci', 'isready', 'position fen X', 'go depth N'\n- Parse 'bestmove' and 'info score mate N' from output\n- Run analysis in Thread to avoid blocking UI\n- Emit thinking_started/thinking_finished signals\n- Show 'thinking' indicator if analysis exceeds 150ms\n\nCreate scripts/autoload/stockfish_bridge.gd (autoload that selects implementation):\n```gdscript\nfunc _ready():\n    if OS.get_name() in [\"Windows\", \"macOS\", \"Linux\"]:\n        engine = StockfishProcess.new()\n    else:\n        push_error(\"Platform not supported\")\n    add_child(engine)\n```\n\nHandle platform-specific binary paths in _get_stockfish_path()",
         "testStrategy": "Create tests/test_stockfish_integration.gd: test_engine_starts(), test_mate_detection() for known mate-in-1 position, test_best_move_parsing(), test_no_mate_returns_null(). Verify engine spawns on each desktop platform.",
         "priority": "high",
         "dependencies": [
-          1
+          "1"
         ],
         "status": "pending",
         "subtasks": [
@@ -425,7 +479,8 @@
             "dependencies": [],
             "details": "Create scripts/autoload/engine_interface.gd with class_name EngineInterface extending Node. Define signals: analysis_complete(result: Dictionary), ready, thinking_started, thinking_finished. Define abstract method stubs for analyze_position(fen: String, depth: int = 15) -> Dictionary, get_best_move(fen: String) -> String, and is_mate_in_n(fen: String, n: int) -> bool. Each method should push_error() indicating it must be overridden by subclasses. Include documentation comments explaining the purpose of each signal and method.",
             "status": "pending",
-            "testStrategy": "Verify the script loads without errors, signals are properly defined, and calling unimplemented methods produces appropriate error messages."
+            "testStrategy": "Verify the script loads without errors, signals are properly defined, and calling unimplemented methods produces appropriate error messages.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -436,7 +491,8 @@
             ],
             "details": "Create scripts/autoload/stockfish_process.gd extending EngineInterface. Implement _ready() to spawn Stockfish using OS.execute() with pipe creation for stdin/stdout. Store process handle and pipe references as class variables. Implement _exit_tree() to properly terminate the Stockfish process and close pipes. Add error handling for cases where Stockfish binary is not found or fails to start. Include a _is_process_running() helper method to check process status.",
             "status": "pending",
-            "testStrategy": "Test that Stockfish process starts successfully on Windows/macOS/Linux, verify process terminates cleanly when the node is freed, confirm error handling works when binary is missing."
+            "testStrategy": "Test that Stockfish process starts successfully on Windows/macOS/Linux, verify process terminates cleanly when the node is freed, confirm error handling works when binary is missing.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -447,7 +503,8 @@
             ],
             "details": "Add methods to stockfish_process.gd: _send_command(cmd: String) to write to stdin, _initialize_uci() to send 'uci' command and wait for 'uciok', _wait_ready() to send 'isready' and wait for 'readyok'. Implement set_position(fen: String) to send 'position fen <fen>' command. Implement _start_analysis(depth: int) to send 'go depth <depth>'. Create a command queue system to handle asynchronous responses. Implement _stop_analysis() to send 'stop' command when needed.",
             "status": "pending",
-            "testStrategy": "Verify UCI initialization completes successfully, test position command sends correct FEN format, confirm engine responds to isready with readyok, test go command initiates analysis."
+            "testStrategy": "Verify UCI initialization completes successfully, test position command sends correct FEN format, confirm engine responds to isready with readyok, test go command initiates analysis.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -458,7 +515,8 @@
             ],
             "details": "Add _read_output() method to continuously read from stdout pipe. Implement _parse_info_line(line: String) to extract 'score mate N' values from info lines during analysis. Implement _parse_bestmove_line(line: String) to extract the best move in UCI notation (e.g., 'e2e4'). Store current analysis state including depth, score, and best move candidate. Create _build_analysis_result() -> Dictionary that returns {best_move: String, is_mate: bool, mate_in: int, score_cp: int}. Handle both 'score cp' (centipawns) and 'score mate' formats.",
             "status": "pending",
-            "testStrategy": "Test parsing of various UCI output formats including mate scores, centipawn scores, and bestmove lines. Verify correct extraction from sample Stockfish output strings. Test edge cases like mate in 0 and very high mate values."
+            "testStrategy": "Test parsing of various UCI output formats including mate scores, centipawn scores, and bestmove lines. Verify correct extraction from sample Stockfish output strings. Test edge cases like mate in 0 and very high mate values.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -469,7 +527,8 @@
             ],
             "details": "Create a Thread instance in stockfish_process.gd for running analysis. Implement _analysis_thread_func() that handles the blocking read operations. Use Mutex for thread-safe access to shared state (current_analysis, is_analyzing). Use call_deferred() to emit signals from the worker thread back to the main thread. Implement analyze_position() to queue analysis request and return immediately. Add a Semaphore to signal when new analysis requests arrive. Ensure clean thread shutdown in _exit_tree() by setting a termination flag and joining the thread.",
             "status": "pending",
-            "testStrategy": "Verify UI remains responsive during long analysis operations, test that analysis results are correctly returned to main thread, confirm thread terminates cleanly when node is freed, test rapid successive analysis requests."
+            "testStrategy": "Verify UI remains responsive during long analysis operations, test that analysis results are correctly returned to main thread, confirm thread terminates cleanly when node is freed, test rapid successive analysis requests.",
+            "parentId": "undefined"
           },
           {
             "id": 6,
@@ -480,7 +539,8 @@
             ],
             "details": "Create _get_stockfish_path() -> String method in stockfish_process.gd. For Windows: check bin/stockfish.exe and res://bin/stockfish.exe. For macOS: check bin/stockfish and /usr/local/bin/stockfish and /opt/homebrew/bin/stockfish. For Linux: check bin/stockfish and /usr/bin/stockfish and /usr/games/stockfish. Use OS.get_name() to detect platform. Use FileAccess.file_exists() to verify binary exists before returning path. Log the resolved path for debugging. Return empty string and push_error() if no valid binary found. Create stockfish_bridge.gd autoload that instantiates StockfishProcess for supported platforms or pushes error for unsupported ones.",
             "status": "pending",
-            "testStrategy": "Test path resolution on each supported platform, verify correct binary is found in various installation locations, confirm appropriate error when binary is missing."
+            "testStrategy": "Test path resolution on each supported platform, verify correct binary is found in various installation locations, confirm appropriate error when binary is missing.",
+            "parentId": "undefined"
           },
           {
             "id": 7,
@@ -491,21 +551,25 @@
             ],
             "details": "Add variables to stockfish_process.gd: _analysis_start_time: int, _thinking_indicator_shown: bool, const THINKING_THRESHOLD_MS = 150. When analysis starts, record Time.get_ticks_msec() but don't emit thinking_started immediately. Create a Timer node or use _process() to check if threshold exceeded while analysis is running. If analysis takes longer than 150ms and indicator not shown, emit thinking_started signal. When analysis completes, emit thinking_finished only if thinking_started was emitted. Always emit analysis_complete with the result Dictionary. Emit ready signal after UCI initialization completes successfully.",
             "status": "pending",
-            "testStrategy": "Test that quick analyses (<150ms) don't trigger thinking signals, verify slow analyses (>150ms) properly emit thinking_started then thinking_finished, confirm analysis_complete always fires with correct data."
+            "testStrategy": "Test that quick analyses (<150ms) don't trigger thinking signals, verify slow analyses (>150ms) properly emit thinking_started then thinking_finished, confirm analysis_complete always fires with correct data.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 8,
+        "recommendedSubtasks": 7,
+        "expansionPrompt": "Break down into subtasks: 1) Create engine_interface.gd abstract base class, 2) Implement StockfishProcess spawning with OS.create_process(), 3) Implement UCI protocol communication (uci, isready, position, go), 4) Parse UCI output for bestmove and mate score, 5) Implement threaded analysis to prevent UI blocking, 6) Add platform-specific binary path resolution, 7) Implement thinking_started/thinking_finished signals with 150ms threshold"
       },
       {
-        "id": 7,
+        "id": "7",
         "title": "Move Input and Board Interaction",
         "description": "Implement click-to-select and click-to-move input system, drag-and-drop alternative, legal move highlighting, and pawn promotion dialog.",
         "details": "Extend scripts/board/chess_board.gd with input handling:\n\n```gdscript\nsignal square_clicked(square: int)\nsignal move_attempted(from: int, to: int)\n\nfunc _input(event: InputEvent):\n    if event is InputEventMouseButton and event.pressed:\n        var square = screen_to_board(event.position)\n        emit_signal(\"square_clicked\", square)\n```\n\nImplement two-click move system:\n1. First click selects piece (if own piece)\n2. Show legal moves for selected piece\n3. Second click on legal square attempts move\n4. Second click elsewhere clears selection\n\nCreate scenes/ui/promotion_dialog.tscn:\n- Modal with 4 piece buttons (Queen, Rook, Bishop, Knight)\n- Returns selected piece type via signal\n- Auto-promote logic for Sprint/Streak modes (try Queen first, check if it maintains mate)\n\nImplement highlight_squares() for:\n- Selected piece highlight\n- Legal move indicators (dots or circles on empty squares, rings on captures)\n- Last move highlight (from and to squares)\n\nImplement animate_move(from, to, duration) for smooth piece movement",
         "testStrategy": "Manual testing: click piece shows legal moves, click legal square makes move, click illegal square clears selection. Promotion dialog appears for pawn reaching final rank. Drag-and-drop works as alternative input method.",
         "priority": "high",
         "dependencies": [
-          3,
-          4,
-          5
+          "3",
+          "4",
+          "5"
         ],
         "status": "pending",
         "subtasks": [
@@ -516,7 +580,8 @@
             "dependencies": [],
             "details": "Extend scripts/board/chess_board.gd with _input() event handling for InputEventMouseButton. Implement screen_to_board(screen_pos: Vector2) -> int function that converts pixel position to square index (0-63). Account for square_size, board offset, and flipped state. Return -1 for clicks outside the board. Emit square_clicked(square: int) signal when valid square is clicked. Consider viewport scaling and potential parent node transforms in coordinate calculation.",
             "status": "pending",
-            "testStrategy": "Test clicking all four corners of the board returns correct square indices (0, 7, 56, 63 or flipped equivalents). Test clicking outside board returns -1. Test with board flipped vs unflipped. Verify coordinate math works with different window sizes."
+            "testStrategy": "Test clicking all four corners of the board returns correct square indices (0, 7, 56, 63 or flipped equivalents). Test clicking outside board returns -1. Test with board flipped vs unflipped. Verify coordinate math works with different window sizes.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -527,7 +592,8 @@
             ],
             "details": "Add selected_square: int = -1 state variable to track currently selected piece. On square_clicked: if no piece selected and clicked square has own piece, set selected_square and emit piece_selected signal. If piece already selected: check if clicked square is in legal_move_squares - if yes emit move_attempted(from, to) signal, if no clear selection. Integrate with ChessLogic.get_legal_moves() to populate legal_move_squares when piece selected. Add clear_selection() method that resets selected_square to -1 and clears legal_move_squares. Handle edge case of clicking same square twice to deselect.",
             "status": "pending",
-            "testStrategy": "Click own piece shows it as selected. Click legal move square triggers move_attempted. Click illegal square clears selection. Click opponent piece when nothing selected does nothing. Click same piece twice deselects. Verify selection state resets after successful move."
+            "testStrategy": "Click own piece shows it as selected. Click legal move square triggers move_attempted. Click illegal square clears selection. Click opponent piece when nothing selected does nothing. Click same piece twice deselects. Verify selection state resets after successful move.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -538,7 +604,8 @@
             ],
             "details": "Implement highlight_squares() rendering in _draw() or via child nodes. Create three highlight types: 1) Selected piece highlight - colored overlay on selected_square, 2) Legal move indicators - dots/circles on empty legal squares, rings/corner markers on capture squares, 3) Last move highlight - subtle color on from_square and to_square of most recent move. Add last_move_from: int and last_move_to: int state variables. Use semi-transparent colors (highlight_color, last_move_color from exports). Call queue_redraw() when selection or last move changes. Consider using CanvasItem draw_circle() for dots and draw_arc() for rings.",
             "status": "pending",
-            "testStrategy": "Select piece and verify legal moves show appropriate indicators (dots for moves, rings for captures). Verify selected square has distinct highlight. Make a move and verify last move squares are highlighted. Verify highlights clear when selection cleared. Test visual clarity with different board color schemes."
+            "testStrategy": "Select piece and verify legal moves show appropriate indicators (dots for moves, rings for captures). Verify selected square has distinct highlight. Make a move and verify last move squares are highlighted. Verify highlights clear when selection cleared. Test visual clarity with different board color schemes.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -547,7 +614,8 @@
             "dependencies": [],
             "details": "Create scenes/ui/promotion_dialog.tscn as a modal Control node. Add four TextureButton children for Queen, Rook, Bishop, Knight with piece sprites. Center dialog over the promotion square. Add signal promotion_selected(piece_type: int) that emits when button clicked. Include cancel/close behavior (clicking outside closes with no selection). Style with panel background matching chess UI aesthetic. Add auto_promote(prefer_queen: bool) method for Sprint/Streak modes that returns Queen unless it would remove a forced mate (integrate with ChessLogic.is_checkmate_after_move). Script in scripts/ui/promotion_dialog.gd.",
             "status": "pending",
-            "testStrategy": "Trigger promotion dialog and verify all four buttons are clickable and emit correct piece type. Test dialog positioning appears near the promotion square. Test clicking outside dialog closes it. Test auto_promote logic selects Queen when it maintains mate, falls back to other pieces otherwise."
+            "testStrategy": "Trigger promotion dialog and verify all four buttons are clickable and emit correct piece type. Test dialog positioning appears near the promotion square. Test clicking outside dialog closes it. Test auto_promote logic selects Queen when it maintains mate, falls back to other pieces otherwise.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -558,7 +626,8 @@
             ],
             "details": "Implement animate_move(from: int, to: int, duration: float = 0.2) -> void in chess_board.gd. Use create_tween() to animate the piece sprite position from board_to_screen(from) to board_to_screen(to). During animation, temporarily reparent or elevate the moving piece's z_index so it renders above other pieces. Add signal move_animation_finished() emitted when tween completes. Handle special cases: castling animates both king and rook, en passant removes captured pawn after animation. Add is_animating: bool state to prevent input during animation. Support animation skip for rapid play.",
             "status": "pending",
-            "testStrategy": "Verify pieces smoothly slide to destination over duration. Test z-ordering during animation (moving piece stays on top). Test castling animates both pieces. Test en passant animation removes captured pawn. Verify input blocked during animation. Test animation can be skipped/instant for rapid moves."
+            "testStrategy": "Verify pieces smoothly slide to destination over duration. Test z-ordering during animation (moving piece stays on top). Test castling animates both pieces. Test en passant animation removes captured pawn. Verify input blocked during animation. Test animation can be skipped/instant for rapid moves.",
+            "parentId": "undefined"
           },
           {
             "id": 6,
@@ -571,21 +640,25 @@
             ],
             "details": "Handle InputEventMouseButton press to start drag if on own piece. Track drag state with is_dragging: bool and drag_from: int. During drag (InputEventMouseMotion), render piece sprite following mouse cursor at elevated z_index. Show legal moves while dragging (reuse highlight system from subtask 3). On mouse release: if over legal square emit move_attempted and animate to final position, if over illegal square animate piece back to origin. Handle edge cases: drag starting then releasing on same square (treated as selection for two-click), drag outside board bounds snaps back. Ensure drag-drop and two-click systems coexist without conflict.",
             "status": "pending",
-            "testStrategy": "Drag piece and verify it follows cursor. Verify legal moves highlight during drag. Drop on legal square makes move. Drop on illegal square returns piece to origin. Drop on same square switches to selection mode. Test drag works correctly with board flipped. Verify no conflicts between drag and click input modes."
+            "testStrategy": "Drag piece and verify it follows cursor. Verify legal moves highlight during drag. Drop on legal square makes move. Drop on illegal square returns piece to origin. Drop on same square switches to selection mode. Test drag works correctly with board flipped. Verify no conflicts between drag and click input modes.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 6,
+        "recommendedSubtasks": 6,
+        "expansionPrompt": "Break down into subtasks: 1) Implement click detection with screen_to_board conversion, 2) Implement two-click move system (select then move), 3) Add legal move highlighting for selected piece, 4) Create promotion_dialog.tscn with piece selection buttons, 5) Implement animate_move() with Tween for smooth piece movement, 6) Add optional drag-and-drop input handling"
       },
       {
-        "id": 8,
+        "id": "8",
         "title": "Puzzle Controller and Core Game Loop",
         "description": "Implement the PuzzleController state machine that manages puzzle flow across all game modes, including Stockfish-based move validation and opponent response.",
         "details": "Create scripts/puzzle/puzzle_controller.gd:\n\n```gdscript\nenum GameMode { PRACTICE, SPRINT, STREAK, DAILY }\nenum PuzzleState { LOADING, PLAYER_TURN, OPPONENT_TURN, COMPLETED_SUCCESS, COMPLETED_FAILED, SHOWING_SOLUTION, GAME_OVER }\n\nvar current_mode: GameMode\nvar current_puzzle: PuzzleData\nvar current_state: PuzzleState\nvar move_index: int\n\nsignal puzzle_loaded(puzzle)\nsignal move_made(from, to, is_correct)\nsignal puzzle_completed(success, attempts)\nsignal opponent_moving(from, to)\nsignal game_over(mode, stats)\n```\n\nCreate scripts/puzzle/puzzle_data.gd:\n```gdscript\nclass_name PuzzleData\nvar id: String\nvar fen: String\nvar solution_moves: Array[String]\nvar rating: int\nvar mate_in: int\n```\n\nCore flow:\n1. load_puzzle() sets initial FEN position\n2. Player makes move\n3. submit_move() calls Stockfish to validate:\n   - After move, is it still mate in remaining moves?\n   - If final move, does it deliver checkmate?\n4. If correct: animate opponent response (Stockfish best move), continue\n5. If incorrect: handle per mode (retry, strike, game over)\n6. On checkmate: emit puzzle_completed\n\nCreate scripts/puzzle/puzzle_validator.gd for Stockfish validation logic",
         "testStrategy": "Create tests/test_puzzle_validation.gd: test_correct_move_accepted(), test_alternate_mate_accepted(), test_non_mating_move_rejected(), test_slower_mate_rejected(). Verify state transitions work correctly.",
         "priority": "high",
         "dependencies": [
-          5,
-          6,
-          7
+          "5",
+          "6",
+          "7"
         ],
         "status": "pending",
         "subtasks": [
@@ -596,7 +669,8 @@
             "dependencies": [],
             "details": "Create scripts/puzzle/puzzle_data.gd with class_name PuzzleData extending RefCounted:\n\n```gdscript\nclass_name PuzzleData\nextends RefCounted\n\nvar id: String\nvar fen: String\nvar solution_moves: Array[String]  # UCI format moves like 'e2e4'\nvar rating: int\nvar mate_in: int  # Number of moves to mate\nvar themes: Array[String]  # Optional: puzzle themes from Lichess\n\nfunc _init(puzzle_id: String = \"\", puzzle_fen: String = \"\", moves: Array[String] = [], puzzle_rating: int = 0, mate_depth: int = 0) -> void\nfunc get_move_count() -> int  # Returns solution_moves.size()\nfunc get_current_move(index: int) -> String  # Returns solution_moves[index] or empty if out of bounds\nfunc is_final_move(index: int) -> bool  # Returns true if index == solution_moves.size() - 1\n```\n\nThe solution_moves array contains all moves in the puzzle sequence, alternating between opponent setup moves and player solution moves. For a mate-in-2, this would typically be 3 moves: opponent move, player move, opponent move, player checkmate.",
             "status": "pending",
-            "testStrategy": "Create test_puzzle_data.gd: verify constructor sets all fields correctly, test get_move_count() returns correct length, test get_current_move() returns correct move and handles out-of-bounds, test is_final_move() returns true only for last index."
+            "testStrategy": "Create test_puzzle_data.gd: verify constructor sets all fields correctly, test get_move_count() returns correct length, test get_current_move() returns correct move and handles out-of-bounds, test is_final_move() returns true only for last index.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -605,7 +679,8 @@
             "dependencies": [],
             "details": "Create scripts/puzzle/puzzle_controller.gd extending Node:\n\n```gdscript\nclass_name PuzzleController\nextends Node\n\nenum GameMode { PRACTICE, SPRINT, STREAK, DAILY }\nenum PuzzleState { LOADING, PLAYER_TURN, OPPONENT_TURN, COMPLETED_SUCCESS, COMPLETED_FAILED, SHOWING_SOLUTION, GAME_OVER }\n\nvar current_mode: GameMode = GameMode.PRACTICE\nvar current_puzzle: PuzzleData\nvar current_state: PuzzleState = PuzzleState.LOADING\nvar move_index: int = 0\nvar attempt_count: int = 0\nvar streak_count: int = 0\nvar strikes: int = 0\n\nsignal state_changed(old_state: PuzzleState, new_state: PuzzleState)\nsignal puzzle_loaded(puzzle: PuzzleData)\nsignal move_made(from: int, to: int, is_correct: bool)\nsignal puzzle_completed(success: bool, attempts: int)\nsignal opponent_moving(from: int, to: int)\nsignal game_over(mode: GameMode, stats: Dictionary)\n\nfunc _set_state(new_state: PuzzleState) -> void  # Handles state transitions, emits state_changed\nfunc _can_transition_to(target_state: PuzzleState) -> bool  # Validates state transitions\n```\n\nDefine valid state transitions: LOADING -> PLAYER_TURN/OPPONENT_TURN, PLAYER_TURN -> OPPONENT_TURN/COMPLETED_SUCCESS/COMPLETED_FAILED, OPPONENT_TURN -> PLAYER_TURN/COMPLETED_SUCCESS, COMPLETED_FAILED -> PLAYER_TURN/SHOWING_SOLUTION/GAME_OVER, etc.",
             "status": "pending",
-            "testStrategy": "Test all valid state transitions work correctly, test invalid transitions are rejected, verify state_changed signal emits with correct old and new states, verify all signals are properly defined."
+            "testStrategy": "Test all valid state transitions work correctly, test invalid transitions are rejected, verify state_changed signal emits with correct old and new states, verify all signals are properly defined.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -617,7 +692,8 @@
             ],
             "details": "Add to puzzle_controller.gd:\n\n```gdscript\nfunc load_puzzle(puzzle: PuzzleData) -> void:\n    _set_state(PuzzleState.LOADING)\n    current_puzzle = puzzle\n    move_index = 0\n    attempt_count = 0\n    \n    # Set initial position from FEN via ChessLogic autoload\n    ChessLogic.parse_fen(puzzle.fen)\n    \n    # Emit signal for UI to update board display\n    puzzle_loaded.emit(puzzle)\n    \n    # Check if first move is opponent (setup move) - determined by side to move in FEN\n    # If puzzle has opponent making first move, transition to OPPONENT_TURN and play it\n    if _is_opponent_first_move():\n        _set_state(PuzzleState.OPPONENT_TURN)\n        await _play_opponent_move()\n    else:\n        _set_state(PuzzleState.PLAYER_TURN)\n\nfunc _is_opponent_first_move() -> bool  # Check if the side to move in FEN is the opponent\nfunc reset_puzzle() -> void  # Reload current puzzle for retry\n```\n\nThe FEN in puzzle data represents position BEFORE any moves. Many Lichess puzzles start with an opponent move that sets up the tactic.",
             "status": "pending",
-            "testStrategy": "Test load_puzzle() sets state to LOADING then transitions correctly, verify FEN is parsed via ChessLogic, test puzzles where opponent moves first vs player moves first, verify puzzle_loaded signal contains correct puzzle data."
+            "testStrategy": "Test load_puzzle() sets state to LOADING then transitions correctly, verify FEN is parsed via ChessLogic, test puzzles where opponent moves first vs player moves first, verify puzzle_loaded signal contains correct puzzle data.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -626,7 +702,8 @@
             "dependencies": [],
             "details": "Create scripts/puzzle/puzzle_validator.gd:\n\n```gdscript\nclass_name PuzzleValidator\nextends RefCounted\n\nvar stockfish_bridge  # Reference to StockfishBridge from Task 6\n\nfunc _init(bridge) -> void:\n    stockfish_bridge = bridge\n\n# Validate a player move maintains winning position\nfunc validate_move(fen: String, move_uci: String, expected_mate_in: int) -> Dictionary:\n    # Returns {valid: bool, is_checkmate: bool, new_mate_in: int, reason: String}\n    \nfunc is_checkmate(fen: String) -> bool:\n    # Check if position is checkmate\n    \nfunc get_mate_distance(fen: String) -> int:\n    # Use Stockfish to get mate distance from position (-1 if no forced mate)\n    # Parse 'info score mate N' from Stockfish output\n    \nfunc accepts_alternate_mate(expected_mate: int, actual_mate: int) -> bool:\n    # Return true if actual_mate <= expected_mate (faster mate is acceptable)\n```\n\nValidation logic: After player move, analyze with Stockfish. If move delivers checkmate, valid. If move maintains mate in equal or fewer moves than remaining expected moves, valid. Otherwise invalid.",
             "status": "pending",
-            "testStrategy": "Test validate_move() correctly identifies checkmate delivery, test alternate mate detection (mate in 1 accepted when mate in 2 expected), test invalid moves are rejected, test slower mate is rejected."
+            "testStrategy": "Test validate_move() correctly identifies checkmate delivery, test alternate mate detection (mate in 1 accepted when mate in 2 expected), test invalid moves are rejected, test slower mate is rejected.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -639,7 +716,8 @@
             ],
             "details": "Add to puzzle_controller.gd:\n\n```gdscript\nvar puzzle_validator: PuzzleValidator\n\nfunc submit_move(from: int, to: int, promotion: int = ChessLogic.EMPTY) -> void:\n    if current_state != PuzzleState.PLAYER_TURN:\n        return\n    \n    var move_uci = ChessLogic.squares_to_uci(from, to, promotion)\n    var current_fen = ChessLogic.to_fen()\n    var remaining_mate = _calculate_remaining_mate()\n    \n    # Validate with Stockfish\n    var result = await puzzle_validator.validate_move(current_fen, move_uci, remaining_mate)\n    \n    if result.valid:\n        # Make the move on board\n        ChessLogic.make_move(from, to, promotion)\n        move_index += 1\n        move_made.emit(from, to, true)\n        \n        if result.is_checkmate:\n            _handle_puzzle_success()\n        else:\n            _set_state(PuzzleState.OPPONENT_TURN)\n            await _play_opponent_move()\n    else:\n        attempt_count += 1\n        move_made.emit(from, to, false)\n        _handle_incorrect_move(result.reason)\n\nfunc _calculate_remaining_mate() -> int  # Calculate expected mate based on move_index\nfunc _handle_puzzle_success() -> void  # Transition to COMPLETED_SUCCESS, emit signals\nfunc _handle_incorrect_move(reason: String) -> void  # Mode-specific handling\n```",
             "status": "pending",
-            "testStrategy": "Test correct move advances move_index and transitions to OPPONENT_TURN, test incorrect move increments attempt_count and calls mode handler, test checkmate detection triggers success, verify move_made signal emits with correct is_correct value."
+            "testStrategy": "Test correct move advances move_index and transitions to OPPONENT_TURN, test incorrect move increments attempt_count and calls mode handler, test checkmate detection triggers success, verify move_made signal emits with correct is_correct value.",
+            "parentId": "undefined"
           },
           {
             "id": 6,
@@ -652,7 +730,8 @@
             ],
             "details": "Add to puzzle_controller.gd:\n\n```gdscript\nfunc _play_opponent_move() -> void:\n    if current_state != PuzzleState.OPPONENT_TURN:\n        return\n    \n    var opponent_move: String\n    \n    # Check if we have a scripted move from puzzle solution\n    if move_index < current_puzzle.solution_moves.size():\n        opponent_move = current_puzzle.solution_moves[move_index]\n    else:\n        # Player found alternate solution - get Stockfish best response\n        var fen = ChessLogic.to_fen()\n        opponent_move = await puzzle_validator.stockfish_bridge.get_best_move(fen)\n    \n    # Parse and execute the move\n    var move_data = ChessLogic.uci_to_squares(opponent_move)\n    \n    # Emit signal for animation (UI handles timing)\n    opponent_moving.emit(move_data.from, move_data.to)\n    \n    # Wait for animation signal or timeout\n    await get_tree().create_timer(0.5).timeout  # Or await animation_completed signal\n    \n    # Make the move\n    ChessLogic.make_move(move_data.from, move_data.to, move_data.promotion)\n    move_index += 1\n    \n    # Check if opponent move delivers checkmate (puzzle failed due to alternate line)\n    if ChessLogic.is_checkmate():\n        _handle_puzzle_failed(\"Opponent delivered checkmate\")\n    else:\n        _set_state(PuzzleState.PLAYER_TURN)\n```",
             "status": "pending",
-            "testStrategy": "Test opponent plays scripted move when available, test Stockfish is queried for moves beyond solution length, verify opponent_moving signal emits correct squares, test checkmate by opponent triggers failure."
+            "testStrategy": "Test opponent plays scripted move when available, test Stockfish is queried for moves beyond solution length, verify opponent_moving signal emits correct squares, test checkmate by opponent triggers failure.",
+            "parentId": "undefined"
           },
           {
             "id": 7,
@@ -664,19 +743,23 @@
             ],
             "details": "Add to puzzle_controller.gd:\n\n```gdscript\nconst MAX_STRIKES = 3\n\nfunc _handle_incorrect_move(reason: String) -> void:\n    match current_mode:\n        GameMode.PRACTICE:\n            # Unlimited retries, stay in PLAYER_TURN\n            pass  # Just show feedback, player can try again\n            \n        GameMode.SPRINT:\n            # Time-based, allow retry but penalize time (handled by sprint mode)\n            pass\n            \n        GameMode.STREAK:\n            # One mistake ends streak\n            _set_state(PuzzleState.COMPLETED_FAILED)\n            _handle_puzzle_failed(reason)\n            \n        GameMode.DAILY:\n            strikes += 1\n            if strikes >= MAX_STRIKES:\n                _set_state(PuzzleState.COMPLETED_FAILED)\n                _handle_puzzle_failed(\"Three strikes\")\n            # Otherwise stay in PLAYER_TURN for retry\n\nfunc _handle_puzzle_failed(reason: String) -> void:\n    puzzle_completed.emit(false, attempt_count)\n    \nfunc _handle_puzzle_success() -> void:\n    _set_state(PuzzleState.COMPLETED_SUCCESS)\n    puzzle_completed.emit(true, attempt_count)\n    \nfunc trigger_game_over() -> void:\n    _set_state(PuzzleState.GAME_OVER)\n    var stats = {\"streak\": streak_count, \"strikes\": strikes, \"mode\": current_mode}\n    game_over.emit(current_mode, stats)\n    \nfunc show_solution() -> void:\n    _set_state(PuzzleState.SHOWING_SOLUTION)\n    # Emit remaining solution moves for UI to animate\n```",
             "status": "pending",
-            "testStrategy": "Test PRACTICE mode allows unlimited retries without state change, test STREAK mode immediately fails on wrong move, test DAILY mode tracks strikes and fails at 3, verify puzzle_completed signal has correct success/fail status and attempt count, test game_over emits correct stats dictionary."
+            "testStrategy": "Test PRACTICE mode allows unlimited retries without state change, test STREAK mode immediately fails on wrong move, test DAILY mode tracks strikes and fails at 3, verify puzzle_completed signal has correct success/fail status and attempt count, test game_over emits correct stats dictionary.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 8,
+        "recommendedSubtasks": 7,
+        "expansionPrompt": "Break down into subtasks: 1) Create puzzle_data.gd class with puzzle fields, 2) Implement PuzzleController state machine with all states, 3) Implement load_puzzle() and position setup, 4) Implement submit_move() with Stockfish validation flow, 5) Implement opponent response using Stockfish best move, 6) Create puzzle_validator.gd for mate-in-N verification, 7) Implement mode-specific result handling (retry, strike, game over)"
       },
       {
-        "id": 9,
+        "id": "9",
         "title": "Practice Mode Implementation",
         "description": "Implement Practice Mode with puzzle filtering by mate depth and rating, hint and solution reveal features, puzzle skipping, and retry on wrong moves.",
         "details": "Create scripts/modes/practice_mode.gd:\n\n```gdscript\nextends Node\n\nvar current_settings: Dictionary  # mate_depth, min_rating, max_rating, order\nvar current_streak: int = 0\nvar puzzles_solved: int = 0\n\nfunc start_game(settings: Dictionary) -> void\nfunc load_next_puzzle() -> void\nfunc on_move_result(is_correct: bool) -> void\nfunc show_hint() -> void\nfunc show_solution() -> void\nfunc skip_puzzle() -> void\n```\n\nPuzzle loading:\n- Query SQLite: SELECT * FROM puzzles WHERE rating BETWEEN ? AND ? AND mate_in = ? ORDER BY RANDOM() LIMIT 1\n- For Progressive mode: ORDER BY rating ASC\n- Prefer unsolved puzzles via LEFT JOIN with user_puzzle_history\n\nHint system:\n- Level 1: Highlight the correct piece to move\n- Level 2: (v1.1) Highlight the target square\n\nOn wrong move:\n- Rewind to position before wrong move\n- Allow retry (forgiving mode for learning)\n\nCreate scenes/ui/practice_setup.tscn with:\n- Mate depth selector (1-5 or All)\n- Challenge mode toggle (enables 6+)\n- Rating range slider (400-3000)\n- Mode toggle: Random / Progressive",
         "testStrategy": "Play through multiple puzzles: verify filtering by mate depth and rating works, hints highlight correct piece, solution shows all moves, skip advances to next puzzle, wrong move allows retry without penalty.",
         "priority": "high",
         "dependencies": [
-          8
+          "8"
         ],
         "status": "pending",
         "subtasks": [
@@ -687,7 +770,8 @@
             "dependencies": [],
             "details": "Create scripts/modes/practice_mode.gd extending Node:\n\n```gdscript\nclass_name PracticeMode\nextends Node\n\nvar current_settings: Dictionary = {\n    \"mate_depth\": 0,  # 0 = All, 1-5 = specific depth\n    \"min_rating\": 800,\n    \"max_rating\": 1600,\n    \"order\": \"random\",  # \"random\" or \"progressive\"\n    \"challenge_mode\": false  # Enables mate depth 6+\n}\nvar current_streak: int = 0\nvar puzzles_solved: int = 0\nvar hints_used: int = 0\nvar current_position_fen: String  # Store position before player move for rewind\n\nsignal settings_changed(settings: Dictionary)\nsignal streak_updated(streak: int)\nsignal puzzle_stats_updated(solved: int, hints: int)\n\nfunc start_game(settings: Dictionary) -> void:\n    current_settings = settings.duplicate()\n    current_streak = 0\n    puzzles_solved = 0\n    hints_used = 0\n    settings_changed.emit(current_settings)\n    load_next_puzzle()\n\nfunc _on_puzzle_loaded(puzzle: PuzzleData) -> void:\n    # Store initial position for potential rewind\n    current_position_fen = ChessLogic.to_fen()\n```\n\nConnect to PuzzleController signals (puzzle_loaded, move_made, puzzle_completed) for integration with the core game loop from Task 8.",
             "status": "pending",
-            "testStrategy": "Verify start_game() initializes all state variables correctly, signals emit with proper data, settings Dictionary contains all required keys with valid defaults."
+            "testStrategy": "Verify start_game() initializes all state variables correctly, signals emit with proper data, settings Dictionary contains all required keys with valid defaults.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -698,7 +782,8 @@
             ],
             "details": "Add to practice_mode.gd:\n\n```gdscript\nvar db: SQLite  # Reference to godot-sqlite instance\nvar puzzle_controller: PuzzleController\n\nfunc load_next_puzzle() -> void:\n    var puzzle = _query_next_puzzle()\n    if puzzle:\n        puzzle_controller.load_puzzle(puzzle)\n    else:\n        push_warning(\"No puzzles found matching criteria\")\n\nfunc _query_next_puzzle() -> PuzzleData:\n    var query: String\n    var params: Array = [current_settings.min_rating, current_settings.max_rating]\n    \n    # Build WHERE clause for mate depth\n    var mate_clause = \"\"\n    if current_settings.mate_depth > 0:\n        mate_clause = \" AND mate_in = ?\"\n        params.append(current_settings.mate_depth)\n    elif not current_settings.challenge_mode:\n        mate_clause = \" AND mate_in <= 5\"  # Exclude 6+ unless challenge mode\n    \n    # Build ORDER clause\n    var order_clause = \"ORDER BY RANDOM()\" if current_settings.order == \"random\" else \"ORDER BY rating ASC\"\n    \n    # Prefer unsolved puzzles with LEFT JOIN\n    query = \"\"\"\n        SELECT p.* FROM puzzles p\n        LEFT JOIN user_puzzle_history h ON p.id = h.puzzle_id\n        WHERE p.rating BETWEEN ? AND ?%s\n        AND (h.puzzle_id IS NULL OR h.result != 'solved')\n        %s\n        LIMIT 1\n    \"\"\" % [mate_clause, order_clause]\n    \n    db.query_with_bindings(query, params)\n    if db.query_result.size() > 0:\n        return _row_to_puzzle_data(db.query_result[0])\n    return null\n\nfunc _row_to_puzzle_data(row: Dictionary) -> PuzzleData:\n    return PuzzleData.new(row.id, row.fen, row.moves.split(\" \"), row.rating, row.mate_in)\n```",
             "status": "pending",
-            "testStrategy": "Test queries return puzzles within rating range, mate depth filter works for specific depths and 'All', progressive mode returns ascending ratings, unsolved puzzles are prioritized over solved ones."
+            "testStrategy": "Test queries return puzzles within rating range, mate depth filter works for specific depths and 'All', progressive mode returns ascending ratings, unsolved puzzles are prioritized over solved ones.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -709,7 +794,8 @@
             ],
             "details": "Add to practice_mode.gd:\n\n```gdscript\nvar chess_board: ChessBoard  # Reference to board scene for highlighting\nvar hint_shown: bool = false\n\nsignal hint_displayed(square: int)\n\nfunc show_hint() -> void:\n    if hint_shown:\n        return  # Already showing hint, prevent multiple hints per move\n    \n    # Get current expected move from puzzle solution\n    var expected_move_index = puzzle_controller.move_index\n    var expected_move_uci = puzzle_controller.current_puzzle.get_current_move(expected_move_index)\n    \n    if expected_move_uci.is_empty():\n        return\n    \n    # Parse the expected move to get source square\n    var move_data = ChessLogic.uci_to_squares(expected_move_uci)\n    var hint_square = move_data.from\n    \n    # Highlight the piece that should move\n    chess_board.set_hint_highlight(hint_square)\n    hint_displayed.emit(hint_square)\n    \n    hints_used += 1\n    hint_shown = true\n    puzzle_stats_updated.emit(puzzles_solved, hints_used)\n\nfunc _on_move_made(from: int, to: int, is_correct: bool) -> void:\n    # Clear hint highlight after any move\n    chess_board.clear_hint_highlight()\n    hint_shown = false\n```\n\nRequires adding set_hint_highlight(square: int) and clear_hint_highlight() methods to ChessBoard (from Task 3) that render a distinct hint indicator (e.g., pulsing glow or arrow pointing to piece).",
             "status": "pending",
-            "testStrategy": "Verify hint highlights correct piece based on solution move, hint counter increments, hint clears after player makes a move, multiple hint requests don't stack, hint works at different move indices in puzzle."
+            "testStrategy": "Verify hint highlights correct piece based on solution move, hint counter increments, hint clears after player makes a move, multiple hint requests don't stack, hint works at different move indices in puzzle.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -721,7 +807,8 @@
             ],
             "details": "Add to practice_mode.gd:\n\n```gdscript\nsignal solution_started()\nsignal solution_move_shown(move_index: int, from: int, to: int)\nsignal solution_completed()\n\nfunc show_solution() -> void:\n    solution_started.emit()\n    \n    # Transition to SHOWING_SOLUTION state via PuzzleController\n    puzzle_controller.show_solution()\n    \n    # Get remaining solution moves\n    var current_index = puzzle_controller.move_index\n    var solution_moves = puzzle_controller.current_puzzle.solution_moves\n    \n    # Animate each remaining move sequentially\n    for i in range(current_index, solution_moves.size()):\n        var move_uci = solution_moves[i]\n        var move_data = ChessLogic.uci_to_squares(move_uci)\n        \n        # Emit signal for UI feedback\n        solution_move_shown.emit(i, move_data.from, move_data.to)\n        \n        # Animate the move on board\n        chess_board.animate_move(move_data.from, move_data.to)\n        await chess_board.move_animation_finished\n        \n        # Make the move in logic\n        ChessLogic.make_move(move_data.from, move_data.to, move_data.promotion)\n        \n        # Brief pause between moves for readability\n        await get_tree().create_timer(0.3).timeout\n    \n    solution_completed.emit()\n    \n    # Mark puzzle as failed (solution was shown)\n    puzzle_controller._handle_puzzle_failed(\"Solution revealed\")\n\nfunc skip_puzzle() -> void:\n    # Skip without showing solution, just load next\n    load_next_puzzle()\n```",
             "status": "pending",
-            "testStrategy": "Verify solution shows all remaining moves in sequence with animations, each move is visually distinguishable, puzzle is marked as failed after solution reveal, skip_puzzle loads new puzzle without showing solution."
+            "testStrategy": "Verify solution shows all remaining moves in sequence with animations, each move is visually distinguishable, puzzle is marked as failed after solution reveal, skip_puzzle loads new puzzle without showing solution.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -733,19 +820,23 @@
             ],
             "details": "Create scenes/ui/practice_setup.tscn with Control root and scripts/ui/practice_setup.gd:\n\nUI Elements:\n1. Mate Depth Selector:\n   - OptionButton with items: \"All\", \"Mate in 1\", \"Mate in 2\", \"Mate in 3\", \"Mate in 4\", \"Mate in 5\"\n   - ID values 0-5 corresponding to mate depth (0 = All)\n\n2. Challenge Mode Toggle:\n   - CheckButton labeled \"Challenge Mode (Mate in 6+)\"\n   - When enabled, adds \"Mate in 6+\" to depth selector\n   - Disabled by default\n\n3. Rating Range Slider:\n   - HSlider with two handles or two linked HSliders\n   - Range: 400-3000\n   - Default: 800-1600\n   - Labels showing current min/max values\n\n4. Order Mode Toggle:\n   - Two RadioButtons in ButtonGroup: \"Random\" and \"Progressive\"\n   - Default: Random selected\n\n5. Start Button:\n   - Styled button that collects settings and starts game\n\n```gdscript\nextends Control\n\nsignal start_requested(settings: Dictionary)\n\n@onready var mate_depth_option: OptionButton = $MateDepthOption\n@onready var challenge_toggle: CheckButton = $ChallengeToggle\n@onready var min_rating_slider: HSlider = $MinRatingSlider\n@onready var max_rating_slider: HSlider = $MaxRatingSlider\n@onready var random_radio: RadioButton = $RandomRadio\n@onready var start_button: Button = $StartButton\n\nfunc _on_start_pressed() -> void:\n    var settings = {\n        \"mate_depth\": mate_depth_option.selected,\n        \"min_rating\": int(min_rating_slider.value),\n        \"max_rating\": int(max_rating_slider.value),\n        \"order\": \"random\" if random_radio.button_pressed else \"progressive\",\n        \"challenge_mode\": challenge_toggle.button_pressed\n    }\n    start_requested.emit(settings)\n```",
             "status": "pending",
-            "testStrategy": "Verify all UI controls function correctly, rating sliders enforce min < max constraint, challenge mode toggle adds/removes 6+ option, start button emits settings Dictionary with correct values, UI is visually clear and usable."
+            "testStrategy": "Verify all UI controls function correctly, rating sliders enforce min < max constraint, challenge mode toggle adds/removes 6+ option, start button emits settings Dictionary with correct values, UI is visually clear and usable.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 5,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Break down into subtasks: 1) Create practice_mode.gd with settings and state, 2) Implement puzzle loading with SQLite filtering (rating, mate depth), 3) Implement hint system (highlight correct piece), 4) Implement solution reveal with move animation, 5) Create practice_setup.tscn with filter controls"
       },
       {
-        "id": 10,
+        "id": "10",
         "title": "Sprint Mode Implementation",
         "description": "Implement Sprint Mode with countdown timer, three-strike system, and scoring based on puzzles solved within the time limit.",
         "details": "Create scripts/modes/sprint_mode.gd:\n\n```gdscript\nvar time_remaining: float\nvar time_limit: float  # 60, 180, or 300 seconds\nvar strikes: int = 0\nvar puzzles_solved: int = 0\nvar puzzles_attempted: int = 0\n\nsignal timer_updated(time_remaining)\nsignal strike_added(total_strikes)\n\nfunc _process(delta):\n    if is_running:\n        time_remaining -= delta\n        emit_signal(\"timer_updated\", time_remaining)\n        if time_remaining <= 0:\n            end_game(\"time\")\n```\n\nRules:\n- Timer starts on first puzzle load\n- Correct solution: +1 solved, load next puzzle immediately\n- Incorrect move: +1 strike, restart current puzzle from beginning\n- 3 strikes OR timer expires: game over\n- No hints, no solution reveal\n\nDifficulty presets:\n- Easy: 800-1200 rating\n- Medium: 1200-1600 rating\n- Hard: 1600-2200 rating\n- Custom: user-defined range\n\nCreate scenes/ui/sprint_setup.tscn and scenes/components/timer_display.tscn, scenes/components/strike_indicator.tscn\n\nGame over screen shows: puzzles solved, accuracy %, strikes used, best score comparison",
         "testStrategy": "Verify timer counts down accurately, strikes increment on wrong moves, game ends at 3 strikes or time expiry, scoring is accurate. Test all time limits (1/3/5 min).",
         "priority": "medium",
         "dependencies": [
-          8
+          "8"
         ],
         "status": "pending",
         "subtasks": [
@@ -756,7 +847,8 @@
             "dependencies": [],
             "details": "Create scripts/modes/sprint_mode.gd extending Node. Include variables: time_remaining (float), time_limit (float for 60/180/300 seconds), strikes (int, default 0), puzzles_solved (int), puzzles_attempted (int), is_running (bool), current_difficulty (Dictionary with min/max rating). Define signals: timer_updated(time_remaining), strike_added(total_strikes), game_ended(reason, stats). Implement start_game(settings: Dictionary) to initialize state from passed time_limit and difficulty preset. Add difficulty presets as constants: EASY (800-1200), MEDIUM (1200-1600), HARD (1600-2200). Implement end_game(reason: String) that emits game_ended with final stats dictionary containing puzzles_solved, puzzles_attempted, strikes, and accuracy percentage.",
             "status": "pending",
-            "testStrategy": "Verify sprint_mode.gd initializes correctly with different time limits and difficulty presets. Test that all state variables reset properly on start_game(). Confirm signals are properly defined and can be connected."
+            "testStrategy": "Verify sprint_mode.gd initializes correctly with different time limits and difficulty presets. Test that all state variables reset properly on start_game(). Confirm signals are properly defined and can be connected.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -767,7 +859,8 @@
             ],
             "details": "In sprint_mode.gd, implement _process(delta) function that: only runs when is_running is true, decrements time_remaining by delta each frame, emits timer_updated signal with current time_remaining for UI updates, calls end_game('time') when time_remaining <= 0. Add start_timer() function called on first puzzle load (not on mode start). Implement pause_timer() and resume_timer() for pause menu support. Ensure timer precision by using float for all time calculations. Add format_time(seconds: float) -> String helper to convert remaining time to MM:SS format for display.",
             "status": "pending",
-            "testStrategy": "Test timer counts down at correct rate by comparing elapsed real time vs timer value. Verify timer_updated signal fires every frame with accurate values. Confirm game ends exactly when timer reaches zero."
+            "testStrategy": "Test timer counts down at correct rate by comparing elapsed real time vs timer value. Verify timer_updated signal fires every frame with accurate values. Confirm game ends exactly when timer reaches zero.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -778,7 +871,8 @@
             ],
             "details": "In sprint_mode.gd, implement on_move_result(is_correct: bool) function. On correct move (puzzle complete): increment puzzles_solved, increment puzzles_attempted, emit signal to load next puzzle immediately. On incorrect move: increment strikes, emit strike_added signal with total strikes, restart current puzzle from beginning (reset board to initial FEN), if strikes >= 3 call end_game('strikes'). Add get_current_stats() -> Dictionary returning live stats. Implement _get_next_puzzle() that queries puzzles within current difficulty rating range. Ensure puzzle restart preserves the same puzzle data but resets board state completely.",
             "status": "pending",
-            "testStrategy": "Test that incorrect moves increment strike count and restart current puzzle. Verify game ends exactly at 3 strikes. Confirm correct moves advance to next puzzle without strike penalty. Test puzzle restart shows same puzzle with fresh board state."
+            "testStrategy": "Test that incorrect moves increment strike count and restart current puzzle. Verify game ends exactly at 3 strikes. Confirm correct moves advance to next puzzle without strike penalty. Test puzzle restart shows same puzzle with fresh board state.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -787,7 +881,8 @@
             "dependencies": [],
             "details": "Create scenes/components/timer_display.tscn: MarginContainer root with Label child showing MM:SS format. Add script timer_display.gd with update_time(seconds: float) function that formats and displays time. Implement color change when time < 30s (yellow) and < 10s (red with optional pulse animation). Create scenes/components/strike_indicator.tscn: HBoxContainer with 3 TextureRect children for strike icons (empty/filled states). Add script strike_indicator.gd with set_strikes(count: int) function that updates visual state of each icon. Use simple circle or X icons that change from gray (unused) to red (used) when strikes occur. Both components should be reusable and connect to sprint_mode signals for automatic updates.",
             "status": "pending",
-            "testStrategy": "Test timer_display updates correctly when receiving time values. Verify color transitions occur at correct thresholds. Test strike_indicator shows correct number of filled strikes for 0, 1, 2, and 3 strike states."
+            "testStrategy": "Test timer_display updates correctly when receiving time values. Verify color transitions occur at correct thresholds. Test strike_indicator shows correct number of filled strikes for 0, 1, 2, and 3 strike states.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -799,19 +894,23 @@
             ],
             "details": "Create scenes/ui/sprint_setup.tscn with VBoxContainer layout containing: Title label 'Sprint Mode', OptionButton or ButtonGroup for time limit (1 min, 3 min, 5 min), OptionButton or ButtonGroup for difficulty (Easy, Medium, Hard, Custom), custom rating range inputs (SpinBox for min/max) shown only when Custom selected, Start button. Add script sprint_setup.gd that emits start_requested(settings: Dictionary) signal. Create scenes/ui/sprint_results.tscn for game over: show puzzles_solved count, accuracy percentage (solved/attempted), strikes used with visual indicator, time limit used. Add best_score comparison by storing/loading from user_stats. Include 'Play Again' and 'Change Settings' buttons. Save high scores per time limit and difficulty combination.",
             "status": "pending",
-            "testStrategy": "Test all UI controls respond correctly and pass proper values. Verify custom rating inputs appear only when Custom difficulty selected. Confirm game over screen displays all stats accurately and best score comparison works correctly."
+            "testStrategy": "Test all UI controls respond correctly and pass proper values. Verify custom rating inputs appear only when Custom difficulty selected. Confirm game over screen displays all stats accurately and best score comparison works correctly.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 5,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Break down into subtasks: 1) Create sprint_mode.gd with timer and strike tracking, 2) Implement countdown timer in _process(), 3) Implement three-strike system with puzzle restart, 4) Create timer_display.tscn and strike_indicator.tscn components, 5) Create sprint_setup.tscn with time limit and difficulty options"
       },
       {
-        "id": 11,
+        "id": "11",
         "title": "Streak Mode Implementation",
         "description": "Implement Streak Mode with progressive difficulty increase, one-wrong-move-ends-run mechanic, and tracking of streak count and peak rating reached.",
         "details": "Create scripts/modes/streak_mode.gd:\n\n```gdscript\nvar streak_count: int = 0\nvar start_rating: int\nvar current_rating: int\nvar peak_rating: int\nvar failed_puzzle: PuzzleData  # Store for end screen review\n\nfunc get_next_rating() -> int:\n    return current_rating + randi_range(25, 50)\n```\n\nRules:\n- First puzzle at starting difficulty (preset or custom)\n- Each solve: next puzzle is +25 to +50 rating higher\n- First incorrect move: immediate game over (no retries)\n- No hints, no solution reveal during game\n- No time limit per puzzle\n\nStarting difficulty presets:\n- Beginner: 800\n- Intermediate: 1200\n- Advanced: 1600\n- Expert: 2000\n- Custom: slider\n\nGame over screen shows:\n- Final streak count\n- Starting rating → Peak rating reached\n- The puzzle that ended the run (with Show Solution button)\n- Best streak comparison\n\nCreate scenes/ui/streak_setup.tscn and scenes/components/streak_counter.tscn",
         "testStrategy": "Verify difficulty increases by 25-50 rating per puzzle, game ends immediately on first wrong move, failed puzzle is shown on end screen with solution option, stats track correctly.",
         "priority": "medium",
         "dependencies": [
-          8
+          "8"
         ],
         "status": "pending",
         "subtasks": [
@@ -822,7 +921,8 @@
             "dependencies": [],
             "details": "Create scripts/modes/streak_mode.gd with the following state variables:\n- streak_count: int = 0 (number of consecutive puzzles solved)\n- start_rating: int (difficulty level selected at game start)\n- current_rating: int (rating of current/next puzzle to fetch)\n- peak_rating: int (highest rating puzzle successfully solved)\n- failed_puzzle: PuzzleData (stores puzzle that ended the run for review)\n- is_running: bool = false (game state flag)\n\nInclude signals:\n- streak_updated(count: int)\n- peak_rating_updated(rating: int)\n- game_over(final_stats: Dictionary)\n\nImplement initialization function that accepts starting difficulty preset or custom value, setting start_rating, current_rating, and peak_rating to that value. Include constants for starting difficulty presets: BEGINNER = 800, INTERMEDIATE = 1200, ADVANCED = 1600, EXPERT = 2000.",
             "status": "pending",
-            "testStrategy": "Verify state variables initialize correctly for each preset (800, 1200, 1600, 2000) and custom values. Test that signals are properly defined and can be connected."
+            "testStrategy": "Verify state variables initialize correctly for each preset (800, 1200, 1600, 2000) and custom values. Test that signals are properly defined and can be connected.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -833,7 +933,8 @@
             ],
             "details": "Implement get_next_rating() -> int function that returns current_rating + randi_range(25, 50).\n\nAdd on_puzzle_solved() function that:\n1. Increments streak_count\n2. Updates peak_rating = max(peak_rating, current_rating) before incrementing\n3. Calls get_next_rating() to update current_rating for next puzzle\n4. Emits streak_updated and peak_rating_updated signals\n5. Triggers loading of next puzzle at new rating\n\nAdd load_next_puzzle() function that queries puzzle database for a puzzle at or near current_rating (within ±50 tolerance). Ensure puzzles are not repeated within the same streak run by tracking solved puzzle IDs in an array.",
             "status": "pending",
-            "testStrategy": "Test get_next_rating() returns values in 25-50 range above current. Verify multiple solves progressively increase rating. Check peak_rating only updates when current exceeds previous peak."
+            "testStrategy": "Test get_next_rating() returns values in 25-50 range above current. Verify multiple solves progressively increase rating. Check peak_rating only updates when current exceeds previous peak.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -844,7 +945,8 @@
             ],
             "details": "Implement on_move_result(is_correct: bool) function:\n- If is_correct: call on_puzzle_solved()\n- If not is_correct: immediately trigger end_game()\n\nImplement end_game() function that:\n1. Sets is_running = false\n2. Stores current puzzle as failed_puzzle for end screen review\n3. Compiles final_stats dictionary with: streak_count, start_rating, peak_rating, failed_puzzle\n4. Emits game_over signal with final_stats\n5. Transitions to game over screen\n\nEnsure streak mode disables all hint functionality:\n- Override or disable show_hint() to do nothing\n- Override or disable show_solution() during active gameplay\n- Remove any retry/undo move capability\n- No time limit per puzzle (remove timer if base mode has one)",
             "status": "pending",
-            "testStrategy": "Test that first wrong move immediately ends game. Verify hints and solution buttons are disabled/hidden during gameplay. Confirm no retry option appears after wrong move."
+            "testStrategy": "Test that first wrong move immediately ends game. Verify hints and solution buttons are disabled/hidden during gameplay. Confirm no retry option appears after wrong move.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -857,7 +959,8 @@
             ],
             "details": "Create scenes/ui/streak_game_over.tscn with:\n- Final streak count display (large, prominent)\n- Rating progression: 'Start Rating → Peak Rating' (e.g., '1200 → 1475')\n- Failed puzzle preview (miniature board showing the position)\n- 'Show Solution' button that reveals the correct move sequence\n- Best streak comparison (if current > previous best, show 'New Record!')\n- 'Play Again' and 'Main Menu' buttons\n\nCreate scripts/ui/streak_game_over.gd:\n- Receives final_stats from game_over signal\n- Loads and displays failed_puzzle on mini board\n- show_solution() animates through correct moves on the failed puzzle\n- Saves best streak to persistent storage if current > saved\n- Retrieves best streak for comparison display\n\nStore best_streak in user://streak_stats.json with fields: best_streak, best_peak_rating, date_achieved.",
             "status": "pending",
-            "testStrategy": "Verify game over screen displays correct streak count and rating range. Test Show Solution button reveals correct moves. Confirm best streak updates when record is broken and persists across sessions."
+            "testStrategy": "Verify game over screen displays correct streak count and rating range. Test Show Solution button reveals correct moves. Confirm best streak updates when record is broken and persists across sessions.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -868,19 +971,23 @@
             ],
             "details": "Create scenes/ui/streak_setup.tscn with:\n- Title: 'Streak Mode'\n- Brief rules explanation: 'Solve puzzles with increasing difficulty. One wrong move ends your run!'\n- Starting difficulty selection:\n  - Radio buttons or dropdown: Beginner (800), Intermediate (1200), Advanced (1600), Expert (2000)\n  - Custom option with HSlider (range 400-2400, step 50) and value label\n- Current best streak display for selected difficulty\n- 'Start' button that initializes streak_mode with selected rating\n\nCreate scripts/ui/streak_setup.gd to handle preset selection, custom slider, and game initialization.\n\nCreate scenes/components/streak_counter.tscn:\n- Compact display showing current streak count (flame/fire icon + number)\n- Current puzzle rating indicator\n- Subtle animation on streak increment (scale bounce, glow effect)\n- Position: top-right corner during gameplay\n\nCreate scripts/components/streak_counter.gd that connects to streak_updated signal and updates display with animation.",
             "status": "pending",
-            "testStrategy": "Test all preset buttons set correct starting rating. Verify custom slider bounds and step size. Test streak counter updates in real-time during gameplay with animation. Confirm setup screen loads best streak correctly."
+            "testStrategy": "Test all preset buttons set correct starting rating. Verify custom slider bounds and step size. Test streak counter updates in real-time during gameplay with animation. Confirm setup screen loads best streak correctly.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 5,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Break down into subtasks: 1) Create streak_mode.gd with rating progression state, 2) Implement get_next_rating() with +25-50 increment, 3) Implement immediate game over on wrong move, 4) Track and display failed puzzle for end screen, 5) Create streak_setup.tscn and streak_counter.tscn"
       },
       {
-        "id": 12,
+        "id": "12",
         "title": "Daily Challenge Mode Implementation",
         "description": "Implement Daily Challenge with deterministic puzzle selection using hash-based seeding, one-attempt-per-puzzle rules, and shareable results.",
         "details": "Create scripts/puzzle/daily_generator.gd:\n\n```gdscript\nconst DAILY_RATING_BRACKETS = [\n    {\"min\": 800, \"max\": 1000},   # Puzzle 1\n    {\"min\": 1000, \"max\": 1300},  # Puzzle 2\n    {\"min\": 1300, \"max\": 1600},  # Puzzle 3\n    {\"min\": 1600, \"max\": 1900},  # Puzzle 4\n    {\"min\": 1900, \"max\": 2200},  # Puzzle 5\n]\n\nfunc get_daily_puzzles() -> Array[PuzzleData]:\n    var date_string = get_date_string()\n    var puzzles: Array[PuzzleData] = []\n    for i in range(5):\n        puzzles.append(_get_deterministic_puzzle(date_string, i, DAILY_RATING_BRACKETS[i]))\n    return puzzles\n\nfunc _get_deterministic_puzzle(date_string: String, index: int, bracket: Dictionary) -> PuzzleData:\n    # Hash each puzzle ID with date to get deterministic selection\n    # DO NOT use SQLite RANDOM() - it's not seedable from Godot\n```\n\nRules:\n- Same 5 puzzles for all players on same day\n- One attempt per puzzle (first move is final)\n- No hints, no retries\n- Must complete all 5 (can't skip)\n- Resets at midnight local time\n\nScoring: 1 pt per solved puzzle + 0.5 pt bonus for perfect solve (no wrong moves in sequence)\n\nShare text generation:\n```\nChess Puzzles Daily #127\n⬛🟩🟩⬛🟩 (3/5)\n🔥 Streak: 2\n```\n\nCreate scripts/modes/daily_mode.gd and scenes/ui/daily_complete.tscn",
         "testStrategy": "Verify same date produces identical puzzles across multiple runs, different dates produce different puzzles, results copy to clipboard correctly, completed daily shows already-done message.",
         "priority": "medium",
         "dependencies": [
-          8
+          "8"
         ],
         "status": "pending",
         "subtasks": [
@@ -891,7 +998,8 @@
             "dependencies": [],
             "details": "Create scripts/puzzle/daily_generator.gd with:\n\n1. Define DAILY_RATING_BRACKETS constant array with 5 difficulty tiers:\n   - Puzzle 1: {\"min\": 800, \"max\": 1000} (Warm-up)\n   - Puzzle 2: {\"min\": 1000, \"max\": 1300} (Easy)\n   - Puzzle 3: {\"min\": 1300, \"max\": 1600} (Medium)\n   - Puzzle 4: {\"min\": 1600, \"max\": 1900} (Hard)\n   - Puzzle 5: {\"min\": 1900, \"max\": 2200} (Challenge)\n\n2. Implement get_date_string() helper function using Time.get_date_dict_from_system() that returns formatted date string \"%04d-%02d-%02d\"\n\n3. Implement get_daily_puzzles() function that:\n   - Gets current date string\n   - Iterates through 5 rating brackets\n   - Calls _get_deterministic_puzzle() for each bracket (stub initially)\n   - Returns Array[PuzzleData] with exactly 5 puzzles\n\n4. Add reference to DatabaseManager or SQLite for puzzle queries\n\n5. Include proper class_name declaration and extends Node",
             "status": "pending",
-            "testStrategy": "Create test_daily_generator.gd with GUT. Test that get_date_string() returns correctly formatted date. Test that DAILY_RATING_BRACKETS has exactly 5 entries with valid min/max ranges. Test that get_daily_puzzles() returns an array of exactly 5 elements."
+            "testStrategy": "Create test_daily_generator.gd with GUT. Test that get_date_string() returns correctly formatted date. Test that DAILY_RATING_BRACKETS has exactly 5 entries with valid min/max ranges. Test that get_daily_puzzles() returns an array of exactly 5 elements.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -902,7 +1010,8 @@
             ],
             "details": "Implement _get_deterministic_puzzle(date_string: String, index: int, bracket: Dictionary) -> PuzzleData:\n\n1. Query SQLite for all puzzle IDs within the rating bracket:\n   SELECT id FROM puzzles WHERE rating BETWEEN bracket.min AND bracket.max\n\n2. For each puzzle ID, compute deterministic score:\n   - var hash_input = date_string + \"-\" + str(index) + \"-\" + puzzle_id\n   - var score = hash(hash_input)\n   - Store as {\"id\": puzzle_id, \"score\": score}\n\n3. Sort scored_ids by score using custom comparator:\n   scored_ids.sort_custom(func(a, b): return a.score < b.score)\n\n4. Select first puzzle ID: var selected_id = scored_ids[0].id\n\n5. Fetch full puzzle data:\n   SELECT * FROM puzzles WHERE id = selected_id\n\n6. Convert database row to PuzzleData object and return\n\nCRITICAL: Do NOT use SQLite RANDOM() as Godot's seed() does not affect SQLite's RNG. The hash-based approach ensures deterministic selection across all platforms and sessions.",
             "status": "pending",
-            "testStrategy": "Test that calling get_daily_puzzles() multiple times on the same date returns identical puzzle arrays. Test that different dates produce different puzzle selections. Test that each puzzle falls within its expected rating bracket. Mock the current date to verify determinism."
+            "testStrategy": "Test that calling get_daily_puzzles() multiple times on the same date returns identical puzzle arrays. Test that different dates produce different puzzle selections. Test that each puzzle falls within its expected rating bracket. Mock the current date to verify determinism.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -914,7 +1023,8 @@
             ],
             "details": "Create scripts/modes/daily_mode.gd:\n\n1. Define class properties:\n   - var current_puzzle_index: int = 0\n   - var puzzle_results: Array[Dictionary] = [] # {\"solved\": bool, \"perfect\": bool}\n   - var daily_puzzles: Array[PuzzleData] = []\n   - var is_first_move: bool = true\n   - var had_wrong_move: bool = false\n   - signal daily_completed(results: Array, score: float)\n   - signal puzzle_failed(index: int)\n   - signal puzzle_solved(index: int, perfect: bool)\n\n2. Implement start_daily() function:\n   - Call DailyGenerator.get_daily_puzzles()\n   - Load first puzzle\n   - Reset all tracking variables\n\n3. Implement on_move_made(is_correct: bool):\n   - If is_first_move and not is_correct: mark puzzle as failed immediately, emit puzzle_failed\n   - If is_correct on final move: mark puzzle solved, track if perfect (no wrong moves in sequence)\n   - If wrong move during sequence: set had_wrong_move = true (affects perfect bonus)\n   - CRITICAL: No retry allowed - first move is final for puzzle result\n\n4. Implement advance_to_next_puzzle():\n   - Increment current_puzzle_index\n   - If index >= 5: emit daily_completed with all results\n   - Else: load next puzzle, reset move tracking\n\n5. Disable hint and solution buttons by setting flags:\n   - var hints_enabled: bool = false\n   - var solution_enabled: bool = false\n   - var skip_enabled: bool = false",
             "status": "pending",
-            "testStrategy": "Test that first wrong move immediately marks puzzle as failed with no retry option. Test that correct sequence with one wrong move in middle counts as solved but not perfect. Test that hints/solution/skip are disabled. Test that all 5 puzzles must be attempted (cannot skip)."
+            "testStrategy": "Test that first wrong move immediately marks puzzle as failed with no retry option. Test that correct sequence with one wrong move in middle counts as solved but not perfect. Test that hints/solution/skip are disabled. Test that all 5 puzzles must be attempted (cannot skip).",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -925,7 +1035,8 @@
             ],
             "details": "Extend user_data.gd or create daily state tracking:\n\n1. Add daily-specific persistent data structure:\n   - last_completed_date: String (YYYY-MM-DD format)\n   - current_daily_streak: int\n   - best_daily_streak: int\n   - days_played: int\n   - total_score: float\n   - perfect_days: int\n   - today_results: Array (5 puzzle results for current day)\n   - today_score: float\n\n2. Implement is_daily_completed_today() -> bool:\n   - Get current date string from Time.get_date_dict_from_system()\n   - Compare with last_completed_date\n   - Return true if dates match\n\n3. Implement check_daily_reset():\n   - Called on app launch and when returning to menu\n   - If current date != last_completed_date and last_completed_date != yesterday:\n     - Reset current_daily_streak to 0\n   - Clear any stale in-progress daily state\n\n4. Implement save_daily_completion(results: Array, score: float):\n   - Set last_completed_date to today\n   - Update current_daily_streak (increment if yesterday was completed, else reset to 1)\n   - Update best_daily_streak if current > best\n   - Increment days_played\n   - Add score to total_score\n   - If all 5 puzzles solved: increment perfect_days\n   - Persist to user_stats.json\n\n5. Add UI hook: when daily mode selected, check is_daily_completed_today() and show \"Already completed today\" message if true",
             "status": "pending",
-            "testStrategy": "Test that completing daily prevents replay on same day. Test that midnight reset allows new daily attempt. Test that streak increments when completing consecutive days. Test that streak resets to 1 when missing a day. Mock system time for date-based tests."
+            "testStrategy": "Test that completing daily prevents replay on same day. Test that midnight reset allows new daily attempt. Test that streak increments when completing consecutive days. Test that streak resets to 1 when missing a day. Mock system time for date-based tests.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -937,7 +1048,8 @@
             ],
             "details": "Add to daily_mode.gd or create share_text_generator.gd:\n\n1. Implement generate_share_text(results: Array, score: float, streak: int) -> String:\n   - Calculate day number: days since a fixed epoch date (e.g., 2024-01-01)\n   - Build emoji grid line:\n     * Green square (🟩) for solved puzzles\n     * Black square (⬛) for failed puzzles\n   - Format: \"Chess Puzzles Daily #[day_number]\"\n\n2. Build the complete share string:\n```\nChess Puzzles Daily #127\n⬛🟩🟩⬛🟩 (3/5)\n🔥 Streak: 2\n```\n\n3. Implement calculate_day_number() -> int:\n   - Define EPOCH_DATE = \"2024-01-01\" or similar\n   - Get current date\n   - Return days difference\n\n4. Implement get_solved_count(results: Array) -> int:\n   - Count results where solved == true\n\n5. Add score display option:\n   - Include score in share text: \"Score: 3.5/7.5\" (optional line)\n\n6. Connect to clipboard:\n   - Use DisplayServer.clipboard_set(share_text)\n   - Return true if successful",
             "status": "pending",
-            "testStrategy": "Test that emoji grid correctly shows green for solved and black for failed. Test that day number increments correctly each day. Test that streak count displays accurately. Test that solved count (X/5) is correct. Verify clipboard copy functionality works on target platforms."
+            "testStrategy": "Test that emoji grid correctly shows green for solved and black for failed. Test that day number increments correctly each day. Test that streak count displays accurately. Test that solved count (X/5) is correct. Verify clipboard copy functionality works on target platforms.",
+            "parentId": "undefined"
           },
           {
             "id": 6,
@@ -948,19 +1060,23 @@
             ],
             "details": "Create scenes/ui/daily_complete.tscn:\n\n1. Scene structure:\n   - MarginContainer (root)\n     - VBoxContainer\n       - Label (\"Daily Challenge Complete\")\n       - GridContainer (5 puzzle result indicators)\n       - Label (Score display: \"3.5 / 7.5\")\n       - Label (Streak display: \"🔥 Streak: 2\")\n       - HSeparator\n       - HBoxContainer (buttons)\n         - Button (\"Share Results\")\n         - Button (\"Review Puzzles\")\n         - Button (\"Main Menu\")\n\n2. Create scripts/ui/daily_complete_screen.gd:\n   - var results: Array = []\n   - var score: float = 0.0\n   - var streak: int = 0\n\n3. Implement initialize(results: Array, score: float, streak: int):\n   - Store data\n   - Update puzzle result grid (5 squares with colors)\n   - Update score label\n   - Update streak label\n\n4. Implement _on_share_button_pressed():\n   - Call DailyMode.generate_share_text()\n   - Copy to clipboard via DisplayServer.clipboard_set()\n   - Show brief \"Copied!\" feedback (tooltip or label flash)\n\n5. Implement _on_review_button_pressed():\n   - Transition to review mode showing solved/failed puzzles with solutions\n\n6. Implement _on_menu_button_pressed():\n   - Return to main menu\n\n7. Style puzzle result grid:\n   - Use ColorRect or TextureRect for each of 5 squares\n   - Green (#6aaa64) for solved, dark gray (#3a3a3c) for failed\n   - Add subtle border or spacing between squares",
             "status": "pending",
-            "testStrategy": "Verify UI displays correctly with various result combinations (all solved, all failed, mixed). Test share button copies correct text to clipboard. Test that clicking share shows visual feedback. Test navigation buttons transition to correct scenes. Test responsive layout on different window sizes."
+            "testStrategy": "Verify UI displays correctly with various result combinations (all solved, all failed, mixed). Test share button copies correct text to clipboard. Test that clicking share shows visual feedback. Test navigation buttons transition to correct scenes. Test responsive layout on different window sizes.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 6,
+        "recommendedSubtasks": 6,
+        "expansionPrompt": "Break down into subtasks: 1) Create daily_generator.gd with rating brackets, 2) Implement deterministic hash-based puzzle selection, 3) Implement one-attempt-per-puzzle enforcement, 4) Track daily completion state with date check, 5) Implement share text generation with emoji grid, 6) Create daily_complete.tscn with share button and clipboard"
       },
       {
-        "id": 13,
+        "id": "13",
         "title": "User Data Persistence and Statistics",
         "description": "Implement persistent storage for user puzzle history, per-mode statistics, settings, and overall progress using SQLite and JSON.",
         "details": "Create scripts/autoload/user_data.gd as autoload:\n\n```gdscript\nvar stats: Dictionary  # Loaded from user_stats.json\nvar settings: Dictionary\n\nfunc save_puzzle_result(puzzle_id: String, result: String, mode: String, attempts: int, time_ms: int)\nfunc get_stats_for_mode(mode: String) -> Dictionary\nfunc update_setting(key: String, value: Variant)\nfunc is_daily_completed_today() -> bool\n```\n\nSQLite table (add to puzzles.db):\n```sql\nCREATE TABLE user_puzzle_history (\n    puzzle_id TEXT PRIMARY KEY,\n    result TEXT NOT NULL,\n    mode TEXT NOT NULL,\n    attempts INTEGER DEFAULT 1,\n    solved_at DATETIME,\n    time_spent_ms INTEGER\n);\n```\n\nJSON stats (user_stats.json) for aggregates:\n- player_rating, total_puzzles_solved, total_time_played\n- Per-mode stats (practice, sprint, streak, daily)\n- Settings: sound_enabled, show_legal_moves, auto_flip_board, auto_promote_queen, animation_speed\n\nImplement queries:\n- get_random_unsolved_puzzle(filters) - LEFT JOIN to prefer unsolved\n- get_accuracy_by_rating_range()\n- get_solve_count_by_mate_depth()\n\nSave path: user://user_stats.json and user://puzzles.db",
         "testStrategy": "Verify puzzle results persist across sessions, stats update correctly after solving puzzles, settings are saved and loaded properly, database queries return expected results.",
         "priority": "medium",
         "dependencies": [
-          1
+          "1"
         ],
         "status": "pending",
         "subtasks": [
@@ -971,7 +1087,8 @@
             "dependencies": [],
             "details": "Create scripts/autoload/user_data.gd with the following structure:\n\n```gdscript\nextends Node\n\nconst STATS_PATH = \"user://user_stats.json\"\nconst DB_PATH = \"user://puzzles.db\"\n\nvar stats: Dictionary = {\n    \"player_rating\": 1200,\n    \"total_puzzles_solved\": 0,\n    \"total_time_played\": 0,\n    \"practice\": {\"solved\": 0, \"failed\": 0, \"time_ms\": 0},\n    \"sprint\": {\"best_time\": 0, \"games_played\": 0, \"puzzles_solved\": 0},\n    \"streak\": {\"best_streak\": 0, \"current_streak\": 0, \"games_played\": 0},\n    \"daily\": {\"completed_dates\": [], \"current_streak\": 0, \"best_streak\": 0}\n}\n\nvar settings: Dictionary = {\n    \"sound_enabled\": true,\n    \"show_legal_moves\": true,\n    \"auto_flip_board\": true,\n    \"auto_promote_queen\": false,\n    \"animation_speed\": 1.0\n}\n\nvar db: SQLite\n\nfunc _ready() -> void:\n    _init_database()\n    _load_stats()\n    _load_settings()\n```\n\nRegister as autoload named 'UserData' in project.godot. Ensure the SQLite addon is properly referenced.",
             "status": "pending",
-            "testStrategy": "Verify autoload initializes without errors, default stats and settings are populated correctly, and the singleton is accessible globally via UserData."
+            "testStrategy": "Verify autoload initializes without errors, default stats and settings are populated correctly, and the singleton is accessible globally via UserData.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -982,7 +1099,8 @@
             ],
             "details": "Add database initialization and query methods to user_data.gd:\n\n```gdscript\nfunc _init_database() -> void:\n    db = SQLite.new()\n    db.path = DB_PATH\n    db.open_db()\n    db.query(\"\"\"\n        CREATE TABLE IF NOT EXISTS user_puzzle_history (\n            puzzle_id TEXT PRIMARY KEY,\n            result TEXT NOT NULL,\n            mode TEXT NOT NULL,\n            attempts INTEGER DEFAULT 1,\n            solved_at DATETIME,\n            time_spent_ms INTEGER\n        );\n    \"\"\")\n\nfunc save_puzzle_result(puzzle_id: String, result: String, mode: String, attempts: int, time_ms: int) -> void:\n    var now = Time.get_datetime_string_from_system()\n    db.query(\"\"\"\n        INSERT OR REPLACE INTO user_puzzle_history \n        (puzzle_id, result, mode, attempts, solved_at, time_spent_ms)\n        VALUES (?, ?, ?, ?, ?, ?)\n    \"\"\", [puzzle_id, result, mode, attempts, now, time_ms])\n    _update_aggregate_stats(mode, result, time_ms)\n\nfunc get_puzzle_history(puzzle_id: String) -> Dictionary:\n    db.query(\"SELECT * FROM user_puzzle_history WHERE puzzle_id = ?\", [puzzle_id])\n    return db.query_result[0] if db.query_result.size() > 0 else {}\n\nfunc get_accuracy_by_rating_range() -> Dictionary:\n    # Returns {\"1000-1200\": 0.75, \"1200-1400\": 0.60, ...}\n\nfunc get_solve_count_by_mate_depth() -> Dictionary:\n    # Returns {\"mate_in_1\": 50, \"mate_in_2\": 30, ...}\n```\n\nHandle database file creation in user:// directory on first run.",
             "status": "pending",
-            "testStrategy": "Test saving puzzle results, verify data persists in SQLite, test queries return correct results, verify table creation on fresh install."
+            "testStrategy": "Test saving puzzle results, verify data persists in SQLite, test queries return correct results, verify table creation on fresh install.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -993,7 +1111,8 @@
             ],
             "details": "Add JSON file handling to user_data.gd:\n\n```gdscript\nfunc _load_stats() -> void:\n    if FileAccess.file_exists(STATS_PATH):\n        var file = FileAccess.open(STATS_PATH, FileAccess.READ)\n        var json = JSON.new()\n        if json.parse(file.get_as_text()) == OK:\n            var loaded = json.get_data()\n            # Merge with defaults to handle new fields\n            for key in loaded:\n                stats[key] = loaded[key]\n        file.close()\n\nfunc _save_stats() -> void:\n    var file = FileAccess.open(STATS_PATH, FileAccess.WRITE)\n    file.store_string(JSON.stringify(stats, \"  \"))\n    file.close()\n\nfunc get_stats_for_mode(mode: String) -> Dictionary:\n    return stats.get(mode, {})\n\nfunc _update_aggregate_stats(mode: String, result: String, time_ms: int) -> void:\n    stats[\"total_time_played\"] += time_ms\n    if result == \"solved\":\n        stats[\"total_puzzles_solved\"] += 1\n    if stats.has(mode):\n        stats[mode][\"time_ms\"] = stats[mode].get(\"time_ms\", 0) + time_ms\n        if result == \"solved\":\n            stats[mode][\"solved\"] = stats[mode].get(\"solved\", 0) + 1\n        else:\n            stats[mode][\"failed\"] = stats[mode].get(\"failed\", 0) + 1\n    _save_stats()\n\nfunc is_daily_completed_today() -> bool:\n    var today = Time.get_date_string_from_system()\n    return today in stats[\"daily\"][\"completed_dates\"]\n```\n\nEnsure atomic writes and handle corrupted JSON gracefully by falling back to defaults.",
             "status": "pending",
-            "testStrategy": "Test stats persist across game restarts, verify mode-specific stats update correctly, test daily completion tracking with date handling, verify graceful fallback on corrupted JSON."
+            "testStrategy": "Test stats persist across game restarts, verify mode-specific stats update correctly, test daily completion tracking with date handling, verify graceful fallback on corrupted JSON.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -1004,7 +1123,8 @@
             ],
             "details": "Add settings management to user_data.gd:\n\n```gdscript\nconst SETTINGS_PATH = \"user://user_settings.json\"\n\nconst SETTING_VALIDATORS = {\n    \"sound_enabled\": func(v): return typeof(v) == TYPE_BOOL,\n    \"show_legal_moves\": func(v): return typeof(v) == TYPE_BOOL,\n    \"auto_flip_board\": func(v): return typeof(v) == TYPE_BOOL,\n    \"auto_promote_queen\": func(v): return typeof(v) == TYPE_BOOL,\n    \"animation_speed\": func(v): return typeof(v) == TYPE_FLOAT and v >= 0.1 and v <= 3.0\n}\n\nfunc _load_settings() -> void:\n    if FileAccess.file_exists(SETTINGS_PATH):\n        var file = FileAccess.open(SETTINGS_PATH, FileAccess.READ)\n        var json = JSON.new()\n        if json.parse(file.get_as_text()) == OK:\n            var loaded = json.get_data()\n            for key in loaded:\n                if _validate_setting(key, loaded[key]):\n                    settings[key] = loaded[key]\n        file.close()\n\nfunc _save_settings() -> void:\n    var file = FileAccess.open(SETTINGS_PATH, FileAccess.WRITE)\n    file.store_string(JSON.stringify(settings, \"  \"))\n    file.close()\n\nfunc update_setting(key: String, value: Variant) -> bool:\n    if not _validate_setting(key, value):\n        push_warning(\"Invalid setting: %s = %s\" % [key, value])\n        return false\n    settings[key] = value\n    _save_settings()\n    return true\n\nfunc get_setting(key: String, default: Variant = null) -> Variant:\n    return settings.get(key, default)\n\nfunc _validate_setting(key: String, value: Variant) -> bool:\n    if SETTING_VALIDATORS.has(key):\n        return SETTING_VALIDATORS[key].call(value)\n    return true\n```\n\nEmit signal when settings change for UI updates.",
             "status": "pending",
-            "testStrategy": "Test setting updates persist across sessions, verify validation rejects invalid values, test default fallback for missing settings, verify settings file corruption handling."
+            "testStrategy": "Test setting updates persist across sessions, verify validation rejects invalid values, test default fallback for missing settings, verify settings file corruption handling.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -1015,23 +1135,27 @@
             ],
             "details": "Add the unsolved puzzle query to user_data.gd:\n\n```gdscript\nfunc get_random_unsolved_puzzle(filters: Dictionary = {}) -> String:\n    var query = \"\"\"\n        SELECT p.puzzle_id \n        FROM puzzles p\n        LEFT JOIN user_puzzle_history h ON p.puzzle_id = h.puzzle_id\n        WHERE h.puzzle_id IS NULL\n    \"\"\"\n    var params = []\n    \n    # Apply optional filters\n    if filters.has(\"min_rating\"):\n        query += \" AND p.rating >= ?\"\n        params.append(filters[\"min_rating\"])\n    if filters.has(\"max_rating\"):\n        query += \" AND p.rating <= ?\"\n        params.append(filters[\"max_rating\"])\n    if filters.has(\"themes\") and filters[\"themes\"].size() > 0:\n        var theme_conditions = []\n        for theme in filters[\"themes\"]:\n            theme_conditions.append(\"p.themes LIKE ?\")\n            params.append(\"%\" + theme + \"%\")\n        query += \" AND (\" + \" OR \".join(theme_conditions) + \")\"\n    if filters.has(\"mate_in\"):\n        query += \" AND p.mate_in = ?\"\n        params.append(filters[\"mate_in\"])\n    \n    query += \" ORDER BY RANDOM() LIMIT 1\"\n    \n    db.query(query, params)\n    if db.query_result.size() > 0:\n        return db.query_result[0][\"puzzle_id\"]\n    \n    # Fallback: return any puzzle matching filters if all solved\n    return _get_any_puzzle_with_filters(filters)\n\nfunc _get_any_puzzle_with_filters(filters: Dictionary) -> String:\n    # Similar query without the LEFT JOIN condition\n```\n\nEnsure the query connects to the main puzzles.db that contains the puzzles table. Handle case where all puzzles in filter range are solved.",
             "status": "pending",
-            "testStrategy": "Test query returns unsolved puzzles first, verify filters work correctly (rating range, themes, mate depth), test fallback behavior when all puzzles solved, verify query performance with large history."
+            "testStrategy": "Test query returns unsolved puzzles first, verify filters work correctly (rating range, themes, mate depth), test fallback behavior when all puzzles solved, verify query performance with large history.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 5,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Break down into subtasks: 1) Create user_data.gd autoload with stats/settings dictionaries, 2) Implement SQLite user_puzzle_history table and queries, 3) Implement JSON stats file save/load for aggregates, 4) Implement settings persistence and retrieval, 5) Add query for random unsolved puzzle with LEFT JOIN"
       },
       {
-        "id": 14,
+        "id": "14",
         "title": "UI Screens and Navigation",
         "description": "Implement all UI screens including main menu, mode setup screens, puzzle screen HUD, game over screens, stats screen, and settings menu.",
         "details": "Create scene hierarchy:\n\nscenes/main.tscn - Root scene with scene switching logic\n\nscenes/ui/main_menu.tscn:\n- Practice, Sprint, Streak, Daily buttons\n- Stats, Settings, Quit buttons\n\nscenes/ui/puzzle_screen.tscn:\n- ChessBoard centered\n- Mode-specific HUD (timer for Sprint, streak counter for Streak, etc.)\n- Back button, puzzle info display\n- Hint/Solution/Skip buttons (Practice only)\n\nscenes/ui/game_over_screen.tscn:\n- Mode-aware: different layouts for each mode\n- Sprint: puzzles solved, accuracy, strikes, time\n- Streak: streak count, rating progression, failed puzzle\n- Daily: result grid, score, share button\n- Replay Last, Play Again, Main Menu buttons\n\nscenes/ui/stats_screen.tscn:\n- Tab or section for each mode\n- Overall stats at top\n- Breakdown by mate depth, rating range\n\nscenes/ui/settings_menu.tscn:\n- Toggle switches for boolean settings\n- Slider for animation speed\n- About section with Licenses link\n\nscenes/ui/licenses_screen.tscn:\n- Stockfish (GPLv3), Lichess (CC0), Godot (MIT)\n- Full GPL license text accessible\n\nCreate scripts/ui/ for each screen's logic",
         "testStrategy": "Navigate through all screens, verify mode setup options work, puzzle HUD updates correctly during gameplay, game over screens show accurate stats, settings persist after closing and reopening.",
         "priority": "medium",
         "dependencies": [
-          9,
-          10,
-          11,
-          12,
-          13
+          "9",
+          "10",
+          "11",
+          "12",
+          "13"
         ],
         "status": "pending",
         "subtasks": [
@@ -1042,7 +1166,8 @@
             "dependencies": [],
             "details": "Create scenes/main.tscn as the root scene with a Control node structure. Implement scripts/ui/main.gd with methods: change_scene(scene_path: String), push_scene(scene_path: String) for modal overlays, pop_scene() for returning from overlays. Use a CanvasLayer or container node to hold the current active scene. Add transition animation support (fade, slide) with configurable duration. Maintain a scene stack for back navigation. Connect to GameManager autoload for accessing game state during transitions. Handle cleanup of previous scenes to prevent memory leaks. Add preloading for frequently accessed scenes (main_menu, puzzle_screen) to reduce load times.",
             "status": "pending",
-            "testStrategy": "Verify scene switching works from main menu to all screens and back. Test that scene stack properly handles multiple push/pop operations. Confirm no memory leaks occur during rapid scene changes. Test transition animations play correctly."
+            "testStrategy": "Verify scene switching works from main menu to all screens and back. Test that scene stack properly handles multiple push/pop operations. Confirm no memory leaks occur during rapid scene changes. Test transition animations play correctly.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -1053,7 +1178,8 @@
             ],
             "details": "Create scenes/ui/main_menu.tscn with VBoxContainer layout containing: Practice button (navigates to practice_setup.tscn), Sprint button (navigates to sprint_setup.tscn), Streak button (navigates to streak_setup.tscn), Daily button (navigates directly to puzzle_screen with daily mode or shows 'completed today' message). Add secondary row with: Stats button, Settings button, Quit button. Implement scripts/ui/main_menu.gd with button signal connections. Style buttons with consistent theme (minimum 48px touch targets). Add game title/logo at top. Connect to UserData autoload to check if daily challenge is already completed today and update Daily button state accordingly. Add subtle hover/focus animations for desktop usability.",
             "status": "pending",
-            "testStrategy": "Verify all buttons navigate to correct screens. Test Daily button shows appropriate state when challenge is/isn't completed. Confirm keyboard navigation works (Tab between buttons, Enter to select). Test Quit button properly exits application."
+            "testStrategy": "Verify all buttons navigate to correct screens. Test Daily button shows appropriate state when challenge is/isn't completed. Confirm keyboard navigation works (Tab between buttons, Enter to select). Test Quit button properly exits application.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -1064,7 +1190,8 @@
             ],
             "details": "Create scenes/ui/puzzle_screen.tscn with: ChessBoard instance centered in viewport, HUD container at top (Back button, puzzle info display), mode-specific HUD elements container, bottom action bar. Implement scripts/ui/puzzle_hud.gd with mode-aware display logic. For Practice mode: show Hint, Solution, Skip buttons, puzzle count, streak counter. For Sprint mode: show countdown timer (timer_display.tscn), strike indicators (strike_indicator.tscn - 3 circles), puzzles solved count. For Streak mode: show streak counter (streak_counter.tscn), current rating, rating progression (+X from start). For Daily mode: show daily progress indicator (daily_progress.tscn - 5 squares), puzzle X of 5, 'One attempt' warning. Add thinking_indicator.tscn that shows when engine analysis exceeds 150ms. Connect to PuzzleController signals for state updates. Implement dynamic show/hide of mode-specific elements based on GameManager.current_mode.",
             "status": "pending",
-            "testStrategy": "Test that correct HUD elements appear for each mode. Verify timer updates correctly in Sprint mode. Confirm strike indicators update on wrong moves. Test thinking indicator appears/hides appropriately. Verify back button confirms quit in timed/streak modes."
+            "testStrategy": "Test that correct HUD elements appear for each mode. Verify timer updates correctly in Sprint mode. Confirm strike indicators update on wrong moves. Test thinking indicator appears/hides appropriately. Verify back button confirms quit in timed/streak modes.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -1075,7 +1202,8 @@
             ],
             "details": "Create scenes/ui/game_over_screen.tscn with dynamic layout system. Implement scripts/ui/game_over_screen.gd with show_results(mode: GameMode, stats: Dictionary) method. Sprint layout: 'TIME'S UP!' or 'STRUCK OUT!' header, puzzles solved, accuracy percentage (solves/attempts), strikes used, time remaining, 'New Best!' indicator if applicable. Streak layout: 'STREAK ENDED' header, final streak count, starting rating → peak rating reached, 'New Record!' indicator, 'Show Solution' and 'Replay Puzzle' buttons for the failed puzzle. Daily layout: 'DAILY #X COMPLETE' header, result grid (5 squares with colored results), score breakdown, perfect solve bonus display, 'Share' button (copies Wordle-style text to clipboard). Common elements: Replay Last Puzzle, Play Again (restart same mode), Main Menu buttons. Add celebratory animations for new records/high scores. Connect to UserData for comparing with previous bests.",
             "status": "pending",
-            "testStrategy": "Test each mode displays correct layout and statistics. Verify 'New Best' indicators appear only when records are broken. Test Share button copies correct format to clipboard for Daily mode. Confirm Replay Last Puzzle loads the correct puzzle."
+            "testStrategy": "Test each mode displays correct layout and statistics. Verify 'New Best' indicators appear only when records are broken. Test Share button copies correct format to clipboard for Daily mode. Confirm Replay Last Puzzle loads the correct puzzle.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -1086,7 +1214,8 @@
             ],
             "details": "Create scenes/ui/stats_screen.tscn with TabContainer or accordion-style sections. Implement scripts/ui/stats_screen.gd with load_stats() method pulling from UserData autoload. Overall section at top: total puzzles solved, total time played, overall accuracy. Practice tab: puzzles solved/attempted, current streak, best streak, breakdown by mate depth (1-5, 6+), rating distribution chart if feasible. Sprint tab: best scores for each time limit (1/3/5 min), average puzzles per run, total runs. Streak tab: best streak count, highest rating reached, average streak length, total runs. Daily tab: days played, current daily streak, best daily streak, average score, perfect days count (7.5/7.5). Add Back button to return to main menu. Style with consistent fonts and colors. Consider using GridContainer for stat rows with label:value pairs.",
             "status": "pending",
-            "testStrategy": "Verify all statistics load correctly from UserData. Test that stats update after completing puzzles/runs. Confirm navigation between tabs works. Test Back button returns to main menu. Verify stats display correctly when all values are zero (new user)."
+            "testStrategy": "Verify all statistics load correctly from UserData. Test that stats update after completing puzzles/runs. Confirm navigation between tabs works. Test Back button returns to main menu. Verify stats display correctly when all values are zero (new user).",
+            "parentId": "undefined"
           },
           {
             "id": 6,
@@ -1097,7 +1226,8 @@
             ],
             "details": "Create scenes/ui/settings_menu.tscn with ScrollContainer for settings list. Implement scripts/ui/settings_menu.gd with two-way binding to UserData.settings. Gameplay section: Show Legal Moves toggle (ON/OFF), Auto-Flip Board toggle (ON/OFF), Auto-Promote to Queen toggle (ON/OFF, default ON). Audio section: Sound Effects toggle (ON/OFF), Volume slider (0-100%). Animation section: Animation Speed selector (0.5x/1x/2x/Instant or slider). About section: Licenses button (navigates to licenses_screen.tscn), Version display label, Credits text or link. Implement immediate application of settings changes (no save button needed). Use CheckButton for toggles, HSlider for sliders. Connect setting changes to UserData.save_settings() for persistence. Add Back button to return to main menu.",
             "status": "pending",
-            "testStrategy": "Test all toggles persist after closing and reopening settings. Verify animation speed changes take effect immediately. Test volume slider affects game audio. Confirm Licenses button navigates to licenses screen. Test settings persist after application restart."
+            "testStrategy": "Test all toggles persist after closing and reopening settings. Verify animation speed changes take effect immediately. Test volume slider affects game audio. Confirm Licenses button navigates to licenses screen. Test settings persist after application restart.",
+            "parentId": "undefined"
           },
           {
             "id": 7,
@@ -1109,7 +1239,8 @@
             ],
             "details": "Create scenes/ui/licenses_screen.tscn with ScrollContainer for license content. Display attributions for: Stockfish (GPLv3) with link to stockfishchess.org and GitHub source, 'View Full GPL License' button that expands/shows full GPLv3 text. Lichess Puzzle Database (CC0/Public Domain) with link to database.lichess.org. Godot Engine (MIT) with link to godotengine.org. Optional: Colin M.L. Burnett chess pieces (BSD) if using that set. Implement scripts/ui/licenses_screen.gd. Store full GPL v3 license text in a separate resource file or embedded string (approximately 35KB of text). Add collapsible sections or dedicated view for full license text. Include Back button to return to settings. This screen is legally required for distributing Stockfish binaries.",
             "status": "pending",
-            "testStrategy": "Verify all required licenses are displayed (especially GPL for Stockfish). Test that full GPL license text is accessible. Confirm all external links are correct. Test Back button returns to settings menu. Verify scroll functionality works for long license text."
+            "testStrategy": "Verify all required licenses are displayed (especially GPL for Stockfish). Test that full GPL license text is accessible. Confirm all external links are correct. Test Back button returns to settings menu. Verify scroll functionality works for long license text.",
+            "parentId": "undefined"
           },
           {
             "id": 8,
@@ -1126,19 +1257,23 @@
             ],
             "details": "Enhance main.gd scene switching with smooth transitions: fade transition (default, 200-300ms), slide transitions for hierarchical navigation (push right, pop left). Implement navigation state stack for proper back button handling throughout the app. Add confirmation dialogs for destructive navigation (leaving puzzle mid-game in Sprint/Streak modes). Implement mode setup screens (practice_setup.tscn, sprint_setup.tscn, streak_setup.tscn) with appropriate options from PRD: Practice setup (mate depth selector, rating range slider, random/progressive toggle), Sprint setup (time selector 1/3/5 min, difficulty preset, mate depth filter), Streak setup (starting difficulty selector, mate depth filter). Connect setup screens to GameManager.start_game(mode, settings) method. Add keyboard shortcut support (Escape for back/quit). Ensure all navigation paths are tested: main menu → setup → puzzle → game over → main menu, and settings/stats accessible from main menu with proper return.",
             "status": "pending",
-            "testStrategy": "Test complete navigation flow through all modes end-to-end. Verify transitions animate smoothly without stuttering. Test back button/Escape key works correctly from all screens. Confirm quit confirmation appears in appropriate contexts. Test mode setup screens pass correct settings to GameManager."
+            "testStrategy": "Test complete navigation flow through all modes end-to-end. Verify transitions animate smoothly without stuttering. Test back button/Escape key works correctly from all screens. Confirm quit confirmation appears in appropriate contexts. Test mode setup screens pass correct settings to GameManager.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 7,
+        "recommendedSubtasks": 8,
+        "expansionPrompt": "Break down into subtasks: 1) Create main.tscn with scene switching logic, 2) Implement main_menu.tscn with mode buttons, 3) Create puzzle_screen.tscn with mode-aware HUD, 4) Implement game_over_screen.tscn with mode-specific layouts, 5) Create stats_screen.tscn with per-mode statistics, 6) Create settings_menu.tscn with toggle controls, 7) Create licenses_screen.tscn for GPL compliance, 8) Implement screen transitions and navigation flow"
       },
       {
-        "id": 15,
+        "id": "15",
         "title": "Audio, Animations, and Polish",
         "description": "Add sound effects for moves, captures, check, and game events, implement smooth move animations, and add visual polish including transitions between screens.",
         "details": "Audio assets needed:\n- move.wav - piece placement sound\n- capture.wav - capture sound\n- check.wav - check warning\n- success.wav - puzzle completed\n- failure.wav - wrong move\n- tick.wav - timer warning (last 10 seconds)\n\nCreate scripts/autoload/audio_manager.gd:\n```gdscript\nfunc play_move()\nfunc play_capture()\nfunc play_check()\nfunc play_success()\nfunc play_failure()\n```\n\nAnimations:\n- Piece movement: Tween from source to destination square (0.2s default)\n- Piece capture: Scale bounce on captured piece before removal\n- Check: Brief flash on king square\n- Puzzle complete: Subtle board pulse or checkmark overlay\n- Screen transitions: Fade or slide between screens\n\nCreate scenes/components/thinking_indicator.tscn:\n- Subtle spinner or 'thinking...' text\n- Shows when engine analysis exceeds 150ms\n\nVisual polish:\n- Button hover/press states\n- Consistent color scheme\n- Responsive layout (handle window resizing)\n\nSettings integration:\n- Sound Effects toggle\n- Volume slider\n- Animation Speed (0.5x/1x/2x/Instant)",
         "testStrategy": "Verify sounds play at correct times and respect mute setting, animations are smooth and interruptible, volume slider affects all sounds, animation speed setting changes move duration.",
         "priority": "low",
         "dependencies": [
-          14
+          "14"
         ],
         "status": "pending",
         "subtasks": [
@@ -1149,7 +1284,8 @@
             "dependencies": [],
             "details": "Create scripts/autoload/audio_manager.gd as an autoload singleton. Implement AudioStreamPlayer nodes for each sound category (move, capture, check, success, failure, tick). Add functions: play_move(), play_capture(), play_check(), play_success(), play_failure(), play_tick(). Include volume property (0.0-1.0), muted boolean, and set_volume()/toggle_mute() methods. Register as autoload named 'AudioManager' in project.godot under [autoload] section. Ensure sounds don't overlap inappropriately and can be interrupted if needed.",
             "status": "pending",
-            "testStrategy": "Test each play function triggers audio, verify mute toggle stops all sounds, verify volume slider affects playback level, test rapid successive calls don't cause audio issues."
+            "testStrategy": "Test each play function triggers audio, verify mute toggle stops all sounds, verify volume slider affects playback level, test rapid successive calls don't cause audio issues.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -1160,7 +1296,8 @@
             ],
             "details": "Create assets/audio/ directory. Source royalty-free or CC0 sound effects for: move.wav (satisfying wooden piece placement), capture.wav (capture with emphasis), check.wav (warning alert tone), success.wav (positive completion chime), failure.wav (subtle error indication), tick.wav (clock tick for timer warning). Keep files small (<100KB each) for fast loading. Import into Godot and configure AudioStreamWAV resources. Update audio_manager.gd to preload these assets and assign to AudioStreamPlayer nodes.",
             "status": "pending",
-            "testStrategy": "Verify all 6 audio files load without errors, play correctly in Godot editor, have appropriate volume levels relative to each other, and integrate properly with AudioManager."
+            "testStrategy": "Verify all 6 audio files load without errors, play correctly in Godot editor, have appropriate volume levels relative to each other, and integrate properly with AudioManager.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -1169,7 +1306,8 @@
             "dependencies": [],
             "details": "Modify the ChessBoard scene/script to animate piece movement. Use create_tween() for piece position interpolation from source to destination square (default 0.2s duration). For captures: animate capturing piece to destination while scaling captured piece down before removal. For check: add brief red/orange flash tween on king's square using modulate property. Add animation_speed setting (0.5x/1x/2x/Instant corresponding to 0.4s/0.2s/0.1s/0s). Emit signal when animation completes so game logic can proceed. Ensure animations are interruptible if new move starts.",
             "status": "pending",
-            "testStrategy": "Verify smooth piece movement at all speed settings, capture animation shows visual feedback before piece removal, check flash is visible but not disruptive, instant mode skips all animations."
+            "testStrategy": "Verify smooth piece movement at all speed settings, capture animation shows visual feedback before piece removal, check flash is visible but not disruptive, instant mode skips all animations.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -1178,7 +1316,8 @@
             "dependencies": [],
             "details": "Create scripts/ui/screen_transition.gd or integrate into main scene switching logic. Implement fade_out/fade_in transitions using CanvasModulate or ColorRect overlay with alpha tween (0.15-0.25s each direction). Alternative: slide transitions where old screen slides out while new slides in. Add transition_to_scene(scene_path) function that handles the animation sequence. For puzzle complete: add subtle board pulse animation (scale 1.0 to 1.02 and back) or checkmark overlay that fades in. Ensure transitions don't block input unexpectedly.",
             "status": "pending",
-            "testStrategy": "Navigate between all screens and verify smooth transitions, test rapid navigation doesn't cause visual glitches, verify puzzle complete animation plays correctly."
+            "testStrategy": "Navigate between all screens and verify smooth transitions, test rapid navigation doesn't cause visual glitches, verify puzzle complete animation plays correctly.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -1187,23 +1326,27 @@
             "dependencies": [],
             "details": "Create scenes/components/thinking_indicator.tscn with CenterContainer root. Add subtle animated indicator: either rotating spinner (AnimationPlayer with rotate keyframes) or pulsing 'Thinking...' Label with opacity animation. Keep design minimal and non-intrusive. Script should have show()/hide() functions. Integrate with PuzzleController to trigger when awaiting Stockfish response: start 150ms timer when engine call begins, show indicator if timer expires before response, hide immediately when response received. Position near board but not obscuring pieces.",
             "status": "pending",
-            "testStrategy": "Verify indicator doesn't appear for quick engine responses (<150ms), appears correctly for slower analysis, hides immediately when analysis completes, animation loops smoothly while visible."
+            "testStrategy": "Verify indicator doesn't appear for quick engine responses (<150ms), appears correctly for slower analysis, hides immediately when analysis completes, animation loops smoothly while visible.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 4,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Break down into subtasks: 1) Create audio_manager.gd autoload with sound playback, 2) Acquire and integrate 6 sound effect assets, 3) Implement piece movement animation with Tween, 4) Add screen transition animations, 5) Create thinking_indicator.tscn with timer threshold"
       },
       {
-        "id": 16,
+        "id": "16",
         "title": "Testing Suite and Quality Assurance",
         "description": "Complete the GUT test suite covering all chess logic, Stockfish integration, puzzle validation, and mode-specific behaviors, ensuring all tests pass.",
         "details": "Ensure all test files exist and pass:\n\ntests/test_fen_parser.gd:\n- Starting position, partial castling, en passant, invalid FEN\n\ntests/test_move_generation.gd:\n- All piece types, blocked pieces, captures\n\ntests/test_check_detection.gd:\n- Simple check, double check, not in check, pins\n\ntests/test_checkmate_detection.gd:\n- Back rank mate, smothered mate, can block, stalemate distinction\n\ntests/test_special_moves.gd:\n- Both castling directions, castle through check, en passant, all promotions\n\ntests/test_puzzle_validation.gd:\n- Correct move, alternate mates, non-mating rejected, slower mate rejected\n\ntests/test_stockfish_integration.gd:\n- Engine starts, mate detection, best move parsing, no mate returns null\n\nRun with: godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/ -gexit\n\nTarget: 100% test pass rate, all critical paths covered",
         "testStrategy": "Run full test suite, verify all tests pass, check code coverage for critical systems (chess logic, puzzle validation, Stockfish communication).",
         "priority": "medium",
         "dependencies": [
-          2,
-          4,
-          5,
-          6,
-          8
+          "2",
+          "4",
+          "5",
+          "6",
+          "8"
         ],
         "status": "pending",
         "subtasks": [
@@ -1214,7 +1357,8 @@
             "dependencies": [],
             "details": "Install GUT addon from AssetLib or manually copy to addons/gut/. Create tests/ directory at project root. Configure gut_config.json with test directory path 'res://tests/', set exit_on_finish to true for CI compatibility. Add GUT to autoloads in project.godot if needed. Create a .gutconfig.json file specifying test prefix 'test_', script suffix '.gd', and directory 'res://tests/'. Verify GUT can be invoked with: godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/ -gexit. Create base test class tests/base_test.gd extending GutTest with common setup/teardown helpers for chess testing scenarios.",
             "status": "pending",
-            "testStrategy": "Run empty test suite to verify GUT executes without errors. Confirm headless mode exits properly with return code 0 when no tests fail."
+            "testStrategy": "Run empty test suite to verify GUT executes without errors. Confirm headless mode exits properly with return code 0 when no tests fail.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -1225,7 +1369,8 @@
             ],
             "details": "Create tests/test_fen_parser.gd extending GutTest. Implement test_starting_position() to verify standard starting FEN 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1' parses correctly with all 32 pieces in proper squares. Implement test_castling_rights_partial() testing FENs with partial castling rights (e.g., 'Kq' means white kingside only, black queenside only). Implement test_en_passant_square() verifying positions like 'e3' or 'd6' are correctly identified. Implement test_invalid_fen_throws() ensuring malformed FENs (wrong piece count, invalid characters, missing fields) return appropriate errors or null. Add test_to_fen_roundtrip() verifying parse then export returns equivalent FEN string.",
             "status": "pending",
-            "testStrategy": "Run tests with known good and bad FEN strings. Verify 100% pass rate and proper error handling for edge cases."
+            "testStrategy": "Run tests with known good and bad FEN strings. Verify 100% pass rate and proper error handling for edge cases.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -1236,7 +1381,8 @@
             ],
             "details": "Create tests/test_move_generation.gd extending GutTest. Test each piece type individually: test_pawn_moves() for single push, double push from start, diagonal captures; test_knight_moves() for L-shaped movement including corner/edge cases; test_bishop_moves() for diagonal sliding until blocked; test_rook_moves() for orthogonal sliding; test_queen_moves() combining bishop and rook patterns; test_king_moves() for single square all directions. Add test_blocked_pieces() verifying friendly pieces block movement. Add test_captures() ensuring enemy pieces can be captured and stops further movement. Add test_no_self_capture() preventing capturing own pieces. Include boundary tests for pieces on board edges.",
             "status": "pending",
-            "testStrategy": "Use specific FEN positions designed to isolate each piece type. Verify move counts and specific legal moves match expected values."
+            "testStrategy": "Use specific FEN positions designed to isolate each piece type. Verify move counts and specific legal moves match expected values.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -1247,7 +1393,8 @@
             ],
             "details": "Create tests/test_check_detection.gd extending GutTest. Implement test_simple_check() with positions where king is attacked by single piece (each piece type attacking). Implement test_double_check() with positions where two pieces simultaneously give check. Implement test_not_in_check() verifying standard positions and positions with nearby but non-attacking pieces are not flagged as check. Implement test_pins() verifying pieces pinned to king cannot move illegally - a pinned piece blocks check but moving it would expose king. Test discovered check scenarios. Add test_in_check_must_escape() verifying moves that don't address check are filtered out.",
             "status": "pending",
-            "testStrategy": "Create specific FEN positions for each check scenario. Verify is_in_check() returns correct boolean and legal moves are properly restricted."
+            "testStrategy": "Create specific FEN positions for each check scenario. Verify is_in_check() returns correct boolean and legal moves are properly restricted.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -1259,7 +1406,8 @@
             ],
             "details": "Create tests/test_checkmate_detection.gd extending GutTest. Implement test_back_rank_mate() using FEN for classic back rank checkmate pattern (rook/queen delivering mate on 8th rank with pawns blocking escape). Implement test_smothered_mate() with knight delivering checkmate to king trapped by own pieces. Implement test_can_block() verifying positions where check can be blocked are not checkmate. Implement test_stalemate_not_checkmate() with classic stalemate positions (king not in check but no legal moves) returns stalemate, not checkmate. Add test_can_capture_attacker() ensuring positions where attacking piece can be captured are not mate. Test multi-piece checkmate patterns.",
             "status": "pending",
-            "testStrategy": "Use famous checkmate positions from chess history. Verify is_checkmate() and is_stalemate() return mutually exclusive correct results."
+            "testStrategy": "Use famous checkmate positions from chess history. Verify is_checkmate() and is_stalemate() return mutually exclusive correct results.",
+            "parentId": "undefined"
           },
           {
             "id": 6,
@@ -1271,7 +1419,8 @@
             ],
             "details": "Create tests/test_special_moves.gd extending GutTest. Implement test_kingside_castle() and test_queenside_castle() for both colors verifying king and rook end positions. Implement test_castle_blocked() when pieces between king and rook. Implement test_castle_through_check() preventing castling when passing through attacked squares. Implement test_castle_from_check() preventing castling while in check. Implement test_castle_rights_lost() after king or rook moves. Implement test_en_passant_capture() verifying pawn can capture en passant on correct square immediately after opponent's double pawn push. Implement test_en_passant_expires() after one move. Implement test_promotion_queen/rook/bishop/knight() verifying pawn reaching 8th rank can promote to any piece except king or pawn.",
             "status": "pending",
-            "testStrategy": "Test each special move in isolation with crafted FEN positions. Verify board state after move execution matches expected outcome."
+            "testStrategy": "Test each special move in isolation with crafted FEN positions. Verify board state after move execution matches expected outcome.",
+            "parentId": "undefined"
           },
           {
             "id": 7,
@@ -1282,21 +1431,25 @@
             ],
             "details": "Create tests/test_stockfish_integration.gd extending GutTest. Implement test_engine_starts() verifying Stockfish process spawns and responds to UCI commands. Implement test_mate_detection() using known mate-in-1 positions confirming engine finds mate. Implement test_best_move_parsing() ensuring UCI 'bestmove' response is correctly parsed. Implement test_no_mate_returns_null() for positions without forced mate. Use await for async engine calls. Create tests/test_puzzle_validation.gd extending GutTest. Implement test_correct_move_accepted() verifying player's move matching solution is accepted. Implement test_alternate_mates_accepted() allowing equivalent checkmate moves. Implement test_non_mating_rejected() ensuring non-checkmate moves are rejected. Implement test_slower_mate_rejected() verifying longer mate sequences are rejected when shorter exists. Handle engine timeout scenarios gracefully.",
             "status": "pending",
-            "testStrategy": "Use known mate puzzle positions for predictable engine responses. Mock Stockfish responses for unit tests, use real engine for integration tests. Verify all puzzle acceptance/rejection logic works correctly."
+            "testStrategy": "Use known mate puzzle positions for predictable engine responses. Mock Stockfish responses for unit tests, use real engine for integration tests. Verify all puzzle acceptance/rejection logic works correctly.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 6,
+        "recommendedSubtasks": 7,
+        "expansionPrompt": "Break down into subtasks: 1) Set up GUT framework and test runner, 2) Implement test_fen_parser.gd tests, 3) Implement test_move_generation.gd tests, 4) Implement test_check_detection.gd tests, 5) Implement test_checkmate_detection.gd tests, 6) Implement test_special_moves.gd tests, 7) Implement test_stockfish_integration.gd and test_puzzle_validation.gd"
       },
       {
-        "id": 17,
+        "id": "17",
         "title": "Export Builds and Distribution",
         "description": "Configure Godot export presets for Windows, macOS, and Linux, bundle Stockfish binaries correctly, handle macOS code signing, and create distribution packages.",
         "details": "Export configuration:\n\n1. Windows (x64):\n- Export preset in project.godot\n- Include bin/stockfish/windows/stockfish.exe\n- Test OS.create_process() path resolution\n\n2. macOS (x64 + ARM):\n- Use universal binary for Stockfish if available\n- Code sign Stockfish binary: codesign --deep --force --sign \"Developer ID\" stockfish\n- Add entitlement: com.apple.security.cs.allow-unsigned-executable-memory\n- Test Gatekeeper doesn't block execution\n\n3. Linux (x64):\n- Include bin/stockfish/linux/stockfish\n- Mark as executable in export settings\n\nExport workflow:\n- Create export_presets.cfg with all three platforms\n- Document export process in README.md\n- Test each build on target platform\n\nDistribution:\n- Windows: .zip or installer\n- macOS: .dmg with app bundle\n- Linux: .tar.gz or AppImage\n\nVerify:\n- Game launches on clean system\n- Stockfish spawns correctly\n- Puzzles load from bundled database\n- Settings persist between sessions",
         "testStrategy": "Export to each platform, test on clean VM or different machine, verify Stockfish integration works, play through all modes to completion, check file paths resolve correctly.",
         "priority": "low",
         "dependencies": [
-          14,
-          15,
-          16
+          "14",
+          "15",
+          "16"
         ],
         "status": "pending",
         "subtasks": [
@@ -1307,7 +1460,8 @@
             "dependencies": [],
             "details": "Create export_presets.cfg in the project root with three export presets:\n\n1. Windows Desktop (x64):\n   - Set platform to 'Windows Desktop'\n   - Configure binary_format/64_bits=true\n   - Set export path pattern (e.g., builds/windows/chess-puzzle.exe)\n   - Add custom_template paths if using custom templates\n\n2. macOS:\n   - Set platform to 'macOS'\n   - Configure for universal binary (x86_64 + arm64)\n   - Set export path pattern (e.g., builds/macos/chess-puzzle.app)\n   - Configure bundle identifier (com.yourcompany.chesspuzzle)\n   - Enable codesign/enable and configure identity\n\n3. Linux (x64):\n   - Set platform to 'Linux'\n   - Configure binary_format/64_bits=true\n   - Set export path pattern (e.g., builds/linux/chess-puzzle.x86_64)\n\nEnsure all presets have consistent naming and export paths for the build workflow.",
             "status": "pending",
-            "testStrategy": "Open Godot editor and verify all three export presets appear in Project > Export. Validate each preset shows no errors or warnings about missing templates."
+            "testStrategy": "Open Godot editor and verify all three export presets appear in Project > Export. Validate each preset shows no errors or warnings about missing templates.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -1318,7 +1472,8 @@
             ],
             "details": "Create the bin/stockfish directory structure:\n- bin/stockfish/windows/stockfish.exe\n- bin/stockfish/macos/stockfish (universal binary preferred)\n- bin/stockfish/linux/stockfish\n\nFor each export preset in export_presets.cfg, add the appropriate binary to the export filter:\n- Windows: Add 'bin/stockfish/windows/*' to include_filter\n- macOS: Add 'bin/stockfish/macos/*' to include_filter\n- Linux: Add 'bin/stockfish/linux/*' to include_filter\n\nUpdate the Stockfish process spawning code to use correct paths:\n- In editor: res://bin/stockfish/{platform}/stockfish\n- In export: OS.get_executable_path().get_base_dir() + '/bin/stockfish/{platform}/stockfish'\n\nFor Linux export, ensure the binary has execute permissions preserved using the 'export_files' setting with executable flag.",
             "status": "pending",
-            "testStrategy": "Export to each platform and verify the Stockfish binary exists in the correct location within the exported package. Test that OS.create_process() successfully spawns Stockfish from the bundled binary."
+            "testStrategy": "Export to each platform and verify the Stockfish binary exists in the correct location within the exported package. Test that OS.create_process() successfully spawns Stockfish from the bundled binary.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -1329,7 +1484,8 @@
             ],
             "details": "Create a signing workflow for macOS export:\n\n1. Create entitlements.plist file:\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>\n    <true/>\n</dict>\n</plist>\n```\n\n2. Add post-export script or document manual steps:\n   - Sign Stockfish: codesign --deep --force --options runtime --entitlements entitlements.plist --sign \"Developer ID Application: Your Name\" path/to/stockfish\n   - Sign the app bundle: codesign --deep --force --options runtime --sign \"Developer ID Application: Your Name\" path/to/chess-puzzle.app\n\n3. Configure export_presets.cfg with codesign settings:\n   - codesign/enable=true\n   - codesign/identity=\"Developer ID Application: Your Name\"\n   - codesign/entitlements/custom_file=\"res://entitlements.plist\"\n\n4. Document notarization process if distributing outside App Store.",
             "status": "pending",
-            "testStrategy": "Export macOS build, verify codesign -vv validates the signature. Test on a fresh macOS system that Gatekeeper allows the app to run without blocking. Verify Stockfish process spawns without security warnings."
+            "testStrategy": "Export macOS build, verify codesign -vv validates the signature. Test on a fresh macOS system that Gatekeeper allows the app to run without blocking. Verify Stockfish process spawns without security warnings.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -1341,7 +1497,8 @@
             ],
             "details": "Create a testing checklist for each platform:\n\nWindows Testing:\n- Export Windows build and run on Windows VM or machine\n- Verify game launches without errors\n- Play a puzzle and confirm Stockfish analysis works\n- Check OS.create_process() path resolution logs\n- Test from a clean directory (not project folder)\n\nmacOS Testing:\n- Export macOS build (.app bundle)\n- Test on both Intel and Apple Silicon Macs if possible\n- Verify Gatekeeper doesn't block execution\n- Confirm Stockfish spawns without security dialogs\n- Test puzzle analysis functionality\n\nLinux Testing:\n- Export Linux build\n- Test on Ubuntu/Debian or other common distro\n- Verify Stockfish binary has execute permissions\n- Confirm process spawning works\n- Test from extracted archive location\n\nFor all platforms:\n- Verify puzzles load from bundled database\n- Check settings persist between sessions\n- Test all game modes (Practice, Sprint, Streak, Daily)",
             "status": "pending",
-            "testStrategy": "Use clean VMs or different machines for each platform. Document any platform-specific issues. Create a testing matrix spreadsheet tracking: launch success, Stockfish spawn, puzzle loading, settings persistence, and mode functionality."
+            "testStrategy": "Use clean VMs or different machines for each platform. Document any platform-specific issues. Create a testing matrix spreadsheet tracking: launch success, Stockfish spawn, puzzle loading, settings persistence, and mode functionality.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -1352,15 +1509,23 @@
             ],
             "details": "Create platform-specific distribution packages:\n\nWindows Distribution:\n- Create .zip archive containing: chess-puzzle.exe, pck file, bin/stockfish/windows/\n- Alternatively, create installer using NSIS or Inno Setup\n- Include README.txt with any Windows-specific instructions\n\nmacOS Distribution:\n- Create .dmg disk image containing chess-puzzle.app\n- Configure dmg layout with Applications folder shortcut\n- Use create-dmg or hdiutil for automation\n- Ensure app bundle is properly signed before packaging\n\nLinux Distribution:\n- Create .tar.gz archive with: chess-puzzle.x86_64, pck file, bin/stockfish/linux/\n- Alternatively, create AppImage for single-file distribution\n- Include install.sh or README with permission instructions\n\nCreate build automation script (build_releases.sh):\n- Export all platforms via Godot CLI\n- Run code signing for macOS\n- Package into distribution formats\n- Generate checksums for verification\n\nUpdate README.md with:\n- System requirements per platform\n- Installation instructions\n- Stockfish attribution/licensing\n- Troubleshooting common issues",
             "status": "pending",
-            "testStrategy": "Download each distribution package on a clean system, extract/install, and verify the full user experience from download to gameplay. Check that all bundled files are present and the game runs correctly."
+            "testStrategy": "Download each distribution package on a clean system, extract/install, and verify the full user experience from download to gameplay. Check that all bundled files are present and the game runs correctly.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 5,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Break down into subtasks: 1) Configure export_presets.cfg for Windows/macOS/Linux, 2) Set up Stockfish binary bundling per platform, 3) Handle macOS code signing for Stockfish binary, 4) Test exports on each platform for Stockfish spawning, 5) Create distribution packages (.zip, .dmg, .tar.gz)"
       }
     ],
     "metadata": {
-      "created": "2025-12-04T19:20:13.095Z",
-      "updated": "2025-12-04T19:20:13.095Z",
-      "description": "Tasks for master context"
+      "version": "1.0.0",
+      "lastModified": "2025-12-04T20:31:37.911Z",
+      "taskCount": 17,
+      "completedCount": 1,
+      "tags": [
+        "master"
+      ]
     }
   }
 }

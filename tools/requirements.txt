@@ -1,0 +1,5 @@
+# Chess Puzzle Preprocessing Dependencies
+
+python-chess>=1.9.0    # For FEN parsing and move validation during preprocessing
+zstandard>=0.21.0      # For decompressing .zst Lichess database files
+requests>=2.28.0       # For downloading the puzzle database
