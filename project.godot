@@ -14,6 +14,10 @@ config/name="chess-puzzle"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[autoload]
+
+ChessLogic="*res://scripts/autoload/chess_logic.gd"
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

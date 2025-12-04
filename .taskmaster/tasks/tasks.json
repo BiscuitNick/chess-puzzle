@@ -116,7 +116,7 @@
         "dependencies": [
           "1"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -124,9 +124,10 @@
             "description": "Set up the ChessLogic autoload singleton file with all piece type enums, color enums, piece constants, and board state variables.",
             "dependencies": [],
             "details": "Create scripts/autoload/chess_logic.gd with:\n- class_name ChessLogic extending Node\n- PieceType enum: NONE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING\n- PieceColor enum: WHITE, BLACK\n- Piece constants: EMPTY=0, W_PAWN=1, W_KNIGHT=2, W_BISHOP=3, W_ROOK=4, W_QUEEN=5, W_KING=6, B_PAWN=9, B_KNIGHT=10, B_BISHOP=11, B_ROOK=12, B_QUEEN=13, B_KING=14\n- Board state variables: board (Array[int] of 64 elements), side_to_move, castling_rights (bitmask), en_passant_square, halfmove_clock, fullmove_number\n- Initialize board array in _ready() with 64 zeros\n- Register as autoload in project.godot under [autoload] section",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify autoload loads correctly, check all constants have expected values, confirm board array initializes to 64 elements.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:45:19.920Z"
           },
           {
             "id": 2,
@@ -136,9 +137,10 @@
               1
             ],
             "details": "Implement parse_fen(fen: String) -> void:\n- Split FEN string by spaces into 6 fields\n- Parse piece placement (field 0):\n  - Split by '/' to get 8 ranks\n  - Iterate each rank from a8 (index 0) to h1 (index 63)\n  - Map piece characters to constants: p=B_PAWN, n=B_KNIGHT, b=B_BISHOP, r=B_ROOK, q=B_QUEEN, k=B_KING (lowercase=black, uppercase=white)\n  - Handle digits 1-8 as consecutive empty squares\n- Parse side to move (field 1):\n  - 'w' sets side_to_move = PieceColor.WHITE\n  - 'b' sets side_to_move = PieceColor.BLACK\n- Add helper function algebraic_to_index(square: String) -> int for coordinate conversion (a8=0, h1=63)",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test with starting position FEN, verify each piece is at correct index, verify side_to_move is set correctly for both 'w' and 'b'.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:45:19.923Z"
           },
           {
             "id": 3,
@@ -148,9 +150,10 @@
               2
             ],
             "details": "Extend parse_fen() to parse remaining FEN fields:\n- Parse castling rights (field 2):\n  - Initialize castling_rights = 0\n  - 'K' adds 1 (white kingside)\n  - 'Q' adds 2 (white queenside)\n  - 'k' adds 4 (black kingside)\n  - 'q' adds 8 (black queenside)\n  - '-' means no castling rights\n- Parse en passant square (field 3):\n  - '-' sets en_passant_square = -1\n  - Otherwise convert algebraic notation to board index using algebraic_to_index()\n- Parse halfmove clock (field 4): int(fields[4])\n- Parse fullmove number (field 5): int(fields[5])\n- Add helper function index_to_algebraic(index: int) -> String for reverse conversion",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test partial castling rights (e.g., 'Kq'), verify bitmask values, test en passant squares on ranks 3 and 6, test halfmove and fullmove parsing.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:45:19.925Z"
           },
           {
             "id": 4,
@@ -160,9 +163,10 @@
               3
             ],
             "details": "Implement get_piece(square: int) -> int:\n- Return board[square] if square is valid (0-63)\n- Return EMPTY for invalid squares\n\nImplement to_fen() -> String:\n- Build piece placement string:\n  - Iterate ranks 0-7 (a8-h1)\n  - For each rank, count consecutive empty squares as digits\n  - Map piece constants back to FEN characters\n  - Join ranks with '/'\n- Add side to move: 'w' or 'b'\n- Build castling string from bitmask (or '-' if none)\n- Convert en_passant_square to algebraic (or '-' if -1)\n- Append halfmove_clock and fullmove_number\n- Join all fields with spaces\n\nAdd helper: piece_to_fen_char(piece: int) -> String for character mapping",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test round-trip: parse_fen() then to_fen() should return equivalent FEN. Test starting position, positions with en passant, various castling states.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:45:19.927Z"
           },
           {
             "id": 5,
@@ -172,14 +176,16 @@
               3
             ],
             "details": "Implement uci_to_squares(uci: String) -> Dictionary:\n- Parse first 2 characters as source square (e.g., 'e2')\n- Parse characters 3-4 as destination square (e.g., 'e4')\n- Convert both to board indices using algebraic_to_index()\n- Check for 5th character for promotion piece (q, r, b, n)\n- Return Dictionary with keys:\n  - 'from': int (source square index)\n  - 'to': int (destination square index)\n  - 'promotion': int (piece constant or EMPTY if no promotion)\n- Map promotion characters: 'q'->QUEEN, 'r'->ROOK, 'b'->BISHOP, 'n'->KNIGHT\n- Handle both white and black promotions based on destination rank\n\nAdd reverse function squares_to_uci(from: int, to: int, promotion: int = EMPTY) -> String",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test standard moves (e2e4), captures, castling notation (e1g1), and promotions (e7e8q). Verify correct index mapping and promotion piece detection.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:45:19.929Z"
           }
         ],
         "complexity": 5,
         "recommendedSubtasks": 5,
-        "expansionPrompt": "Break down into subtasks: 1) Create chess_logic.gd autoload singleton with piece constants and enums, 2) Implement parse_fen() to parse piece placement and side to move, 3) Implement castling rights and en passant parsing, 4) Implement get_piece() and to_fen() helper functions, 5) Implement uci_to_squares() for move notation conversion"
+        "expansionPrompt": "Break down into subtasks: 1) Create chess_logic.gd autoload singleton with piece constants and enums, 2) Implement parse_fen() to parse piece placement and side to move, 3) Implement castling rights and en passant parsing, 4) Implement get_piece() and to_fen() helper functions, 5) Implement uci_to_squares() for move notation conversion",
+        "updatedAt": "2025-12-04T20:45:19.929Z"
       },
       {
         "id": "3",
@@ -1520,9 +1526,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-12-04T20:31:37.911Z",
+      "lastModified": "2025-12-04T20:45:19.929Z",
       "taskCount": 17,
-      "completedCount": 1,
+      "completedCount": 2,
       "tags": [
         "master"
       ]
