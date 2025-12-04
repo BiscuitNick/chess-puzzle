@@ -1,0 +1,149 @@
+{
+	"meta": {
+		"generatedAt": "2025-12-04T19:22:28.919Z",
+		"tasksAnalyzed": 17,
+		"totalTasks": 17,
+		"analysisCount": 17,
+		"thresholdScore": 5,
+		"projectName": "Taskmaster",
+		"usedResearch": false
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 1,
+			"taskTitle": "Project Setup and Asset Pipeline",
+			"complexityScore": 6,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "Break down into subtasks: 1) Create directory structure, 2) Install godot-sqlite plugin, 3) Install GUT testing framework, 4) Acquire chess piece sprites, 5) Create preprocess_puzzles.py script with download/filter/validate logic, 6) Create requirements.txt for Python dependencies, 7) Download and organize Stockfish binaries for all platforms",
+			"reasoning": "Moderate complexity due to multiple external dependencies (plugins, Stockfish binaries), Python preprocessing script with Lichess database handling, and cross-platform binary management. No existing code to build on - starting from scratch."
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "FEN Parser and Board State Representation",
+			"complexityScore": 5,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down into subtasks: 1) Create chess_logic.gd autoload singleton with piece constants and enums, 2) Implement parse_fen() to parse piece placement and side to move, 3) Implement castling rights and en passant parsing, 4) Implement get_piece() and to_fen() helper functions, 5) Implement uci_to_squares() for move notation conversion",
+			"reasoning": "Moderate complexity. FEN parsing is well-documented but requires careful handling of all 6 fields. The 64-element array representation is straightforward but needs proper index mapping (a8=0, h1=63). Good unit test coverage defined."
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "Chess Board Rendering and Piece Display",
+			"complexityScore": 5,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down into subtasks: 1) Create chess_board.tscn scene structure with Node2D root, 2) Implement _draw() for 8x8 grid rendering with alternating colors, 3) Create piece.tscn and implement piece placement from FEN, 4) Implement board flipping with coordinate transformation, 5) Add highlight rendering for selected squares and last move",
+			"reasoning": "Moderate complexity involving Godot 2D rendering, sprite management, and coordinate system transformations. Board flipping adds complexity to screen_to_board/board_to_screen conversions. Depends on FEN parser being complete."
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "Move Generation and Validation",
+			"complexityScore": 8,
+			"recommendedSubtasks": 8,
+			"expansionPrompt": "Break down into subtasks: 1) Implement pawn move generation (pushes, captures, double move), 2) Implement knight move generation, 3) Implement sliding piece logic (bishop/rook/queen rays), 4) Implement king move generation, 5) Implement attack detection for check verification, 6) Implement is_in_check() function, 7) Implement is_checkmate() and is_stalemate(), 8) Implement move legality filter (verify king not left in check)",
+			"reasoning": "High complexity - chess move generation is algorithmically intricate. Must handle all piece types correctly, sliding piece ray casting, and the critical step of filtering moves that leave king in check. Pin detection adds significant complexity."
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "Special Moves Implementation",
+			"complexityScore": 7,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Break down into subtasks: 1) Implement castling rights tracking and validation, 2) Implement kingside castling move execution, 3) Implement queenside castling move execution, 4) Implement en passant capture validation and execution, 5) Implement pawn promotion detection and piece transformation, 6) Update make_move() to handle all special cases and update game state",
+			"reasoning": "High complexity due to multiple edge cases. Castling requires checking 5+ conditions (rights, empty squares, no check/attack through). En passant has subtle capture mechanics. Promotion affects move flow. All require careful state updates."
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "Stockfish Engine Integration",
+			"complexityScore": 8,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "Break down into subtasks: 1) Create engine_interface.gd abstract base class, 2) Implement StockfishProcess spawning with OS.create_process(), 3) Implement UCI protocol communication (uci, isready, position, go), 4) Parse UCI output for bestmove and mate score, 5) Implement threaded analysis to prevent UI blocking, 6) Add platform-specific binary path resolution, 7) Implement thinking_started/thinking_finished signals with 150ms threshold",
+			"reasoning": "High complexity involving process spawning, inter-process communication via UCI protocol, threading for non-blocking analysis, and cross-platform binary handling. UCI parsing requires careful state machine implementation."
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "Move Input and Board Interaction",
+			"complexityScore": 6,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Break down into subtasks: 1) Implement click detection with screen_to_board conversion, 2) Implement two-click move system (select then move), 3) Add legal move highlighting for selected piece, 4) Create promotion_dialog.tscn with piece selection buttons, 5) Implement animate_move() with Tween for smooth piece movement, 6) Add optional drag-and-drop input handling",
+			"reasoning": "Moderate-high complexity. Two-click system has state management, coordinate conversion must account for board flipping, and promotion dialog adds modal UI complexity. Animation timing needs polish for good UX."
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "Puzzle Controller and Core Game Loop",
+			"complexityScore": 8,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "Break down into subtasks: 1) Create puzzle_data.gd class with puzzle fields, 2) Implement PuzzleController state machine with all states, 3) Implement load_puzzle() and position setup, 4) Implement submit_move() with Stockfish validation flow, 5) Implement opponent response using Stockfish best move, 6) Create puzzle_validator.gd for mate-in-N verification, 7) Implement mode-specific result handling (retry, strike, game over)",
+			"reasoning": "High complexity - core game loop orchestrating chess logic, engine integration, and mode-specific behaviors. State machine has 7 states with transitions. Stockfish validation for alternate mates adds async complexity."
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "Practice Mode Implementation",
+			"complexityScore": 5,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down into subtasks: 1) Create practice_mode.gd with settings and state, 2) Implement puzzle loading with SQLite filtering (rating, mate depth), 3) Implement hint system (highlight correct piece), 4) Implement solution reveal with move animation, 5) Create practice_setup.tscn with filter controls",
+			"reasoning": "Moderate complexity. Most game loop complexity is in PuzzleController. Practice mode adds forgiving retry behavior, hint/solution features, and filter UI. SQLite queries are straightforward with existing schema."
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "Sprint Mode Implementation",
+			"complexityScore": 5,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down into subtasks: 1) Create sprint_mode.gd with timer and strike tracking, 2) Implement countdown timer in _process(), 3) Implement three-strike system with puzzle restart, 4) Create timer_display.tscn and strike_indicator.tscn components, 5) Create sprint_setup.tscn with time limit and difficulty options",
+			"reasoning": "Moderate complexity. Timer and strike mechanics are straightforward. Difficulty presets map to rating ranges. Main challenge is integrating with PuzzleController for correct fail handling (restart puzzle, not game over)."
+		},
+		{
+			"taskId": 11,
+			"taskTitle": "Streak Mode Implementation",
+			"complexityScore": 5,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down into subtasks: 1) Create streak_mode.gd with rating progression state, 2) Implement get_next_rating() with +25-50 increment, 3) Implement immediate game over on wrong move, 4) Track and display failed puzzle for end screen, 5) Create streak_setup.tscn and streak_counter.tscn",
+			"reasoning": "Moderate complexity. Progressive difficulty is simple math. One-shot failure is actually simpler than Practice/Sprint (no retry logic). Main UX concern is storing failed puzzle for post-game review."
+		},
+		{
+			"taskId": 12,
+			"taskTitle": "Daily Challenge Mode Implementation",
+			"complexityScore": 6,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Break down into subtasks: 1) Create daily_generator.gd with rating brackets, 2) Implement deterministic hash-based puzzle selection, 3) Implement one-attempt-per-puzzle enforcement, 4) Track daily completion state with date check, 5) Implement share text generation with emoji grid, 6) Create daily_complete.tscn with share button and clipboard",
+			"reasoning": "Moderate-high complexity. Hash-based deterministic selection is tricky to implement correctly (must avoid SQLite RANDOM). Date-based state tracking needs careful midnight reset logic. Share feature requires platform clipboard access."
+		},
+		{
+			"taskId": 13,
+			"taskTitle": "User Data Persistence and Statistics",
+			"complexityScore": 5,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down into subtasks: 1) Create user_data.gd autoload with stats/settings dictionaries, 2) Implement SQLite user_puzzle_history table and queries, 3) Implement JSON stats file save/load for aggregates, 4) Implement settings persistence and retrieval, 5) Add query for random unsolved puzzle with LEFT JOIN",
+			"reasoning": "Moderate complexity. Hybrid SQLite/JSON approach is sound - history in SQLite for queries, aggregates in JSON for speed. File I/O in Godot is straightforward. Main concern is data migration if schema changes."
+		},
+		{
+			"taskId": 14,
+			"taskTitle": "UI Screens and Navigation",
+			"complexityScore": 7,
+			"recommendedSubtasks": 8,
+			"expansionPrompt": "Break down into subtasks: 1) Create main.tscn with scene switching logic, 2) Implement main_menu.tscn with mode buttons, 3) Create puzzle_screen.tscn with mode-aware HUD, 4) Implement game_over_screen.tscn with mode-specific layouts, 5) Create stats_screen.tscn with per-mode statistics, 6) Create settings_menu.tscn with toggle controls, 7) Create licenses_screen.tscn for GPL compliance, 8) Implement screen transitions and navigation flow",
+			"reasoning": "Moderate-high complexity due to sheer number of screens (8+) and mode-aware behavior. Each mode has unique HUD elements and game over layouts. Settings require bidirectional binding with user_data. Navigation state management."
+		},
+		{
+			"taskId": 15,
+			"taskTitle": "Audio, Animations, and Polish",
+			"complexityScore": 4,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down into subtasks: 1) Create audio_manager.gd autoload with sound playback, 2) Acquire and integrate 6 sound effect assets, 3) Implement piece movement animation with Tween, 4) Add screen transition animations, 5) Create thinking_indicator.tscn with timer threshold",
+			"reasoning": "Lower complexity - mostly straightforward Godot patterns. AudioStreamPlayer for sounds, Tween for animations. Main effort is sourcing quality audio assets. Thinking indicator already architected in PRD."
+		},
+		{
+			"taskId": 16,
+			"taskTitle": "Testing Suite and Quality Assurance",
+			"complexityScore": 6,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "Break down into subtasks: 1) Set up GUT framework and test runner, 2) Implement test_fen_parser.gd tests, 3) Implement test_move_generation.gd tests, 4) Implement test_check_detection.gd tests, 5) Implement test_checkmate_detection.gd tests, 6) Implement test_special_moves.gd tests, 7) Implement test_stockfish_integration.gd and test_puzzle_validation.gd",
+			"reasoning": "Moderate complexity. PRD provides excellent test specifications. GUT framework is mature. Main effort is implementing all test cases correctly and ensuring async Stockfish tests work. Tests should be written alongside implementation ideally."
+		},
+		{
+			"taskId": 17,
+			"taskTitle": "Export Builds and Distribution",
+			"complexityScore": 5,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down into subtasks: 1) Configure export_presets.cfg for Windows/macOS/Linux, 2) Set up Stockfish binary bundling per platform, 3) Handle macOS code signing for Stockfish binary, 4) Test exports on each platform for Stockfish spawning, 5) Create distribution packages (.zip, .dmg, .tar.gz)",
+			"reasoning": "Moderate complexity. Godot export is straightforward, but macOS code signing adds friction. Testing on each platform is essential to verify Stockfish process spawning. Path resolution must work in exported builds (not just editor)."
+		}
+	]
+}
