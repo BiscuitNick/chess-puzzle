@@ -27,6 +27,16 @@ var legal_move_squares: Array[int] = []
 var last_move_from: int = -1
 var last_move_to: int = -1
 
+# Animation state
+var is_animating: bool = false
+signal move_animation_finished
+
+# Drag state
+var is_dragging: bool = false
+var drag_from: int = -1
+var _drag_sprite: Sprite2D = null
+var _original_sprite_pos: Vector2
+
 # Piece sprites container
 var _pieces_container: Node2D
 var _piece_sprites: Dictionary = {}  # square index -> Sprite2D
@@ -235,24 +245,80 @@ func clear_selection() -> void:
 	queue_redraw()
 
 
-## Handle input for square clicking.
+## Handle input for square clicking and drag-and-drop.
 func _input(event: InputEvent) -> void:
+	if is_animating:
+		return
+
 	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		if event.button_index == MOUSE_BUTTON_LEFT:
 			var local_pos = get_local_mouse_position()
 			var square = screen_to_board(local_pos)
 
-			if square >= 0:
-				square_clicked.emit(square)
+			if event.pressed:
+				# Mouse down - start drag or select
+				if square >= 0:
+					square_clicked.emit(square)
 
-				# If we have a selection and clicked a legal move, attempt the move
-				if selected_square >= 0 and square in legal_move_squares:
-					move_attempted.emit(selected_square, square)
-				# If clicked on a piece, select it
-				elif _piece_sprites.has(square):
-					piece_selected.emit(square)
-				else:
-					clear_selection()
+					if _piece_sprites.has(square):
+						# Start dragging this piece
+						_start_drag(square)
+						piece_selected.emit(square)
+					elif selected_square >= 0 and square in legal_move_squares:
+						# Click on legal move square
+						move_attempted.emit(selected_square, square)
+					else:
+						clear_selection()
+			else:
+				# Mouse up - end drag
+				if is_dragging:
+					_end_drag(square)
+
+	elif event is InputEventMouseMotion and is_dragging:
+		_update_drag(event.position)
+
+
+func _start_drag(square: int) -> void:
+	if not _piece_sprites.has(square):
+		return
+
+	is_dragging = true
+	drag_from = square
+	_drag_sprite = _piece_sprites[square]
+	_original_sprite_pos = _drag_sprite.position
+
+	# Elevate the dragged piece
+	_drag_sprite.z_index = 100
+
+
+func _update_drag(screen_pos: Vector2) -> void:
+	if _drag_sprite:
+		_drag_sprite.position = get_local_mouse_position()
+
+
+func _end_drag(square: int) -> void:
+	if not is_dragging or not _drag_sprite:
+		is_dragging = false
+		drag_from = -1
+		return
+
+	# Reset z-index
+	_drag_sprite.z_index = 0
+
+	if square >= 0 and square in legal_move_squares and square != drag_from:
+		# Valid drop - attempt the move
+		move_attempted.emit(drag_from, square)
+		# Don't reset position - move_piece or animate_move will handle it
+	else:
+		# Invalid drop - animate back to original position
+		var tween = create_tween()
+		tween.set_trans(Tween.TRANS_CUBIC)
+		tween.set_ease(Tween.EASE_OUT)
+		tween.tween_property(_drag_sprite, "position", _original_sprite_pos, 0.1)
+
+	is_dragging = false
+	drag_from = -1
+	_drag_sprite = null
 
 
 ## Get the total board size.
@@ -260,7 +326,7 @@ func get_board_size() -> Vector2:
 	return Vector2(square_size * 8, square_size * 8)
 
 
-## Move a piece visually (for animation or immediate move).
+## Move a piece visually (immediate, no animation).
 func move_piece(from: int, to: int) -> void:
 	if not _piece_sprites.has(from):
 		return
@@ -279,3 +345,93 @@ func move_piece(from: int, to: int) -> void:
 
 	# Update last move highlight
 	set_last_move(from, to)
+
+
+## Animate a piece move with smooth tweening.
+func animate_move(from: int, to: int, duration: float = 0.15) -> void:
+	if not _piece_sprites.has(from):
+		return
+
+	if is_animating:
+		return
+
+	is_animating = true
+
+	# Remove any piece at destination
+	if _piece_sprites.has(to):
+		_piece_sprites[to].queue_free()
+		_piece_sprites.erase(to)
+
+	var sprite = _piece_sprites[from]
+	var target_pos = board_to_screen(to)
+
+	# Elevate z-index during animation
+	var original_z = sprite.z_index
+	sprite.z_index = 100
+
+	# Create tween for smooth animation
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_CUBIC)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(sprite, "position", target_pos, duration)
+	tween.tween_callback(func():
+		sprite.z_index = original_z
+		_piece_sprites.erase(from)
+		_piece_sprites[to] = sprite
+		is_animating = false
+		move_animation_finished.emit()
+	)
+
+	# Update last move highlight
+	set_last_move(from, to)
+
+
+## Handle special move animations (castling, en passant).
+func animate_castle(king_from: int, king_to: int, rook_from: int, rook_to: int, duration: float = 0.15) -> void:
+	if not _piece_sprites.has(king_from) or not _piece_sprites.has(rook_from):
+		return
+
+	is_animating = true
+
+	var king_sprite = _piece_sprites[king_from]
+	var rook_sprite = _piece_sprites[rook_from]
+
+	# Elevate both pieces
+	king_sprite.z_index = 100
+	rook_sprite.z_index = 100
+
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_CUBIC)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_parallel(true)
+	tween.tween_property(king_sprite, "position", board_to_screen(king_to), duration)
+	tween.tween_property(rook_sprite, "position", board_to_screen(rook_to), duration)
+	tween.set_parallel(false)
+	tween.tween_callback(func():
+		king_sprite.z_index = 0
+		rook_sprite.z_index = 0
+		_piece_sprites.erase(king_from)
+		_piece_sprites.erase(rook_from)
+		_piece_sprites[king_to] = king_sprite
+		_piece_sprites[rook_to] = rook_sprite
+		is_animating = false
+		move_animation_finished.emit()
+	)
+
+	set_last_move(king_from, king_to)
+
+
+## Remove a piece from the board (for en passant capture).
+func remove_piece(square: int) -> void:
+	if _piece_sprites.has(square):
+		_piece_sprites[square].queue_free()
+		_piece_sprites.erase(square)
+
+
+## Replace a piece with a different piece (for promotion).
+func promote_piece(square: int, fen_char: String) -> void:
+	if _piece_sprites.has(square):
+		_piece_sprites[square].queue_free()
+		_piece_sprites.erase(square)
+
+	_add_piece(fen_char, square)

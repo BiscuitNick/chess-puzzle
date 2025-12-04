@@ -607,7 +607,7 @@
           "4",
           "5"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -615,9 +615,10 @@
             "description": "Add mouse input handling to chess_board.gd that converts screen pixel coordinates to board square indices, accounting for board flipping state.",
             "dependencies": [],
             "details": "Extend scripts/board/chess_board.gd with _input() event handling for InputEventMouseButton. Implement screen_to_board(screen_pos: Vector2) -> int function that converts pixel position to square index (0-63). Account for square_size, board offset, and flipped state. Return -1 for clicks outside the board. Emit square_clicked(square: int) signal when valid square is clicked. Consider viewport scaling and potential parent node transforms in coordinate calculation.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test clicking all four corners of the board returns correct square indices (0, 7, 56, 63 or flipped equivalents). Test clicking outside board returns -1. Test with board flipped vs unflipped. Verify coordinate math works with different window sizes.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:16:16.079Z"
           },
           {
             "id": 2,
@@ -627,9 +628,10 @@
               1
             ],
             "details": "Add selected_square: int = -1 state variable to track currently selected piece. On square_clicked: if no piece selected and clicked square has own piece, set selected_square and emit piece_selected signal. If piece already selected: check if clicked square is in legal_move_squares - if yes emit move_attempted(from, to) signal, if no clear selection. Integrate with ChessLogic.get_legal_moves() to populate legal_move_squares when piece selected. Add clear_selection() method that resets selected_square to -1 and clears legal_move_squares. Handle edge case of clicking same square twice to deselect.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Click own piece shows it as selected. Click legal move square triggers move_attempted. Click illegal square clears selection. Click opponent piece when nothing selected does nothing. Click same piece twice deselects. Verify selection state resets after successful move.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:16:16.081Z"
           },
           {
             "id": 3,
@@ -639,9 +641,10 @@
               2
             ],
             "details": "Implement highlight_squares() rendering in _draw() or via child nodes. Create three highlight types: 1) Selected piece highlight - colored overlay on selected_square, 2) Legal move indicators - dots/circles on empty legal squares, rings/corner markers on capture squares, 3) Last move highlight - subtle color on from_square and to_square of most recent move. Add last_move_from: int and last_move_to: int state variables. Use semi-transparent colors (highlight_color, last_move_color from exports). Call queue_redraw() when selection or last move changes. Consider using CanvasItem draw_circle() for dots and draw_arc() for rings.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Select piece and verify legal moves show appropriate indicators (dots for moves, rings for captures). Verify selected square has distinct highlight. Make a move and verify last move squares are highlighted. Verify highlights clear when selection cleared. Test visual clarity with different board color schemes.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:16:16.083Z"
           },
           {
             "id": 4,
@@ -649,9 +652,10 @@
             "description": "Build the pawn promotion UI modal that appears when a pawn reaches the final rank, allowing player to choose promotion piece.",
             "dependencies": [],
             "details": "Create scenes/ui/promotion_dialog.tscn as a modal Control node. Add four TextureButton children for Queen, Rook, Bishop, Knight with piece sprites. Center dialog over the promotion square. Add signal promotion_selected(piece_type: int) that emits when button clicked. Include cancel/close behavior (clicking outside closes with no selection). Style with panel background matching chess UI aesthetic. Add auto_promote(prefer_queen: bool) method for Sprint/Streak modes that returns Queen unless it would remove a forced mate (integrate with ChessLogic.is_checkmate_after_move). Script in scripts/ui/promotion_dialog.gd.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Trigger promotion dialog and verify all four buttons are clickable and emit correct piece type. Test dialog positioning appears near the promotion square. Test clicking outside dialog closes it. Test auto_promote logic selects Queen when it maintains mate, falls back to other pieces otherwise.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:16:16.085Z"
           },
           {
             "id": 5,
@@ -661,9 +665,10 @@
               1
             ],
             "details": "Implement animate_move(from: int, to: int, duration: float = 0.2) -> void in chess_board.gd. Use create_tween() to animate the piece sprite position from board_to_screen(from) to board_to_screen(to). During animation, temporarily reparent or elevate the moving piece's z_index so it renders above other pieces. Add signal move_animation_finished() emitted when tween completes. Handle special cases: castling animates both king and rook, en passant removes captured pawn after animation. Add is_animating: bool state to prevent input during animation. Support animation skip for rapid play.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify pieces smoothly slide to destination over duration. Test z-ordering during animation (moving piece stays on top). Test castling animates both pieces. Test en passant animation removes captured pawn. Verify input blocked during animation. Test animation can be skipped/instant for rapid moves.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:16:16.087Z"
           },
           {
             "id": 6,
@@ -675,14 +680,16 @@
               3
             ],
             "details": "Handle InputEventMouseButton press to start drag if on own piece. Track drag state with is_dragging: bool and drag_from: int. During drag (InputEventMouseMotion), render piece sprite following mouse cursor at elevated z_index. Show legal moves while dragging (reuse highlight system from subtask 3). On mouse release: if over legal square emit move_attempted and animate to final position, if over illegal square animate piece back to origin. Handle edge cases: drag starting then releasing on same square (treated as selection for two-click), drag outside board bounds snaps back. Ensure drag-drop and two-click systems coexist without conflict.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Drag piece and verify it follows cursor. Verify legal moves highlight during drag. Drop on legal square makes move. Drop on illegal square returns piece to origin. Drop on same square switches to selection mode. Test drag works correctly with board flipped. Verify no conflicts between drag and click input modes.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T21:16:16.088Z"
           }
         ],
         "complexity": 6,
         "recommendedSubtasks": 6,
-        "expansionPrompt": "Break down into subtasks: 1) Implement click detection with screen_to_board conversion, 2) Implement two-click move system (select then move), 3) Add legal move highlighting for selected piece, 4) Create promotion_dialog.tscn with piece selection buttons, 5) Implement animate_move() with Tween for smooth piece movement, 6) Add optional drag-and-drop input handling"
+        "expansionPrompt": "Break down into subtasks: 1) Implement click detection with screen_to_board conversion, 2) Implement two-click move system (select then move), 3) Add legal move highlighting for selected piece, 4) Create promotion_dialog.tscn with piece selection buttons, 5) Implement animate_move() with Tween for smooth piece movement, 6) Add optional drag-and-drop input handling",
+        "updatedAt": "2025-12-04T21:16:16.088Z"
       },
       {
         "id": "8",
@@ -1556,9 +1563,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-12-04T21:12:20.056Z",
+      "lastModified": "2025-12-04T21:16:16.089Z",
       "taskCount": 17,
-      "completedCount": 6,
+      "completedCount": 7,
       "tags": [
         "master"
       ]
