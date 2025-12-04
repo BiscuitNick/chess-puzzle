@@ -399,7 +399,7 @@
         "dependencies": [
           "4"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -407,9 +407,10 @@
             "description": "Add castling rights state management with bitmask tracking (K=1, Q=2, k=4, q=8) and implement can_castle_kingside(color) and can_castle_queenside(color) validation functions that check all required conditions.",
             "dependencies": [],
             "details": "Add to chess_logic.gd:\n\n1. Ensure castling_rights bitmask constant definitions:\n   - CASTLE_K = 1 (white kingside)\n   - CASTLE_Q = 2 (white queenside)\n   - CASTLE_k = 4 (black kingside)\n   - CASTLE_q = 8 (black queenside)\n\n2. Implement can_castle_kingside(color: PieceColor) -> bool:\n   - Check appropriate right bit is set (K for white, k for black)\n   - Verify king is on starting square (e1/e8)\n   - Verify kingside rook is on starting square (h1/h8)\n   - Verify squares f1/f8 and g1/g8 are empty\n   - Verify king is not currently in check using is_in_check()\n   - Verify f1/f8 and g1/g8 are not attacked using is_square_attacked()\n\n3. Implement can_castle_queenside(color: PieceColor) -> bool:\n   - Check appropriate right bit is set (Q for white, q for black)\n   - Verify king on starting square (e1/e8)\n   - Verify queenside rook on starting square (a1/a8)\n   - Verify squares b1/b8, c1/c8, d1/d8 are empty\n   - Verify king is not in check\n   - Verify d1/d8 and c1/c8 are not attacked (king passes through d, lands on c)\n\n4. Integrate with get_king_moves() to include castling target squares (g1/g8 and c1/c8) when valid",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test castling validation with: fresh starting position (both sides valid), position after king moved (invalid), position with rook captured (invalid), king in check (invalid), path through check (invalid), blocked path (invalid). Use FEN positions for each case.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:57:13.446Z"
           },
           {
             "id": 2,
@@ -419,9 +420,10 @@
               1
             ],
             "details": "Modify make_move(from: int, to: int, promotion: PieceType = EMPTY) to handle kingside castling:\n\n1. Add detection logic at start of make_move():\n   - Check if moving piece is a king\n   - Check if move is exactly 2 squares to the right (to = from + 2)\n   - For white: from=e1(60), to=g1(62), rook from=h1(63), rook to=f1(61)\n   - For black: from=e8(4), to=g8(6), rook from=h8(7), rook to=f8(5)\n\n2. Execute compound move:\n   - Move king: board[from] = EMPTY, board[to] = KING\n   - Move rook: board[rook_from] = EMPTY, board[rook_to] = ROOK\n\n3. Update castling rights:\n   - Clear both kingside and queenside rights for the castling color\n   - For white: castling_rights &= ~(CASTLE_K | CASTLE_Q)\n   - For black: castling_rights &= ~(CASTLE_k | CASTLE_q)\n\n4. Update other state:\n   - Clear en_passant_square = -1\n   - Reset halfmove_clock = 0 (optional, some engines don't reset on castle)\n   - Switch side_to_move\n   - Increment fullmove_number if black just moved",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test kingside castling execution: verify king ends on g1/g8, rook ends on f1/f8, both original squares are empty, castling rights cleared for that color, en passant square cleared. Test with white and black separately.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:57:13.450Z"
           },
           {
             "id": 3,
@@ -431,9 +433,10 @@
               1
             ],
             "details": "Modify make_move() to handle queenside castling:\n\n1. Add detection logic (in addition to kingside check):\n   - Check if moving piece is a king\n   - Check if move is exactly 2 squares to the left (to = from - 2)\n   - For white: from=e1(60), to=c1(58), rook from=a1(56), rook to=d1(59)\n   - For black: from=e8(4), to=c8(2), rook from=a8(0), rook to=d8(3)\n\n2. Execute compound move:\n   - Move king: board[from] = EMPTY, board[to] = KING\n   - Move rook: board[rook_from] = EMPTY, board[rook_to] = ROOK\n\n3. Update castling rights (same as kingside - clear both for color):\n   - For white: castling_rights &= ~(CASTLE_K | CASTLE_Q)\n   - For black: castling_rights &= ~(CASTLE_k | CASTLE_q)\n\n4. Update state same as kingside:\n   - Clear en_passant_square\n   - Switch side_to_move\n   - Increment fullmove_number if black moved\n\n5. Consider refactoring castling logic into helper:\n   - _execute_castle(king_from, king_to, rook_from, rook_to, color)",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test queenside castling execution: verify king ends on c1/c8, rook ends on d1/d8, a-file and e-file squares empty, castling rights cleared. Verify b1/b8 remains empty (rook jumps over it). Test white and black separately.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:57:13.452Z"
           },
           {
             "id": 4,
@@ -441,9 +444,10 @@
             "description": "Add en passant square tracking on pawn double pushes, integrate en passant capture into pawn move generation, and execute the special capture that removes the pawn from a different square than the target.",
             "dependencies": [],
             "details": "Implement en passant in chess_logic.gd:\n\n1. En passant square tracking in make_move():\n   - On ANY move, first clear: en_passant_square = -1\n   - Detect pawn double push: piece is pawn AND abs(from - to) == 16\n   - Set en_passant_square to the skipped square:\n     - White pawn from rank 2 to rank 4: en_passant_square = from - 8\n     - Black pawn from rank 7 to rank 5: en_passant_square = from + 8\n\n2. Integrate with get_pawn_moves(square, color):\n   - Check if en_passant_square != -1\n   - Check if pawn is on correct rank (rank 5 for white, rank 4 for black)\n   - Check if en_passant_square is diagonally adjacent to pawn\n   - Add en_passant_square to legal move targets if valid\n\n3. Execute en passant capture in make_move():\n   - Detect: pawn moves diagonally AND target square == en_passant_square\n   - Calculate captured pawn square:\n     - White capturing: captured = en_passant_square + 8 (one rank below target)\n     - Black capturing: captured = en_passant_square - 8 (one rank above target)\n   - Remove captured pawn: board[captured] = EMPTY\n   - Move capturing pawn normally: board[from] = EMPTY, board[to] = pawn\n\n4. Reset halfmove_clock on en passant (it's a pawn move and capture)",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test en passant: 1) Double push sets correct en_passant_square, 2) Single push clears it, 3) Non-pawn move clears it, 4) Adjacent pawn can capture to en_passant_square, 5) Captured pawn removed from correct square (not target), 6) En passant only available immediately after double push. Use FEN: rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:57:13.454Z"
           },
           {
             "id": 5,
@@ -451,9 +455,10 @@
             "description": "Detect when pawns reach the final rank during make_move() and transform them to the specified promotion piece type (queen, rook, bishop, or knight) using the optional promotion parameter.",
             "dependencies": [],
             "details": "Implement pawn promotion in make_move():\n\n1. Add promotion detection after pawn move execution:\n   - Check if moved piece is a pawn\n   - Check if destination rank is promotion rank:\n     - White pawn: to/8 == 0 (rank 8, indices 0-7)\n     - Black pawn: to/8 == 7 (rank 1, indices 56-63)\n\n2. Handle promotion parameter:\n   - make_move() already accepts promotion: PieceType = EMPTY\n   - If pawn reaches final rank:\n     - If promotion == EMPTY, default to QUEEN (for auto-promotion scenarios)\n     - Validate promotion is valid: QUEEN, ROOK, BISHOP, or KNIGHT\n     - Transform: board[to] = promotion piece with correct color\n\n3. Piece transformation logic:\n   - Get color of the pawn being promoted\n   - Convert promotion type to correct colored piece:\n     - White: W_QUEEN=5, W_ROOK=4, W_BISHOP=3, W_KNIGHT=2\n     - Black: B_QUEEN=13, B_ROOK=12, B_BISHOP=11, B_KNIGHT=10\n   - Set board[to] = colored_promotion_piece instead of pawn\n\n4. Handle promotion with capture:\n   - Normal capture logic still applies (captured piece removed)\n   - Then apply promotion transformation\n\n5. Consider returning promotion info in move result or signal for UI:\n   - UI may need to prompt player for promotion choice\n   - This subtask focuses on the logic; UI integration is separate",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test promotion: 1) White pawn to 8th rank transforms to queen by default, 2) Explicit promotion to each piece type works (Q/R/B/N), 3) Black pawn to 1st rank promotes correctly, 4) Promotion with capture works, 5) Invalid promotion type defaults to queen, 6) Non-final-rank pawn moves don't promote. Use FEN: 8/P7/8/8/8/8/p7/8 w - -",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:57:13.456Z"
           },
           {
             "id": 6,
@@ -466,14 +471,16 @@
               5
             ],
             "details": "Finalize make_move() to handle all game state updates:\n\n1. Refactor make_move() flow order:\n   a) Store move metadata (piece type, captured piece, etc.)\n   b) Handle special moves in priority order:\n      - Check for castling (king moves 2 squares)\n      - Check for en passant (pawn to en_passant_square)\n      - Check for promotion (pawn to final rank)\n   c) Execute standard move if not special\n   d) Update game state variables\n\n2. Castling rights updates on ANY king/rook move:\n   - If white king moves from e1: clear CASTLE_K and CASTLE_Q\n   - If black king moves from e8: clear CASTLE_k and CASTLE_q\n   - If rook moves from h1: clear CASTLE_K\n   - If rook moves from a1: clear CASTLE_Q\n   - If rook moves from h8: clear CASTLE_k\n   - If rook moves from a8: clear CASTLE_q\n   - Also clear if rook is captured on starting square!\n\n3. Halfmove clock management:\n   - Reset to 0 on pawn move OR capture\n   - Increment by 1 otherwise\n   - Used for 50-move rule detection\n\n4. Fullmove number:\n   - Increment after black moves: if side_to_move == WHITE (after switch)\n   - fullmove_number starts at 1\n\n5. Side to move:\n   - Toggle: side_to_move = BLACK if WHITE else WHITE\n   - Do this AFTER all other updates\n\n6. En passant square (ensure proper ordering):\n   - Clear at start of move\n   - Set only if double pawn push",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Integration tests: 1) Play through a game with all special moves verifying state at each step, 2) Test rook capture on starting square clears opponent's castling rights, 3) Verify halfmove clock resets on pawn/capture, increments otherwise, 4) Verify fullmove number increments only after black moves, 5) Test FEN export after special moves produces valid FEN. Use Lichess puzzle positions that require special moves.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-04T20:57:13.458Z"
           }
         ],
         "complexity": 7,
         "recommendedSubtasks": 6,
-        "expansionPrompt": "Break down into subtasks: 1) Implement castling rights tracking and validation, 2) Implement kingside castling move execution, 3) Implement queenside castling move execution, 4) Implement en passant capture validation and execution, 5) Implement pawn promotion detection and piece transformation, 6) Update make_move() to handle all special cases and update game state"
+        "expansionPrompt": "Break down into subtasks: 1) Implement castling rights tracking and validation, 2) Implement kingside castling move execution, 3) Implement queenside castling move execution, 4) Implement en passant capture validation and execution, 5) Implement pawn promotion detection and piece transformation, 6) Update make_move() to handle all special cases and update game state",
+        "updatedAt": "2025-12-04T20:57:13.458Z"
       },
       {
         "id": "6",
@@ -1535,9 +1542,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-12-04T20:48:45.260Z",
+      "lastModified": "2025-12-04T20:57:13.459Z",
       "taskCount": 17,
-      "completedCount": 3,
+      "completedCount": 4,
       "tags": [
         "master"
       ]

@@ -499,7 +499,7 @@ func get_queen_moves(square: int, color: PieceColor) -> Array[int]:
 	return moves
 
 
-## Get king moves (one square in any direction, excluding castling).
+## Get king moves (one square in any direction, plus castling).
 func get_king_moves(square: int, color: PieceColor) -> Array[int]:
 	var moves: Array[int] = []
 	var file = get_file(square)
@@ -519,7 +519,98 @@ func get_king_moves(square: int, color: PieceColor) -> Array[int]:
 		if target_piece == EMPTY or _is_enemy_piece(target_piece, color):
 			moves.append(target)
 
+	# Add castling moves (validation done in can_castle functions)
+	if can_castle_kingside(color):
+		# Kingside castle target: g1 for white (62), g8 for black (6)
+		moves.append(60 + 2 if color == PieceColor.WHITE else 4 + 2)
+	if can_castle_queenside(color):
+		# Queenside castle target: c1 for white (58), c8 for black (2)
+		moves.append(60 - 2 if color == PieceColor.WHITE else 4 - 2)
+
 	return moves
+
+
+## Check if the given color can castle kingside.
+func can_castle_kingside(color: PieceColor) -> bool:
+	# Check castling rights
+	var right = CASTLE_K if color == PieceColor.WHITE else CASTLE_k
+	if (castling_rights & right) == 0:
+		return false
+
+	# Get square indices
+	var king_sq = 60 if color == PieceColor.WHITE else 4   # e1 or e8
+	var rook_sq = 63 if color == PieceColor.WHITE else 7   # h1 or h8
+	var f_sq = 61 if color == PieceColor.WHITE else 5      # f1 or f8
+	var g_sq = 62 if color == PieceColor.WHITE else 6      # g1 or g8
+
+	# Verify king is on starting square
+	var king = W_KING if color == PieceColor.WHITE else B_KING
+	if board[king_sq] != king:
+		return false
+
+	# Verify rook is on starting square
+	var rook = W_ROOK if color == PieceColor.WHITE else B_ROOK
+	if board[rook_sq] != rook:
+		return false
+
+	# Verify squares between king and rook are empty
+	if board[f_sq] != EMPTY or board[g_sq] != EMPTY:
+		return false
+
+	# Verify king is not in check
+	var enemy_color = PieceColor.BLACK if color == PieceColor.WHITE else PieceColor.WHITE
+	if is_square_attacked(king_sq, enemy_color):
+		return false
+
+	# Verify king doesn't pass through or land on attacked squares
+	if is_square_attacked(f_sq, enemy_color):
+		return false
+	if is_square_attacked(g_sq, enemy_color):
+		return false
+
+	return true
+
+
+## Check if the given color can castle queenside.
+func can_castle_queenside(color: PieceColor) -> bool:
+	# Check castling rights
+	var right = CASTLE_Q if color == PieceColor.WHITE else CASTLE_q
+	if (castling_rights & right) == 0:
+		return false
+
+	# Get square indices
+	var king_sq = 60 if color == PieceColor.WHITE else 4   # e1 or e8
+	var rook_sq = 56 if color == PieceColor.WHITE else 0   # a1 or a8
+	var b_sq = 57 if color == PieceColor.WHITE else 1      # b1 or b8
+	var c_sq = 58 if color == PieceColor.WHITE else 2      # c1 or c8
+	var d_sq = 59 if color == PieceColor.WHITE else 3      # d1 or d8
+
+	# Verify king is on starting square
+	var king = W_KING if color == PieceColor.WHITE else B_KING
+	if board[king_sq] != king:
+		return false
+
+	# Verify rook is on starting square
+	var rook = W_ROOK if color == PieceColor.WHITE else B_ROOK
+	if board[rook_sq] != rook:
+		return false
+
+	# Verify squares between king and rook are empty
+	if board[b_sq] != EMPTY or board[c_sq] != EMPTY or board[d_sq] != EMPTY:
+		return false
+
+	# Verify king is not in check
+	var enemy_color = PieceColor.BLACK if color == PieceColor.WHITE else PieceColor.WHITE
+	if is_square_attacked(king_sq, enemy_color):
+		return false
+
+	# Verify king doesn't pass through or land on attacked squares (d and c)
+	if is_square_attacked(d_sq, enemy_color):
+		return false
+	if is_square_attacked(c_sq, enemy_color):
+		return false
+
+	return true
 
 
 ## Get pseudo-legal moves for a piece (doesn't check if move leaves king in check).
@@ -686,6 +777,33 @@ func _make_move_unchecked(from: int, to: int, promotion: int = EMPTY) -> void:
 	var piece_type = get_piece_type(piece)
 	var captured = board[to]
 
+	# Handle castling
+	if piece_type == PieceType.KING and abs(to - from) == 2:
+		# This is a castling move
+		var is_kingside = to > from
+		var rook_from: int
+		var rook_to: int
+		var rook = W_ROOK if color == PieceColor.WHITE else B_ROOK
+
+		if color == PieceColor.WHITE:
+			if is_kingside:
+				rook_from = 63  # h1
+				rook_to = 61    # f1
+			else:
+				rook_from = 56  # a1
+				rook_to = 59    # d1
+		else:
+			if is_kingside:
+				rook_from = 7   # h8
+				rook_to = 5     # f8
+			else:
+				rook_from = 0   # a8
+				rook_to = 3     # d8
+
+		# Move the rook
+		board[rook_from] = EMPTY
+		board[rook_to] = rook
+
 	# Handle en passant capture
 	if piece_type == PieceType.PAWN and to == en_passant_square:
 		var captured_pawn_sq = to + (DIR_S if color == PieceColor.WHITE else DIR_N)
@@ -727,6 +845,33 @@ func make_move(from: int, to: int, promotion: int = EMPTY) -> bool:
 
 	# Clear en passant
 	en_passant_square = -1
+
+	# Handle castling
+	if piece_type == PieceType.KING and abs(to - from) == 2:
+		# This is a castling move
+		var is_kingside = to > from
+		var rook_from: int
+		var rook_to: int
+		var rook = W_ROOK if color == PieceColor.WHITE else B_ROOK
+
+		if color == PieceColor.WHITE:
+			if is_kingside:
+				rook_from = 63  # h1
+				rook_to = 61    # f1
+			else:
+				rook_from = 56  # a1
+				rook_to = 59    # d1
+		else:
+			if is_kingside:
+				rook_from = 7   # h8
+				rook_to = 5     # f8
+			else:
+				rook_from = 0   # a8
+				rook_to = 3     # d8
+
+		# Move the rook
+		board[rook_from] = EMPTY
+		board[rook_to] = rook
 
 	# Handle en passant capture
 	if piece_type == PieceType.PAWN and to == old_en_passant:
