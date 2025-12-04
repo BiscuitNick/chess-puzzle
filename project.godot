@@ -17,6 +17,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 ChessLogic="*res://scripts/autoload/chess_logic.gd"
+StockfishBridge="*res://scripts/autoload/stockfish_bridge.gd"
 
 [rendering]
 
