@@ -1,0 +1,161 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8dhr6p2vklmn"]
+
+[ext_resource type="Script" path="res://scripts/ui/sprint_setup.gd" id="1_setup"]
+
+[node name="SprintSetup" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_setup")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.15, 0.15, 0.18, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -280.0
+offset_right = 200.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Sprint Mode"
+horizontal_alignment = 1
+
+[node name="TimeSection" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TimeLabel" type="Label" parent="VBoxContainer/TimeSection"]
+layout_mode = 2
+text = "Time Limit"
+
+[node name="TimeButtons" type="HBoxContainer" parent="VBoxContainer/TimeSection"]
+layout_mode = 2
+
+[node name="Time1MinButton" type="Button" parent="VBoxContainer/TimeSection/TimeButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "1 min"
+
+[node name="Time3MinButton" type="Button" parent="VBoxContainer/TimeSection/TimeButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+text = "3 min"
+
+[node name="Time5MinButton" type="Button" parent="VBoxContainer/TimeSection/TimeButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "5 min"
+
+[node name="DifficultySection" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DifficultyLabel" type="Label" parent="VBoxContainer/DifficultySection"]
+layout_mode = 2
+text = "Difficulty"
+
+[node name="DifficultyButtons" type="HBoxContainer" parent="VBoxContainer/DifficultySection"]
+layout_mode = 2
+
+[node name="EasyButton" type="Button" parent="VBoxContainer/DifficultySection/DifficultyButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Easy"
+
+[node name="MediumButton" type="Button" parent="VBoxContainer/DifficultySection/DifficultyButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+text = "Medium"
+
+[node name="HardButton" type="Button" parent="VBoxContainer/DifficultySection/DifficultyButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Hard"
+
+[node name="CustomButton" type="Button" parent="VBoxContainer/DifficultySection/DifficultyButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "Custom"
+
+[node name="CustomRatingSection" type="VBoxContainer" parent="VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CustomLabel" type="Label" parent="VBoxContainer/CustomRatingSection"]
+layout_mode = 2
+text = "Custom Rating Range"
+
+[node name="MinRatingContainer" type="HBoxContainer" parent="VBoxContainer/CustomRatingSection"]
+layout_mode = 2
+
+[node name="MinLabel" type="Label" parent="VBoxContainer/CustomRatingSection/MinRatingContainer"]
+layout_mode = 2
+text = "Min:"
+
+[node name="MinRatingSpinBox" type="SpinBox" parent="VBoxContainer/CustomRatingSection/MinRatingContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 400.0
+max_value = 3000.0
+step = 50.0
+value = 1200.0
+
+[node name="MaxRatingContainer" type="HBoxContainer" parent="VBoxContainer/CustomRatingSection"]
+layout_mode = 2
+
+[node name="MaxLabel" type="Label" parent="VBoxContainer/CustomRatingSection/MaxRatingContainer"]
+layout_mode = 2
+text = "Max:"
+
+[node name="MaxRatingSpinBox" type="SpinBox" parent="VBoxContainer/CustomRatingSection/MaxRatingContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 400.0
+max_value = 3000.0
+step = 50.0
+value = 1600.0
+
+[node name="Spacer" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StartButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 50)
+theme_override_font_sizes/font_size = 20
+text = "Start Sprint"
+
+[node name="BackButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Back"

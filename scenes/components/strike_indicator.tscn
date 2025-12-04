@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3 uid="uid://dhp2m6j4vt8qy"]
+
+[ext_resource type="Script" path="res://scripts/ui/strike_indicator.gd" id="1_strike"]
+
+[node name="StrikeIndicator" type="HBoxContainer"]
+custom_minimum_size = Vector2(120, 40)
+theme_override_constants/separation = 8
+script = ExtResource("1_strike")
+
+[node name="Strike1" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="Strike2" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="Strike3" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+stretch_mode = 5
