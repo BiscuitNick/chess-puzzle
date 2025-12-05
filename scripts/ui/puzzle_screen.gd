@@ -20,6 +20,7 @@ var mode_settings: Dictionary = {}
 @onready var chess_board: ChessBoard = $GameArea/ChessBoard
 @onready var back_btn: Button = $TopBar/BackButton
 @onready var puzzle_info_label: Label = $TopBar/PuzzleInfo
+@onready var move_feedback_label: Label = $GameArea/MoveFeedback
 
 # Practice HUD elements
 @onready var practice_hud: Control = $HUD/PracticeHUD
@@ -44,7 +45,12 @@ var mode_settings: Dictionary = {}
 @onready var daily_puzzle_label: Label = $HUD/DailyHUD/PuzzleLabel
 
 # Thinking indicator
-@onready var thinking_indicator: Control = $HUD/ThinkingIndicator
+@onready var thinking_indicator: ThinkingIndicator = $HUD/ThinkingIndicator
+
+# Move navigation controls
+@onready var move_controls: HBoxContainer = $MoveControls
+@onready var move_back_btn: Button = $MoveControls/BackButton
+@onready var move_forward_btn: Button = $MoveControls/ForwardButton
 
 # State
 var game_started: bool = false
@@ -64,6 +70,14 @@ func _connect_ui_signals() -> void:
 		solution_btn.pressed.connect(_on_solution_pressed)
 	if skip_btn:
 		skip_btn.pressed.connect(_on_skip_pressed)
+
+	# Move navigation buttons
+	if move_back_btn:
+		move_back_btn.pressed.connect(_on_move_back_pressed)
+		move_back_btn.disabled = true  # Initially disabled
+	if move_forward_btn:
+		move_forward_btn.pressed.connect(_on_move_forward_pressed)
+		move_forward_btn.disabled = true  # Initially disabled
 
 
 ## Initialize the puzzle screen with a specific mode.
@@ -88,6 +102,13 @@ func _setup_puzzle_controller() -> void:
 		puzzle_controller.move_made.connect(_on_move_made)
 		puzzle_controller.puzzle_completed.connect(_on_puzzle_completed)
 		puzzle_controller.opponent_moving.connect(_on_opponent_moving)
+
+	# Connect thinking indicator
+	puzzle_controller.analysis_started.connect(_on_analysis_started)
+	puzzle_controller.analysis_completed.connect(_on_analysis_completed)
+
+	# Connect move history for undo/redo buttons
+	puzzle_controller.history_changed.connect(_on_history_changed)
 
 
 func _setup_mode_instance() -> void:
@@ -135,9 +156,8 @@ func _start_game() -> void:
 			practice_mode.start_practice()
 
 		PuzzleController.GameMode.SPRINT:
-			var time_limit = mode_settings.get("time_limit", 180.0)
-			var difficulty = mode_settings.get("difficulty", SprintMode.DIFFICULTY_MEDIUM)
-			sprint_mode.start_sprint(time_limit, difficulty)
+			# Just pass settings directly - start_game handles parsing
+			sprint_mode.start_game(mode_settings)
 
 		PuzzleController.GameMode.STREAK:
 			var starting_rating = mode_settings.get("starting_rating", 1200)
@@ -177,20 +197,28 @@ func _show_mode_hud(mode: PuzzleController.GameMode) -> void:
 
 
 # Move handling
-func _on_move_attempted(from: int, to: int, promotion: String) -> void:
+func _on_move_attempted(from: int, to: int) -> void:
 	if puzzle_controller:
-		puzzle_controller.try_move(from, to, promotion)
+		# TODO: Handle pawn promotion - for now pass EMPTY (no promotion)
+		puzzle_controller.submit_move(from, to, ChessLogic.EMPTY)
 
 
 func _on_puzzle_loaded(puzzle: PuzzleData) -> void:
+	print("[PuzzleScreen] _on_puzzle_loaded called, FEN: ", puzzle.fen if puzzle else "NULL PUZZLE")
 	if chess_board:
 		chess_board.setup_position(puzzle.fen)
+	else:
+		print("[PuzzleScreen] ERROR: chess_board is null!")
 	_update_puzzle_info(puzzle)
 
 
-func _on_move_made(_from: int, _to: int, _is_correct: bool) -> void:
+func _on_move_made(_from: int, _to: int, is_correct: bool) -> void:
 	if chess_board:
 		chess_board.refresh_position()
+
+	# Show feedback for player moves (not refreshes)
+	if _from >= 0 and _to >= 0:
+		_show_move_feedback(is_correct)
 
 
 func _on_puzzle_completed(_success: bool, _attempts: int) -> void:
@@ -204,7 +232,36 @@ func _on_opponent_moving(from: int, to: int) -> void:
 
 func _update_puzzle_info(puzzle: PuzzleData) -> void:
 	if puzzle_info_label:
-		puzzle_info_label.text = "Mate in %d  |  Rating: %d" % [puzzle.mate_in, puzzle.rating]
+		# Extract whose turn it is from FEN (second field: 'w' = white, 'b' = black)
+		var turn = "White"
+		var fen_parts = puzzle.fen.split(" ")
+		if fen_parts.size() > 1 and fen_parts[1] == "b":
+			turn = "Black"
+
+		puzzle_info_label.text = "#%s  |  %s to move  |  Mate in %d  |  Rating: %d" % [
+			puzzle.id, turn, puzzle.mate_in, puzzle.rating
+		]
+
+	# Clear any previous feedback
+	if move_feedback_label:
+		move_feedback_label.text = ""
+
+
+func _show_move_feedback(is_correct: bool) -> void:
+	if not move_feedback_label:
+		return
+
+	if is_correct:
+		move_feedback_label.text = "Correct!"
+		move_feedback_label.add_theme_color_override("font_color", Color(0.2, 0.8, 0.2))  # Green
+	else:
+		move_feedback_label.text = "Incorrect"
+		move_feedback_label.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))  # Red
+
+	# Clear feedback after a delay
+	await get_tree().create_timer(1.5).timeout
+	if move_feedback_label:
+		move_feedback_label.text = ""
 
 
 # Practice mode handlers
@@ -374,3 +431,36 @@ func handle_back() -> bool:
 		_show_quit_confirmation()
 		return true
 	return false
+
+
+# Thinking indicator handlers
+func _on_analysis_started() -> void:
+	if thinking_indicator:
+		thinking_indicator.start_thinking()
+
+
+func _on_analysis_completed() -> void:
+	if thinking_indicator:
+		thinking_indicator.stop_thinking()
+
+
+# Move navigation handlers
+func _on_move_back_pressed() -> void:
+	if puzzle_controller:
+		puzzle_controller.undo_move()
+		if chess_board:
+			chess_board.refresh_position()
+
+
+func _on_move_forward_pressed() -> void:
+	if puzzle_controller:
+		puzzle_controller.redo_move()
+		if chess_board:
+			chess_board.refresh_position()
+
+
+func _on_history_changed(can_undo: bool, can_redo: bool) -> void:
+	if move_back_btn:
+		move_back_btn.disabled = not can_undo
+	if move_forward_btn:
+		move_forward_btn.disabled = not can_redo

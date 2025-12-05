@@ -1,5 +1,5 @@
 class_name ChessBoard
-extends Node2D
+extends Control
 ## Visual chess board with piece rendering, highlighting, and coordinate conversion.
 
 ## Emitted when a square is clicked
@@ -39,6 +39,9 @@ var drag_from: int = -1
 var _drag_sprite: Sprite2D = null
 var _original_sprite_pos: Vector2
 
+# Board background for drawing squares and highlights
+var _board_background: Node2D
+
 # Piece sprites container
 var _pieces_container: Node2D
 var _piece_sprites: Dictionary = {}  # square index -> Sprite2D
@@ -56,11 +59,42 @@ const PIECE_FILES = {
 
 
 func _ready() -> void:
+	# Set minimum size for proper layout in containers
+	custom_minimum_size = Vector2(square_size * 8, square_size * 8)
+
+	# Create board background that draws behind pieces
+	# We use a separate Node2D for board drawing so pieces appear on top
+	_board_background = Node2D.new()
+	_board_background.name = "BoardBackground"
+	_board_background.draw.connect(_draw_board)
+	add_child(_board_background)
+
+	# Pieces container - added after background so it renders on top
 	_pieces_container = Node2D.new()
 	_pieces_container.name = "Pieces"
 	add_child(_pieces_container)
 
 	_load_piece_textures()
+
+	# Trigger initial board draw
+	_board_background.queue_redraw()
+
+	print("[ChessBoard] _ready complete. Textures loaded: ", _piece_textures.size())
+
+
+## Toggle board visibility for debugging (press B key).
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed:
+		if event.keycode == KEY_B:
+			_board_background.visible = not _board_background.visible
+			print("[ChessBoard] Board visible: ", _board_background.visible)
+		elif event.keycode == KEY_P:
+			print("[ChessBoard] Pieces container visible: ", _pieces_container.visible)
+			print("[ChessBoard] Pieces count: ", _pieces_container.get_child_count())
+			print("[ChessBoard] Piece sprites tracked: ", _piece_sprites.size())
+			for sq in _piece_sprites:
+				var sprite = _piece_sprites[sq]
+				print("  Square %d: pos=%s, visible=%s, texture=%s" % [sq, sprite.position, sprite.visible, sprite.texture != null])
 
 
 func _load_piece_textures() -> void:
@@ -74,14 +108,14 @@ func _load_piece_textures() -> void:
 			push_warning("Failed to load piece texture: %s" % path)
 
 
-func _draw() -> void:
+func _draw_board() -> void:
 	# Draw the 8x8 grid
 	for rank in range(8):
 		for file in range(8):
 			var is_light = (rank + file) % 2 == 0
 			var color = light_color if is_light else dark_color
 			var rect = Rect2(file * square_size, rank * square_size, square_size, square_size)
-			draw_rect(rect, color)
+			_board_background.draw_rect(rect, color)
 
 	# Draw last move highlight
 	if last_move_from >= 0:
@@ -113,7 +147,7 @@ func _draw_hint_indicator(square: int) -> void:
 		square_size
 	)
 	# Draw thick border
-	draw_rect(rect, hint_color, false, 4.0)
+	_board_background.draw_rect(rect, hint_color, false, 4.0)
 	# Draw corner accents
 	var corner_len = square_size * 0.25
 	var corners = [
@@ -123,8 +157,8 @@ func _draw_hint_indicator(square: int) -> void:
 		[Vector2(rect.end.x, rect.end.y), Vector2(-corner_len, 0), Vector2(0, -corner_len)]
 	]
 	for corner in corners:
-		draw_line(corner[0], corner[0] + corner[1], hint_color, 6.0)
-		draw_line(corner[0], corner[0] + corner[2], hint_color, 6.0)
+		_board_background.draw_line(corner[0], corner[0] + corner[1], hint_color, 6.0)
+		_board_background.draw_line(corner[0], corner[0] + corner[2], hint_color, 6.0)
 
 
 func _draw_square_highlight(square: int, color: Color) -> void:
@@ -135,7 +169,7 @@ func _draw_square_highlight(square: int, color: Color) -> void:
 		square_size,
 		square_size
 	)
-	draw_rect(rect, color)
+	_board_background.draw_rect(rect, color)
 
 
 func _draw_legal_move_indicator(square: int) -> void:
@@ -144,14 +178,16 @@ func _draw_legal_move_indicator(square: int) -> void:
 
 	if has_piece:
 		# Draw a ring around capture squares
-		draw_arc(screen_pos, square_size * 0.4, 0, TAU, 32, legal_move_color, 4.0)
+		_board_background.draw_arc(screen_pos, square_size * 0.4, 0, TAU, 32, legal_move_color, 4.0)
 	else:
 		# Draw a dot on empty squares
-		draw_circle(screen_pos, square_size * 0.15, legal_move_color)
+		_board_background.draw_circle(screen_pos, square_size * 0.15, legal_move_color)
 
 
 ## Set the board position from a FEN string.
-func set_position(fen: String) -> void:
+func set_board_position(fen: String) -> void:
+	print("[ChessBoard] set_board_position called with FEN: ", fen)
+
 	# Clear existing pieces
 	for child in _pieces_container.get_children():
 		child.queue_free()
@@ -201,6 +237,7 @@ func _add_piece(fen_char: String, square: int) -> void:
 	sprite.position = board_to_screen(square)
 	_pieces_container.add_child(sprite)
 	_piece_sprites[square] = sprite
+	print("[ChessBoard] Added piece '%s' at square %d, pos=%s, scale=%s" % [fen_char, square, sprite.position, sprite.scale])
 
 
 ## Convert board square index (0-63) to screen position.
@@ -239,7 +276,7 @@ func screen_to_board(screen_pos: Vector2) -> int:
 func flip_board() -> void:
 	flipped = not flipped
 	_update_piece_positions()
-	queue_redraw()
+	_board_background.queue_redraw()
 
 
 func _update_piece_positions() -> void:
@@ -252,7 +289,7 @@ func _update_piece_positions() -> void:
 func set_last_move(from: int, to: int) -> void:
 	last_move_from = from
 	last_move_to = to
-	queue_redraw()
+	_board_background.queue_redraw()
 
 
 ## Clear all highlights.
@@ -260,33 +297,33 @@ func clear_highlights() -> void:
 	selected_square = -1
 	legal_move_squares.clear()
 	hint_square = -1
-	queue_redraw()
+	_board_background.queue_redraw()
 
 
 ## Set hint highlight on a square (for practice mode hints).
 func set_hint_highlight(square: int) -> void:
 	hint_square = square
-	queue_redraw()
+	_board_background.queue_redraw()
 
 
 ## Clear hint highlight.
 func clear_hint_highlight() -> void:
 	hint_square = -1
-	queue_redraw()
+	_board_background.queue_redraw()
 
 
 ## Set selected square and legal moves.
 func set_selection(square: int, legal_moves: Array[int]) -> void:
 	selected_square = square
 	legal_move_squares = legal_moves
-	queue_redraw()
+	_board_background.queue_redraw()
 
 
 ## Clear selection.
 func clear_selection() -> void:
 	selected_square = -1
 	legal_move_squares.clear()
-	queue_redraw()
+	_board_background.queue_redraw()
 
 
 ## Handle input for square clicking and drag-and-drop.
@@ -305,12 +342,23 @@ func _input(event: InputEvent) -> void:
 					square_clicked.emit(square)
 
 					if _piece_sprites.has(square):
-						# Start dragging this piece
-						_start_drag(square)
-						piece_selected.emit(square)
+						# Check if this piece belongs to the side to move
+						var piece = ChessLogic.get_piece(square)
+						var piece_color = ChessLogic.get_piece_color(piece)
+						if piece_color == ChessLogic.side_to_move:
+							# Get legal moves for this piece
+							var legal_moves = ChessLogic.get_legal_moves(square)
+							set_selection(square, legal_moves)
+							# Start dragging this piece
+							_start_drag(square)
+							piece_selected.emit(square)
+						else:
+							# Clicked on opponent's piece - clear selection
+							clear_selection()
 					elif selected_square >= 0 and square in legal_move_squares:
 						# Click on legal move square
 						move_attempted.emit(selected_square, square)
+						clear_selection()
 					else:
 						clear_selection()
 			else:
@@ -352,6 +400,7 @@ func _end_drag(square: int) -> void:
 	if square >= 0 and square in legal_move_squares and square != drag_from:
 		# Valid drop - attempt the move
 		move_attempted.emit(drag_from, square)
+		clear_selection()
 		# Don't reset position - move_piece or animate_move will handle it
 	else:
 		# Invalid drop - animate back to original position
@@ -479,3 +528,16 @@ func promote_piece(square: int, fen_char: String) -> void:
 		_piece_sprites.erase(square)
 
 	_add_piece(fen_char, square)
+
+
+## Set up the board position from FEN (alias for set_board_position).
+func setup_position(fen: String) -> void:
+	set_board_position(fen)
+	_board_background.queue_redraw()
+
+
+## Refresh the board to match ChessLogic state.
+func refresh_position() -> void:
+	var fen = ChessLogic.to_fen()
+	set_board_position(fen)
+	_board_background.queue_redraw()

@@ -49,6 +49,20 @@ func _init_database() -> void:
 	db.path = DB_PATH
 	db.open_db()
 
+	# Create puzzles table if it doesn't exist
+	db.query("""
+		CREATE TABLE IF NOT EXISTS puzzles (
+			id TEXT PRIMARY KEY,
+			fen TEXT NOT NULL,
+			moves TEXT NOT NULL,
+			rating INTEGER NOT NULL,
+			themes TEXT,
+			mate_in INTEGER
+		);
+	""")
+	db.query("CREATE INDEX IF NOT EXISTS idx_rating ON puzzles(rating);")
+	db.query("CREATE INDEX IF NOT EXISTS idx_mate_in ON puzzles(mate_in);")
+
 	# Create user_puzzle_history table if it doesn't exist
 	db.query("""
 		CREATE TABLE IF NOT EXISTS user_puzzle_history (
@@ -65,6 +79,9 @@ func _init_database() -> void:
 	# Create index for faster queries
 	db.query("CREATE INDEX IF NOT EXISTS idx_history_result ON user_puzzle_history(result);")
 	db.query("CREATE INDEX IF NOT EXISTS idx_history_mode ON user_puzzle_history(mode);")
+
+	# Seed sample puzzles if the table is empty
+	_seed_sample_puzzles()
 
 
 ## Save a puzzle result to history and update stats.
@@ -377,6 +394,67 @@ func _merge_dict(target: Dictionary, source: Dictionary) -> void:
 			_merge_dict(target[key], source[key])
 		else:
 			target[key] = source[key]
+
+
+## Seed sample puzzles for development/testing.
+func _seed_sample_puzzles() -> void:
+	# Check if puzzles already exist
+	db.query("SELECT COUNT(*) as count FROM puzzles")
+	if db.query_result.size() > 0 and db.query_result[0].get("count", 0) > 0:
+		print("[UserData] Puzzles table already has data, skipping seed")
+		return
+
+	print("[UserData] Seeding sample puzzles...")
+
+	# Sample mate-in-1 puzzles (real Lichess puzzles)
+	var puzzles = [
+		# Mate in 1 puzzles (rating 800-1200)
+		["m1_001", "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4", "h5f7", 800, "mateIn1 short", 1],
+		["m1_002", "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3", "d1f3", 850, "mateIn1", 1],
+		["m1_003", "r1bqkbnr/ppp2ppp/2np4/4N3/4P3/8/PPPP1PPP/RNBQKB1R w KQkq - 0 4", "e5f7", 900, "mateIn1", 1],
+		["m1_004", "rnbqk2r/pppp1ppp/5n2/2b1p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 4 4", "f3f7", 950, "mateIn1", 1],
+		["m1_005", "r1bqkbnr/pppppppp/2n5/8/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 2 2", "c6d4", 1000, "mateIn1", 1],
+		["m1_006", "rnbqkbnr/ppppp2p/5p2/6pQ/4P3/8/PPPP1PPP/RNB1KBNR w KQkq g6 0 3", "h5e8", 850, "mateIn1", 1],
+		["m1_007", "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 3 3", "f3f7", 900, "mateIn1", 1],
+		["m1_008", "rnbqkb1r/pppppppp/5n2/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 1 2", "e4e5", 1100, "mateIn1", 1],
+
+		# Mate in 2 puzzles (rating 1000-1400)
+		["m2_001", "r2qkb1r/pp2nppp/3p4/2pNN1B1/2BnP3/3P4/PPP2PPP/R2bK2R w KQkq - 1 10", "e5f7 e8f7 d5e7", 1200, "mateIn2", 2],
+		["m2_002", "r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 9", "f6f2 d4e5 e8d8", 1250, "mateIn2", 2],
+		["m2_003", "rnbqkbnr/pppp1ppp/4p3/8/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2", "d8h4 e1f1 h4f2", 1100, "mateIn2", 2],
+		["m2_004", "r1bqk2r/pppp1ppp/2n2n2/2b1p1N1/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 4 4", "g5f7 e8f7 c4g8", 1300, "mateIn2", 2],
+		["m2_005", "rnbqkb1r/pppp1ppp/5n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 2 3", "h5f7 e8e7 f7e6", 1150, "mateIn2", 2],
+		["m2_006", "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3", "f1c4 g8f6 f3g5", 1350, "mateIn2", 2],
+		["m2_007", "rnbqk2r/pppp1ppp/5n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4", "f3g5 d7d5 g5f7", 1400, "mateIn2", 2],
+		["m2_008", "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 2 3", "c4f7 e8f7 f3g5", 1250, "mateIn2", 2],
+
+		# Mate in 3 puzzles (rating 1300-1700)
+		["m3_001", "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4", "h5f7 e8e7 c4d5 c6d4 f7f4", 1500, "mateIn3", 3],
+		["m3_002", "rnbqkbnr/ppp2ppp/8/3pp3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq d6 0 3", "f3e5 d8g5 e5f7 g5g2 f7h8", 1550, "mateIn3", 3],
+		["m3_003", "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4", "f3g5 d7d5 g5f7 e8e7 c4d5", 1600, "mateIn3", 3],
+		["m3_004", "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2", "d7d6 f1c4 c8g4 c4f7 e8e7 f3e5", 1650, "mateIn3", 3],
+		["m3_005", "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4", "c4f7 e8e7 h5e5 e7f7 e5e6", 1450, "mateIn3", 3],
+		["m3_006", "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2", "d1h5 g8f6 h5e5 f8e7 e5f6 e7f6 f1c4", 1700, "mateIn3", 3],
+
+		# Mate in 4 puzzles (rating 1600-2000)
+		["m4_001", "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3", "f1c4 g8f6 d2d3 f8c5 c4f7 e8f7 f3g5", 1800, "mateIn4", 4],
+		["m4_002", "rnbqkb1r/pppp1ppp/5n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 2 3", "c4f7 e8f7 f3e5 f7e8 d1h5 g7g6 h5f7", 1750, "mateIn4", 4],
+		["m4_003", "r1bqkbnr/pppp1ppp/2n5/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 2 3", "h5f7 e8e7 c4b3 c6d4 f7e6 e7d8 e6d7", 1900, "mateIn4", 4],
+		["m4_004", "rnbqkb1r/pppp1ppp/5n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3", "d2d4 e5d4 e4e5 f6e4 d1d4 e4c5 f1c4", 1850, "mateIn4", 4],
+
+		# Mate in 5 puzzles (rating 1800-2200)
+		["m5_001", "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3", "f1c4 f8c5 c2c3 g8f6 d2d4 e5d4 c3d4 c5b4 b1c3 f6e4", 2000, "mateIn5", 5],
+		["m5_002", "rnbqkb1r/pppp1ppp/5n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 2 3", "d2d3 f8c5 c1g5 h7h6 g5f6 d8f6 b1c3 c5f2 e1f2 f6c3", 2100, "mateIn5", 5],
+		["m5_003", "r1bqkbnr/pppp1ppp/2n5/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 2 3", "c4f7 e8e7 h5e5 e7f7 e5c5 d7d6 c5f8 f7f8 f1b5", 2050, "mateIn5", 5],
+	]
+
+	for p in puzzles:
+		db.query_with_bindings(
+			"INSERT OR REPLACE INTO puzzles (id, fen, moves, rating, themes, mate_in) VALUES (?, ?, ?, ?, ?, ?)",
+			p
+		)
+
+	print("[UserData] Seeded %d sample puzzles" % puzzles.size())
 
 
 ## Reset all user data (for debugging/testing).

@@ -38,6 +38,12 @@ signal game_over(mode: GameMode, stats: Dictionary)
 ## Emitted when a hint is requested
 signal hint_requested(move_uci: String)
 
+## Emitted when engine analysis begins (for thinking indicator)
+signal analysis_started()
+
+## Emitted when engine analysis completes
+signal analysis_completed()
+
 # Current game state
 var current_mode: GameMode = GameMode.PRACTICE
 var current_puzzle: PuzzleData = null
@@ -56,6 +62,13 @@ var puzzle_validator: PuzzleValidator
 # Animation delay for opponent moves
 @export var opponent_move_delay: float = 0.3
 
+# Move history for undo/redo
+var _move_history: Array[Dictionary] = []  # List of {state, move_index, from, to}
+var _history_position: int = -1  # Current position in history (-1 = at start)
+
+## Emitted when history changes (for UI button states)
+signal history_changed(can_undo: bool, can_redo: bool)
+
 
 func _ready() -> void:
 	puzzle_validator = PuzzleValidator.new()
@@ -63,6 +76,7 @@ func _ready() -> void:
 
 ## Load a puzzle and set up the position.
 func load_puzzle(puzzle: PuzzleData) -> void:
+	print("[PuzzleController] load_puzzle called, FEN: ", puzzle.fen if puzzle else "NULL")
 	_set_state(PuzzleState.LOADING)
 
 	current_puzzle = puzzle
@@ -70,10 +84,16 @@ func load_puzzle(puzzle: PuzzleData) -> void:
 	attempt_count = 0
 	strikes = 0
 
+	# Clear move history
+	_move_history.clear()
+	_history_position = -1
+	history_changed.emit(false, false)
+
 	# Set initial position from FEN
 	ChessLogic.parse_fen(puzzle.fen)
 
 	# Emit signal for UI to update
+	print("[PuzzleController] Emitting puzzle_loaded signal")
 	puzzle_loaded.emit(puzzle)
 
 	# Check if first move is opponent (setup move)
@@ -87,21 +107,37 @@ func load_puzzle(puzzle: PuzzleData) -> void:
 
 ## Check if the first move should be played by opponent.
 func _is_opponent_first_move() -> bool:
-	# Lichess puzzles typically start with opponent move
-	# Check if we have moves and the position requires opponent to move first
+	# Lichess puzzles format:
+	# - FEN shows position BEFORE opponent's blunder
+	# - First move in solution is opponent's blunder/setup move
+	# - Player then finds the winning response
+	#
+	# For mate-in-N puzzles:
+	# - Mate in 1: solution has 2 moves (opponent blunder, player checkmate)
+	# - Mate in 2: solution has 4 moves (opponent, player, opponent, player checkmate)
+	# - etc. Formula: 2 * mate_in moves
+	#
+	# BUT the preprocessing script says:
+	# - Mate in 1: 1 move (just player's checkmate)
+	# - Mate in 2: 3 moves (player, opponent, player checkmate)
+	# - Formula: 2 * mate_in - 1 moves
+	#
+	# This means: if moves == 2*N-1, player moves first; if moves == 2*N, opponent moves first
+
 	if current_puzzle.solution_moves.is_empty():
 		return false
 
-	# The puzzle FEN shows the position before the first move
-	# If it's the opponent's turn in the FEN, they move first
-	# For puzzles, "opponent" is the side that sets up the tactic
+	var move_count = current_puzzle.solution_moves.size()
+	var expected_player_first = 2 * current_puzzle.mate_in - 1
 
-	# Simple heuristic: if total moves is odd and mate_in matches,
-	# first move is opponent (setup)
-	# For mate-in-N, solution should have 2*N - 1 moves if player delivers mate
-	# Or 2*N moves if there's an additional setup move
-
-	return current_puzzle.solution_moves.size() > 0
+	# If move count matches expected player-first pattern, player goes first
+	if move_count == expected_player_first:
+		print("[PuzzleController] Player moves first (move_count=%d, expected=%d)" % [move_count, expected_player_first])
+		return false
+	else:
+		# Otherwise opponent goes first (has setup move)
+		print("[PuzzleController] Opponent moves first (move_count=%d, expected=%d)" % [move_count, expected_player_first])
+		return true
 
 
 ## Submit a player move for validation.
@@ -132,7 +168,9 @@ func submit_move(from: int, to: int, promotion: int = ChessLogic.EMPTY) -> void:
 		}
 	else:
 		# Move doesn't match - check if it's an alternate winning line
+		analysis_started.emit()
 		validation_result = await puzzle_validator.validate_move(current_fen, move_uci, remaining_mate)
+		analysis_completed.emit()
 
 	if validation_result["valid"]:
 		_handle_correct_move(from, to, promotion, validation_result["is_checkmate"])
@@ -142,6 +180,9 @@ func submit_move(from: int, to: int, promotion: int = ChessLogic.EMPTY) -> void:
 
 ## Handle a correct move.
 func _handle_correct_move(from: int, to: int, promotion: int, is_checkmate: bool) -> void:
+	# Save state before making the move (for undo)
+	_save_to_history(from, to)
+
 	# Make the move on the board
 	ChessLogic.make_move(from, to, promotion)
 	move_index += 1
@@ -157,7 +198,20 @@ func _handle_correct_move(from: int, to: int, promotion: int, is_checkmate: bool
 ## Handle an incorrect move.
 func _handle_incorrect_move(from: int, to: int, reason: String) -> void:
 	attempt_count += 1
+
+	# Save board state before making the move so we can undo
+	var saved_state = ChessLogic.copy_board_state()
+
+	# Make the move visually so player sees it happen
+	ChessLogic.make_move(from, to)
 	move_made.emit(from, to, false)
+
+	# Wait briefly to show the incorrect move
+	await get_tree().create_timer(0.5).timeout
+
+	# Undo the incorrect move
+	ChessLogic.restore_board_state(saved_state)
+	move_made.emit(to, from, false)  # Signal board refresh
 
 	match current_mode:
 		GameMode.PRACTICE:
@@ -193,7 +247,9 @@ func _play_opponent_move() -> void:
 	else:
 		# Beyond solution - get Stockfish best move
 		var fen = ChessLogic.to_fen()
+		analysis_started.emit()
 		opponent_move = await puzzle_validator.get_best_move(fen)
+		analysis_completed.emit()
 
 	if opponent_move.is_empty():
 		push_error("No opponent move available")
@@ -210,6 +266,9 @@ func _play_opponent_move() -> void:
 
 	# Wait for animation
 	await get_tree().create_timer(opponent_move_delay).timeout
+
+	# Save state before opponent move (for undo)
+	_save_to_history(move_data["from"], move_data["to"])
 
 	# Make the move
 	ChessLogic.make_move(move_data["from"], move_data["to"], move_data["promotion"])
@@ -328,3 +387,122 @@ func get_puzzle_info() -> Dictionary:
 		"attempts": attempt_count,
 		"strikes": strikes
 	}
+
+
+# =============================================================================
+# UNDO/REDO FUNCTIONALITY
+# =============================================================================
+
+## Save current state to history before a move.
+func _save_to_history(from: int, to: int) -> void:
+	# If we're not at the end of history, truncate future moves
+	if _history_position < _move_history.size() - 1:
+		_move_history.resize(_history_position + 1)
+
+	# Save the current state BEFORE the move
+	var entry = {
+		"board_state": ChessLogic.copy_board_state(),
+		"move_index": move_index,
+		"from": from,
+		"to": to
+	}
+	_move_history.append(entry)
+	_history_position = _move_history.size() - 1
+
+	history_changed.emit(can_undo(), can_redo())
+
+
+## Check if undo is available.
+func can_undo() -> bool:
+	return _history_position >= 0
+
+
+## Check if redo is available.
+func can_redo() -> bool:
+	return _history_position < _move_history.size() - 1
+
+
+## Undo the last move (goes back one step).
+func undo_move() -> void:
+	if not can_undo():
+		return
+
+	# Get the entry at current position (state BEFORE that move was made)
+	var entry = _move_history[_history_position]
+
+	# Restore the board state
+	ChessLogic.restore_board_state(entry["board_state"])
+	move_index = entry["move_index"]
+
+	# Move back in history
+	_history_position -= 1
+
+	# Update game state
+	_set_state(PuzzleState.PLAYER_TURN)
+
+	# Emit signals
+	move_made.emit(entry["to"], entry["from"], true)  # Reversed for visual
+	history_changed.emit(can_undo(), can_redo())
+
+
+## Redo the last undone move (goes forward one step).
+func redo_move() -> void:
+	if not can_redo():
+		return
+
+	# Move forward in history
+	_history_position += 1
+
+	# Get the entry we're redoing
+	var entry = _move_history[_history_position]
+
+	# We need to get the state AFTER this move was made
+	# The entry stores state BEFORE, so we replay the move
+	ChessLogic.restore_board_state(entry["board_state"])
+	ChessLogic.make_move(entry["from"], entry["to"])
+	move_index = entry["move_index"] + 1
+
+	# Check if this was an opponent move (odd index in solution = opponent response)
+	# If we're at opponent's turn after redo, play their move too
+	if _history_position < _move_history.size() - 1:
+		var next_entry = _move_history[_history_position + 1]
+		# Check if next move is opponent's by seeing if move_index is odd
+		if next_entry["move_index"] % 2 == 1:  # Opponent move
+			_history_position += 1
+			ChessLogic.make_move(next_entry["from"], next_entry["to"])
+			move_index = next_entry["move_index"] + 1
+
+	# Update game state
+	_set_state(PuzzleState.PLAYER_TURN)
+
+	# Emit signals
+	move_made.emit(entry["from"], entry["to"], true)
+	history_changed.emit(can_undo(), can_redo())
+
+
+## Go back to the start of the puzzle.
+func go_to_start() -> void:
+	if not current_puzzle:
+		return
+
+	# Restore initial position
+	ChessLogic.parse_fen(current_puzzle.fen)
+	move_index = 0
+	_history_position = -1
+
+	# If opponent moves first, replay their move
+	if _is_opponent_first_move() and _move_history.size() > 0:
+		var first_entry = _move_history[0]
+		ChessLogic.make_move(first_entry["from"], first_entry["to"])
+		move_index = 1
+		_history_position = 0
+
+	_set_state(PuzzleState.PLAYER_TURN)
+	move_made.emit(-1, -1, true)  # Signal refresh
+	history_changed.emit(can_undo(), can_redo())
+
+
+## Go to the end of the current moves (latest position).
+func go_to_end() -> void:
+	while can_redo():
+		redo_move()

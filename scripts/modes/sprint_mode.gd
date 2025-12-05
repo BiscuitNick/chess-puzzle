@@ -14,6 +14,9 @@ signal game_ended(reason: String, stats: Dictionary)
 ## Emitted when a puzzle is completed
 signal puzzle_completed(solved: int, attempted: int)
 
+## Emitted when puzzles solved count updates (alias for puzzle_completed)
+signal puzzles_solved_updated(count: int)
+
 ## Emitted when requesting next puzzle
 signal next_puzzle_requested()
 
@@ -72,6 +75,15 @@ func initialize(controller: PuzzleController, database: SQLite) -> void:
 	puzzle_controller.move_made.connect(_on_move_made)
 	puzzle_controller.puzzle_completed.connect(_on_puzzle_completed)
 	puzzle_controller.puzzle_loaded.connect(_on_puzzle_loaded)
+
+
+## Start a new sprint game with time limit and difficulty (convenience method).
+func start_sprint(time_limit_secs: float, difficulty: Dictionary) -> void:
+	var settings = {
+		"time_limit": time_limit_secs,
+		"difficulty": difficulty.get("name", "medium").to_lower()
+	}
+	start_game(settings)
 
 
 ## Start a new sprint game with given settings.
@@ -250,6 +262,7 @@ func _on_puzzle_completed(success: bool, _attempts: int) -> void:
 	if success:
 		puzzles_solved += 1
 		puzzle_completed.emit(puzzles_solved, puzzles_attempted)
+		puzzles_solved_updated.emit(puzzles_solved)
 
 		# Load next puzzle immediately
 		next_puzzle_requested.emit()

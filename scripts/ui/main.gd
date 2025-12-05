@@ -303,10 +303,10 @@ func show_results(results_data: Dictionary) -> void:
 		"sprint":
 			await change_scene("sprint_results")
 			if current_scene and current_scene.has_method("show_results"):
-				current_scene.show_results(
-					results_data.get("reason", ""),
-					results_data.get("stats", {})
-				)
+				# Merge reason into stats dict since show_results expects single dict
+				var stats = results_data.get("stats", {})
+				stats["reason"] = results_data.get("reason", "")
+				current_scene.show_results(stats)
 		"streak":
 			await change_scene("streak_game_over")
 			if current_scene and current_scene.has_method("show_results"):
