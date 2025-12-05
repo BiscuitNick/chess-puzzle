@@ -20,7 +20,6 @@ var mode_settings: Dictionary = {}
 @onready var chess_board: ChessBoard = $GameArea/ChessBoard
 @onready var back_btn: Button = $TopBar/BackButton
 @onready var puzzle_info_label: Label = $TopBar/PuzzleInfo
-@onready var move_feedback_label: Label = $GameArea/MoveFeedback
 
 # Practice HUD elements
 @onready var practice_hud: Control = $HUD/PracticeHUD
@@ -51,6 +50,9 @@ var mode_settings: Dictionary = {}
 @onready var move_controls: HBoxContainer = $MoveControls
 @onready var move_back_btn: Button = $MoveControls/BackButton
 @onready var move_forward_btn: Button = $MoveControls/ForwardButton
+
+# Result modal
+@onready var result_modal: PuzzleResultModal = $PuzzleResultModal
 
 # State
 var game_started: bool = false
@@ -109,6 +111,16 @@ func _setup_puzzle_controller() -> void:
 
 	# Connect move history for undo/redo buttons
 	puzzle_controller.history_changed.connect(_on_history_changed)
+
+	# Connect modal signals
+	puzzle_controller.incorrect_move.connect(_on_incorrect_move)
+	puzzle_controller.puzzle_solved.connect(_on_puzzle_solved)
+
+	# Connect modal button signals
+	if result_modal:
+		result_modal.try_again_pressed.connect(_on_modal_try_again)
+		result_modal.next_puzzle_pressed.connect(_on_modal_next_puzzle)
+		result_modal.show_solution_pressed.connect(_on_modal_show_solution)
 
 
 func _setup_mode_instance() -> void:
@@ -212,13 +224,9 @@ func _on_puzzle_loaded(puzzle: PuzzleData) -> void:
 	_update_puzzle_info(puzzle)
 
 
-func _on_move_made(_from: int, _to: int, is_correct: bool) -> void:
+func _on_move_made(_from: int, _to: int, _is_correct: bool) -> void:
 	if chess_board:
 		chess_board.refresh_position()
-
-	# Show feedback for player moves (not refreshes)
-	if _from >= 0 and _to >= 0:
-		_show_move_feedback(is_correct)
 
 
 func _on_puzzle_completed(_success: bool, _attempts: int) -> void:
@@ -241,28 +249,6 @@ func _update_puzzle_info(puzzle: PuzzleData) -> void:
 		puzzle_info_label.text = "#%s  |  %s to move  |  Mate in %d  |  Rating: %d" % [
 			puzzle.id, turn, puzzle.mate_in, puzzle.rating
 		]
-
-	# Clear any previous feedback
-	if move_feedback_label:
-		move_feedback_label.text = ""
-
-
-func _show_move_feedback(is_correct: bool) -> void:
-	if not move_feedback_label:
-		return
-
-	if is_correct:
-		move_feedback_label.text = "Correct!"
-		move_feedback_label.add_theme_color_override("font_color", Color(0.2, 0.8, 0.2))  # Green
-	else:
-		move_feedback_label.text = "Incorrect"
-		move_feedback_label.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))  # Red
-
-	# Clear feedback after a delay
-	await get_tree().create_timer(1.5).timeout
-	if move_feedback_label:
-		move_feedback_label.text = ""
-
 
 # Practice mode handlers
 func _on_hint_pressed() -> void:
@@ -464,3 +450,82 @@ func _on_history_changed(can_undo: bool, can_redo: bool) -> void:
 		move_back_btn.disabled = not can_undo
 	if move_forward_btn:
 		move_forward_btn.disabled = not can_redo
+
+
+# Modal handlers
+func _on_incorrect_move(can_retry: bool, can_skip: bool) -> void:
+	if not result_modal:
+		return
+
+	var message = "That's not the best move."
+	if current_mode == PuzzleController.GameMode.STREAK:
+		message = "Streak ended!"
+	elif current_mode == PuzzleController.GameMode.DAILY:
+		var strikes = puzzle_controller.strikes if puzzle_controller else 0
+		if strikes >= PuzzleController.MAX_STRIKES:
+			message = "Three strikes - puzzle failed!"
+		else:
+			message = "Strike %d of 3" % strikes
+
+	result_modal.show_incorrect(message, can_retry, can_skip, can_retry)
+
+
+func _on_puzzle_solved() -> void:
+	if not result_modal:
+		return
+
+	var message = "Well done!"
+	var show_next = true
+
+	# In some modes, auto-advance without showing modal
+	match current_mode:
+		PuzzleController.GameMode.SPRINT:
+			# Sprint: auto-advance immediately
+			_advance_to_next_puzzle()
+			return
+		PuzzleController.GameMode.STREAK:
+			message = "Streak continues!"
+		PuzzleController.GameMode.DAILY:
+			message = "Puzzle solved!"
+
+	result_modal.show_correct(message, show_next)
+
+
+func _on_modal_try_again() -> void:
+	if puzzle_controller:
+		puzzle_controller.revert_incorrect_move()
+		if chess_board:
+			chess_board.refresh_position()
+
+
+func _on_modal_next_puzzle() -> void:
+	_advance_to_next_puzzle()
+
+
+func _on_modal_show_solution() -> void:
+	if puzzle_controller:
+		puzzle_controller.revert_incorrect_move()
+		puzzle_controller.show_solution()
+		if chess_board:
+			chess_board.refresh_position()
+
+
+func _advance_to_next_puzzle() -> void:
+	match current_mode:
+		PuzzleController.GameMode.PRACTICE:
+			if practice_mode:
+				practice_mode.load_next_puzzle()
+		PuzzleController.GameMode.SPRINT:
+			if sprint_mode:
+				sprint_mode._load_next_puzzle()
+		PuzzleController.GameMode.STREAK:
+			# Streak mode - if we got here after incorrect, game is over
+			if puzzle_controller and puzzle_controller.current_state == PuzzleController.PuzzleState.COMPLETED_FAILED:
+				if streak_mode:
+					streak_mode.end_game()
+			else:
+				if streak_mode:
+					streak_mode._load_next_puzzle()
+		PuzzleController.GameMode.DAILY:
+			if daily_mode:
+				daily_mode._load_current_puzzle()

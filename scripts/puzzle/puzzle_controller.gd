@@ -44,6 +44,15 @@ signal analysis_started()
 ## Emitted when engine analysis completes
 signal analysis_completed()
 
+## Emitted when an incorrect move is made (for UI modal)
+signal incorrect_move(can_retry: bool, can_skip: bool)
+
+## Emitted when puzzle is solved (for UI modal)
+signal puzzle_solved()
+
+# Saved state for reverting incorrect moves
+var _incorrect_move_state: Dictionary = {}
+
 # Current game state
 var current_mode: GameMode = GameMode.PRACTICE
 var current_puzzle: PuzzleData = null
@@ -196,42 +205,52 @@ func _handle_correct_move(from: int, to: int, promotion: int, is_checkmate: bool
 
 
 ## Handle an incorrect move.
-func _handle_incorrect_move(from: int, to: int, reason: String) -> void:
+func _handle_incorrect_move(from: int, to: int, _reason: String) -> void:
 	attempt_count += 1
 
-	# Save board state before making the move so we can undo
-	var saved_state = ChessLogic.copy_board_state()
+	# Save board state before making the move so we can revert later
+	_incorrect_move_state = ChessLogic.copy_board_state()
 
 	# Make the move visually so player sees it happen
 	ChessLogic.make_move(from, to)
 	move_made.emit(from, to, false)
 
-	# Wait briefly to show the incorrect move
-	await get_tree().create_timer(0.5).timeout
+	# Set state to prevent further moves while modal is shown
+	_set_state(PuzzleState.COMPLETED_FAILED)
 
-	# Undo the incorrect move
-	ChessLogic.restore_board_state(saved_state)
-	move_made.emit(to, from, false)  # Signal board refresh
+	# Determine what options to show based on mode
+	var can_retry = true
+	var can_skip = true
 
 	match current_mode:
 		GameMode.PRACTICE:
-			# Unlimited retries in practice mode
-			pass
+			# Unlimited retries, can skip
+			can_retry = true
+			can_skip = true
 
 		GameMode.SPRINT:
-			# Time penalty handled elsewhere, allow retry
-			pass
+			# Time penalty handled elsewhere, can retry but no skip
+			can_retry = true
+			can_skip = false
 
 		GameMode.STREAK:
-			# One mistake ends streak
-			_set_state(PuzzleState.COMPLETED_FAILED)
-			_handle_puzzle_failed(reason)
+			# One mistake ends streak - no retry, must go to next
+			can_retry = false
+			can_skip = true  # "Next" means game over
 
 		GameMode.DAILY:
 			strikes += 1
 			if strikes >= MAX_STRIKES:
-				_set_state(PuzzleState.COMPLETED_FAILED)
-				_handle_puzzle_failed("Three strikes - puzzle failed")
+				# Three strikes - puzzle failed, must move on
+				can_retry = false
+				can_skip = true
+			else:
+				# Can still retry
+				can_retry = true
+				can_skip = false
+
+	# Emit signal for UI to show modal
+	incorrect_move.emit(can_retry, can_skip)
 
 
 ## Play the opponent's response move.
@@ -289,10 +308,22 @@ func _calculate_remaining_mate() -> int:
 	return max(1, current_puzzle.mate_in - player_moves_made)
 
 
+## Revert an incorrect move (called when user chooses "Try Again").
+func revert_incorrect_move() -> void:
+	if _incorrect_move_state.is_empty():
+		return
+
+	ChessLogic.restore_board_state(_incorrect_move_state)
+	_incorrect_move_state.clear()
+	_set_state(PuzzleState.PLAYER_TURN)
+	move_made.emit(-1, -1, true)  # Signal board refresh
+
+
 ## Handle successful puzzle completion.
 func _handle_puzzle_success() -> void:
 	_set_state(PuzzleState.COMPLETED_SUCCESS)
 	streak_count += 1
+	puzzle_solved.emit()
 	puzzle_completed.emit(true, attempt_count)
 
 

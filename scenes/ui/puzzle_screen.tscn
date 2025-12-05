@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://cpuzzlescreen123"]
+[gd_scene load_steps=10 format=3 uid="uid://cpuzzlescreen123"]
 
 [ext_resource type="Script" path="res://scripts/ui/puzzle_screen.gd" id="1_pscreen"]
 [ext_resource type="PackedScene" uid="uid://dlmdkp2p7cnjc" path="res://scenes/board/chess_board.tscn" id="2_board"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://dijrdwv8hwrbf" path="res://scenes/components/streak_counter.tscn" id="5_streak"]
 [ext_resource type="Script" path="res://scripts/ui/daily_progress.gd" id="6_dprog"]
 [ext_resource type="Script" path="res://scripts/ui/thinking_indicator.gd" id="7_think"]
+[ext_resource type="PackedScene" uid="uid://cresultmodal123" path="res://scenes/components/puzzle_result_modal.tscn" id="8_modal"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_topbar"]
 bg_color = Color(0.15, 0.15, 0.18, 0.9)
@@ -70,13 +71,6 @@ grow_vertical = 2
 
 [node name="ChessBoard" parent="GameArea" instance=ExtResource("2_board")]
 layout_mode = 2
-
-[node name="MoveFeedback" type="Label" parent="GameArea"]
-layout_mode = 2
-size_flags_vertical = 0
-theme_override_font_sizes/font_size = 28
-horizontal_alignment = 1
-vertical_alignment = 0
 
 [node name="MoveControls" type="HBoxContainer" parent="."]
 layout_mode = 1
@@ -243,3 +237,6 @@ theme_override_colors/font_color = Color(0.6, 0.6, 0.65, 1)
 text = "Thinking..."
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="PuzzleResultModal" parent="." instance=ExtResource("8_modal")]
+visible = false
