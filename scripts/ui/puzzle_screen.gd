@@ -16,56 +16,61 @@ var puzzle_controller: PuzzleController
 var current_mode: PuzzleController.GameMode = PuzzleController.GameMode.PRACTICE
 var mode_settings: Dictionary = {}
 
-# UI References
-@onready var chess_board: ChessBoard = $GameArea/BoardContainer/ChessBoard
-@onready var back_btn: Button = $TopBar/BackButton
-@onready var puzzle_info_label: Label = $TopBar/PuzzleInfo
+# UI References - new layout paths
+@onready var chess_board: ChessBoard = $MainLayout/ContentArea/LeftPanel/BoardWrapper/ChessBoard
+@onready var back_btn: Button = $MainLayout/TopBar/HBoxContainer/BackButton
+@onready var puzzle_info_label: Label = $MainLayout/TopBar/HBoxContainer/PuzzleInfo
 
-# Debug panel references
-@onready var debug_db_version: Label = $GameArea/DebugPanel/VBox/DBVersion
-@onready var debug_puzzle_id: Label = $GameArea/DebugPanel/VBox/PuzzleID
-@onready var debug_puzzle_number: Label = $GameArea/DebugPanel/VBox/PuzzleNumber
-@onready var debug_fen: Label = $GameArea/DebugPanel/VBox/FEN
-@onready var debug_move_index: Label = $GameArea/DebugPanel/VBox/MoveIndex
-@onready var debug_expected_move: Label = $GameArea/DebugPanel/VBox/ExpectedMove
-@onready var debug_current_fen: Label = $GameArea/DebugPanel/VBox/CurrentFEN
-@onready var debug_moves_list: Label = $GameArea/DebugPanel/VBox/MovesList
-@onready var debug_solution_list: Label = $GameArea/DebugPanel/VBox/SolutionList
-@onready var debug_puzzle_state: Label = $GameArea/DebugPanel/VBox/PuzzleState
-@onready var debug_attempts: Label = $GameArea/DebugPanel/VBox/Attempts
-@onready var debug_rating: Label = $GameArea/DebugPanel/VBox/Rating
-@onready var debug_mate_in: Label = $GameArea/DebugPanel/VBox/MateIn
+# Button bar references
+@onready var button_bar: HBoxContainer = $MainLayout/ContentArea/LeftPanel/ButtonBar
+@onready var undo_btn: Button = $MainLayout/ContentArea/LeftPanel/ButtonBar/UndoButton
+@onready var redo_btn: Button = $MainLayout/ContentArea/LeftPanel/ButtonBar/RedoButton
+@onready var hint_btn: Button = $MainLayout/ContentArea/LeftPanel/ButtonBar/HintButton
+@onready var solution_btn: Button = $MainLayout/ContentArea/LeftPanel/ButtonBar/SolutionButton
+@onready var skip_btn: Button = $MainLayout/ContentArea/LeftPanel/ButtonBar/SkipButton
+@onready var next_btn: Button = $MainLayout/ContentArea/LeftPanel/ButtonBar/NextButton
 
-# Practice HUD elements
-@onready var practice_hud: Control = $HUD/PracticeHUD
-@onready var hint_btn: Button = $HUD/PracticeHUD/HintButton
-@onready var solution_btn: Button = $HUD/PracticeHUD/SolutionButton
-@onready var skip_btn: Button = $HUD/PracticeHUD/SkipButton
-@onready var next_puzzle_btn: Button = $HUD/PracticeHUD/NextPuzzleButton
+# Right panel - tabs
+@onready var right_panel: TabContainer = $MainLayout/ContentArea/RightPanel
+@onready var options_tab: VBoxContainer = $MainLayout/ContentArea/RightPanel/Options
+@onready var flip_board_btn: Button = $MainLayout/ContentArea/RightPanel/Options/FlipBoardButton
+
+# Debug panel references (in Debug tab)
+@onready var debug_db_version: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/DBVersion
+@onready var debug_puzzle_id: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/PuzzleID
+@onready var debug_puzzle_number: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/PuzzleNumber
+@onready var debug_fen: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/FEN
+@onready var debug_move_index: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/MoveIndex
+@onready var debug_expected_move: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/ExpectedMove
+@onready var debug_current_fen: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/CurrentFEN
+@onready var debug_moves_list: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/MovesList
+@onready var debug_solution_list: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/SolutionList
+@onready var debug_puzzle_state: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/PuzzleState
+@onready var debug_attempts: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/Attempts
+@onready var debug_rating: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/Rating
+@onready var debug_mate_in: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/MateIn
+
+# Mode HUD elements
+@onready var mode_hud: HBoxContainer = $MainLayout/ContentArea/LeftPanel/ModeHUD
 
 # Sprint HUD elements
-@onready var sprint_hud: Control = $HUD/SprintHUD
-@onready var timer_display: TimerDisplay = $HUD/SprintHUD/TimerDisplay
-@onready var strike_indicator: StrikeIndicator = $HUD/SprintHUD/StrikeIndicator
-@onready var sprint_solved_label: Label = $HUD/SprintHUD/SolvedLabel
+@onready var sprint_hud: Control = $MainLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD
+@onready var timer_display: TimerDisplay = $MainLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD/TimerDisplay
+@onready var strike_indicator: StrikeIndicator = $MainLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD/StrikeIndicator
+@onready var sprint_solved_label: Label = $MainLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD/SolvedLabel
 
 # Streak HUD elements
-@onready var streak_hud: Control = $HUD/StreakHUD
-@onready var streak_counter: StreakCounter = $HUD/StreakHUD/StreakCounter
-@onready var streak_rating_label: Label = $HUD/StreakHUD/RatingLabel
+@onready var streak_hud: Control = $MainLayout/ContentArea/LeftPanel/ModeHUD/StreakHUD
+@onready var streak_counter: StreakCounter = $MainLayout/ContentArea/LeftPanel/ModeHUD/StreakHUD/StreakCounter
+@onready var streak_rating_label: Label = $MainLayout/ContentArea/LeftPanel/ModeHUD/StreakHUD/RatingLabel
 
 # Daily HUD elements
-@onready var daily_hud: Control = $HUD/DailyHUD
-@onready var daily_progress: DailyProgress = $HUD/DailyHUD/DailyProgress
-@onready var daily_puzzle_label: Label = $HUD/DailyHUD/PuzzleLabel
+@onready var daily_hud: Control = $MainLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD
+@onready var daily_progress: DailyProgress = $MainLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD/DailyProgress
+@onready var daily_puzzle_label: Label = $MainLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD/PuzzleLabel
 
 # Thinking indicator
-@onready var thinking_indicator: ThinkingIndicator = $HUD/ThinkingIndicator
-
-# Move navigation controls
-@onready var move_controls: HBoxContainer = $MoveControls
-@onready var move_back_btn: Button = $MoveControls/BackButton
-@onready var move_forward_btn: Button = $MoveControls/ForwardButton
+@onready var thinking_indicator: ThinkingIndicator = $MainLayout/ContentArea/LeftPanel/ModeHUD/ThinkingIndicator
 
 # Result modal
 @onready var result_modal: PuzzleResultModal = $PuzzleResultModal
@@ -85,23 +90,27 @@ func _ready() -> void:
 func _connect_ui_signals() -> void:
 	if back_btn:
 		back_btn.pressed.connect(_on_back_pressed)
+
+	# Button bar signals
+	if undo_btn:
+		undo_btn.pressed.connect(_on_undo_pressed)
+		undo_btn.disabled = true
+	if redo_btn:
+		redo_btn.pressed.connect(_on_redo_pressed)
+		redo_btn.disabled = true
 	if hint_btn:
 		hint_btn.pressed.connect(_on_hint_pressed)
 	if solution_btn:
 		solution_btn.pressed.connect(_on_solution_pressed)
 	if skip_btn:
 		skip_btn.pressed.connect(_on_skip_pressed)
-	if next_puzzle_btn:
-		next_puzzle_btn.pressed.connect(_on_next_puzzle_pressed)
-		next_puzzle_btn.disabled = true  # Initially disabled until puzzle is solved
+	if next_btn:
+		next_btn.pressed.connect(_on_next_puzzle_pressed)
+		next_btn.disabled = true
 
-	# Move navigation buttons
-	if move_back_btn:
-		move_back_btn.pressed.connect(_on_move_back_pressed)
-		move_back_btn.disabled = true  # Initially disabled
-	if move_forward_btn:
-		move_forward_btn.pressed.connect(_on_move_forward_pressed)
-		move_forward_btn.disabled = true  # Initially disabled
+	# Options panel signals
+	if flip_board_btn:
+		flip_board_btn.pressed.connect(_on_flip_board_pressed)
 
 
 ## Initialize the puzzle screen with a specific mode.
@@ -112,6 +121,7 @@ func initialize(mode: PuzzleController.GameMode, settings: Dictionary = {}) -> v
 	_setup_puzzle_controller()
 	_setup_mode_instance()
 	_show_mode_hud(mode)
+	_update_buttons_for_mode(mode)
 	_start_game()
 
 
@@ -208,8 +218,6 @@ func _start_game() -> void:
 
 
 func _hide_all_huds() -> void:
-	if practice_hud:
-		practice_hud.visible = false
 	if sprint_hud:
 		sprint_hud.visible = false
 	if streak_hud:
@@ -223,8 +231,7 @@ func _show_mode_hud(mode: PuzzleController.GameMode) -> void:
 
 	match mode:
 		PuzzleController.GameMode.PRACTICE:
-			if practice_hud:
-				practice_hud.visible = true
+			pass  # No special HUD, buttons handle it
 		PuzzleController.GameMode.SPRINT:
 			if sprint_hud:
 				sprint_hud.visible = true
@@ -234,6 +241,31 @@ func _show_mode_hud(mode: PuzzleController.GameMode) -> void:
 		PuzzleController.GameMode.DAILY:
 			if daily_hud:
 				daily_hud.visible = true
+
+
+func _update_buttons_for_mode(mode: PuzzleController.GameMode) -> void:
+	# Show/hide buttons based on mode
+	match mode:
+		PuzzleController.GameMode.PRACTICE:
+			if hint_btn: hint_btn.visible = true
+			if solution_btn: solution_btn.visible = true
+			if skip_btn: skip_btn.visible = true
+			if next_btn: next_btn.visible = true
+		PuzzleController.GameMode.SPRINT:
+			if hint_btn: hint_btn.visible = false
+			if solution_btn: solution_btn.visible = false
+			if skip_btn: skip_btn.visible = false
+			if next_btn: next_btn.visible = false
+		PuzzleController.GameMode.STREAK:
+			if hint_btn: hint_btn.visible = false
+			if solution_btn: solution_btn.visible = false
+			if skip_btn: skip_btn.visible = false
+			if next_btn: next_btn.visible = false
+		PuzzleController.GameMode.DAILY:
+			if hint_btn: hint_btn.visible = true
+			if solution_btn: solution_btn.visible = true
+			if skip_btn: skip_btn.visible = false
+			if next_btn: next_btn.visible = false
 
 
 # Debug panel functions
@@ -344,8 +376,8 @@ func _on_puzzle_loaded(puzzle: PuzzleData) -> void:
 	_update_puzzle_info(puzzle)
 
 	# Disable Next button when new puzzle loads (re-enabled when solved)
-	if next_puzzle_btn:
-		next_puzzle_btn.disabled = true
+	if next_btn:
+		next_btn.disabled = true
 
 	# Update debug panel
 	puzzle_count += 1
@@ -384,7 +416,27 @@ func _update_puzzle_info(puzzle: PuzzleData) -> void:
 			puzzle.id, turn, puzzle.mate_in, puzzle.rating
 		]
 
-# Practice mode handlers
+
+# Button handlers
+func _on_undo_pressed() -> void:
+	if puzzle_controller:
+		puzzle_controller.undo_move()
+		if chess_board:
+			chess_board.refresh_position()
+
+
+func _on_redo_pressed() -> void:
+	if puzzle_controller:
+		puzzle_controller.redo_move()
+		if chess_board:
+			chess_board.refresh_position()
+
+
+func _on_flip_board_pressed() -> void:
+	if chess_board:
+		chess_board.flip_board()
+
+
 func _on_hint_pressed() -> void:
 	if practice_mode:
 		practice_mode.show_hint()
@@ -399,16 +451,16 @@ func _on_skip_pressed() -> void:
 	if practice_mode:
 		practice_mode.skip_puzzle()
 	# Disable Next button when skipping to a new puzzle
-	if next_puzzle_btn:
-		next_puzzle_btn.disabled = true
+	if next_btn:
+		next_btn.disabled = true
 
 
 func _on_next_puzzle_pressed() -> void:
 	if practice_mode:
 		practice_mode.load_next_puzzle()
 	# Disable the button after clicking
-	if next_puzzle_btn:
-		next_puzzle_btn.disabled = true
+	if next_btn:
+		next_btn.disabled = true
 
 
 func _on_hint_displayed(_square: int) -> void:
@@ -418,8 +470,8 @@ func _on_hint_displayed(_square: int) -> void:
 
 func _on_solution_completed() -> void:
 	# Enable Next button after solution is shown
-	if next_puzzle_btn:
-		next_puzzle_btn.disabled = false
+	if next_btn:
+		next_btn.disabled = false
 
 
 # Sprint mode handlers
@@ -574,26 +626,12 @@ func _on_analysis_completed() -> void:
 		thinking_indicator.stop_thinking()
 
 
-# Move navigation handlers
-func _on_move_back_pressed() -> void:
-	if puzzle_controller:
-		puzzle_controller.undo_move()
-		if chess_board:
-			chess_board.refresh_position()
-
-
-func _on_move_forward_pressed() -> void:
-	if puzzle_controller:
-		puzzle_controller.redo_move()
-		if chess_board:
-			chess_board.refresh_position()
-
-
+# Move navigation handlers (undo/redo)
 func _on_history_changed(can_undo: bool, can_redo: bool) -> void:
-	if move_back_btn:
-		move_back_btn.disabled = not can_undo
-	if move_forward_btn:
-		move_forward_btn.disabled = not can_redo
+	if undo_btn:
+		undo_btn.disabled = not can_undo
+	if redo_btn:
+		redo_btn.disabled = not can_redo
 
 
 # Modal handlers
@@ -616,8 +654,8 @@ func _on_incorrect_move(_can_retry: bool, _can_skip: bool) -> void:
 func _on_puzzle_solved() -> void:
 	# For practice mode, just enable the Next button instead of showing modal
 	if current_mode == PuzzleController.GameMode.PRACTICE:
-		if next_puzzle_btn:
-			next_puzzle_btn.disabled = false
+		if next_btn:
+			next_btn.disabled = false
 		return
 
 	# For other modes, show modal (disabled for now, focusing on practice mode)

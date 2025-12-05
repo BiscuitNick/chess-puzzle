@@ -76,10 +76,42 @@ func _ready() -> void:
 
 	_load_piece_textures()
 
+	# Connect to resized signal for responsive sizing
+	resized.connect(_on_resized)
+
 	# Trigger initial board draw
 	_board_background.queue_redraw()
 
 	print("[ChessBoard] _ready complete. Textures loaded: ", _piece_textures.size())
+
+
+## Handle container resize - adjust board to fit.
+func _on_resized() -> void:
+	# Calculate new square size based on available space
+	var available = size
+	var new_square_size = int(min(available.x, available.y) / 8.0)
+	if new_square_size > 0 and new_square_size != square_size:
+		set_square_size(new_square_size)
+
+
+## Set a new square size and update all visuals.
+func set_square_size(new_size: int) -> void:
+	square_size = new_size
+	custom_minimum_size = Vector2(square_size * 8, square_size * 8)
+
+	# Update all piece positions and scales
+	for sq in _piece_sprites:
+		var sprite = _piece_sprites[sq]
+		sprite.position = board_to_screen(sq)
+		# Rescale piece to fit new square size
+		if sprite.texture:
+			var tex_size = sprite.texture.get_size()
+			var target_size = square_size * 0.9
+			var scale_factor = target_size / max(tex_size.x, tex_size.y)
+			sprite.scale = Vector2(scale_factor, scale_factor)
+
+	# Redraw board
+	_board_background.queue_redraw()
 
 
 ## Toggle board visibility for debugging (press B key).
