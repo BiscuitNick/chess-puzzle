@@ -2,6 +2,8 @@ class_name ChessBoard
 extends Control
 ## Visual chess board with piece rendering, highlighting, and coordinate conversion.
 
+const BUILD_NUMBER = 3  # Increment this after each code change for debugging
+
 ## Emitted when a square is clicked
 signal square_clicked(square: int)
 
@@ -380,9 +382,11 @@ func _gui_input(event: InputEvent) -> void:
 		# Debug: Always log click attempt
 		var local_pos = get_local_mouse_position()
 		var global_pos = get_global_mouse_position()
-		print("[ChessBoard] === CLICK DEBUG ===")
+		print("[ChessBoard] === CLICK DEBUG (Build %d) ===" % BUILD_NUMBER)
 		print("[ChessBoard] is_animating=%s, input_blocked=%s, local_pos=%s" % [is_animating, input_blocked, local_pos])
 		print("[ChessBoard] Control size=%s, square_size=%d, flipped=%s" % [size, square_size, flipped])
+		print("[ChessBoard] ChessLogic FEN: %s" % ChessLogic.to_fen())
+		print("[ChessBoard] side_to_move=%d (0=white, 1=black)" % ChessLogic.side_to_move)
 		print("[ChessBoard] _piece_sprites keys: %s" % [_piece_sprites.keys()])
 
 	if is_animating:
@@ -409,7 +413,14 @@ func _gui_input(event: InputEvent) -> void:
 					var logic_piece = ChessLogic.get_piece(square)
 					print("[ChessBoard] Square %d: has_sprite=%s, ChessLogic.piece=%d" % [square, has_sprite, logic_piece])
 
-					if has_sprite:
+					# First, check if we have a piece selected and this is a legal move (including captures)
+					if selected_square >= 0 and square in legal_move_squares:
+						# Click on legal move square (empty or capture)
+						print("[ChessBoard] Moving from %d to %d" % [selected_square, square])
+						move_attempted.emit(selected_square, square)
+						clear_selection()
+						accept_event()
+					elif has_sprite:
 						# Check if this piece belongs to the side to move
 						var piece = ChessLogic.get_piece(square)
 						var piece_color = ChessLogic.get_piece_color(piece)
@@ -422,15 +433,11 @@ func _gui_input(event: InputEvent) -> void:
 							# Start dragging this piece
 							_start_drag(square)
 							piece_selected.emit(square)
+							accept_event()
 						else:
 							print("[ChessBoard] Piece color %d != side_to_move %d, clearing selection" % [piece_color, ChessLogic.side_to_move])
 							# Clicked on opponent's piece - clear selection
 							clear_selection()
-					elif selected_square >= 0 and square in legal_move_squares:
-						# Click on legal move square
-						print("[ChessBoard] Moving from %d to %d" % [selected_square, square])
-						move_attempted.emit(selected_square, square)
-						clear_selection()
 					else:
 						print("[ChessBoard] No piece sprite at square %d, clearing selection" % square)
 						clear_selection()
@@ -440,9 +447,11 @@ func _gui_input(event: InputEvent) -> void:
 				# Mouse up - end drag
 				if is_dragging:
 					_end_drag(square)
+					accept_event()
 
 	elif event is InputEventMouseMotion and is_dragging:
 		_update_drag(event.position)
+		accept_event()
 
 
 func _start_drag(square: int) -> void:
