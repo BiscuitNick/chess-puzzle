@@ -108,13 +108,21 @@ func load_next_puzzle() -> void:
 	hint_shown = false
 	showing_solution = false
 
-	var puzzle = _query_next_puzzle()
-	if puzzle:
-		puzzles_attempted += 1
-		puzzle_controller.load_puzzle(puzzle)
-	else:
-		push_warning("No puzzles found matching criteria")
-		no_puzzles_available.emit()
+	# Retry up to 5 times if puzzle fails validation
+	for _attempt in range(5):
+		var puzzle = _query_next_puzzle()
+		if puzzle:
+			puzzles_attempted += 1
+			var loaded = await puzzle_controller.load_puzzle(puzzle)
+			if loaded:
+				return  # Success
+			# Validation failed, try another puzzle
+			push_warning("Puzzle %s failed validation, trying another" % puzzle.id)
+		else:
+			break
+
+	push_warning("No puzzles found matching criteria")
+	no_puzzles_available.emit()
 
 
 ## Query database for next puzzle matching filters.

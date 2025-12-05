@@ -44,6 +44,9 @@ signal analysis_started()
 ## Emitted when engine analysis completes
 signal analysis_completed()
 
+## Emitted when a puzzle fails validation (skip to next)
+signal puzzle_invalid(puzzle_id: String, reason: String)
+
 ## Emitted when an incorrect move is made (for UI modal)
 signal incorrect_move(can_retry: bool, can_skip: bool)
 
@@ -84,9 +87,17 @@ func _ready() -> void:
 
 
 ## Load a puzzle and set up the position.
-func load_puzzle(puzzle: PuzzleData) -> void:
+## Returns true if puzzle loaded successfully, false if validation failed.
+func load_puzzle(puzzle: PuzzleData) -> bool:
 	print("[PuzzleController] load_puzzle called, FEN: ", puzzle.fen if puzzle else "NULL")
 	_set_state(PuzzleState.LOADING)
+
+	# Runtime validation - verify puzzle solution delivers checkmate
+	var validation = puzzle_validator.validate_puzzle(puzzle)
+	if not validation["valid"]:
+		push_warning("[PuzzleController] INVALID PUZZLE %s: %s" % [puzzle.id, validation["reason"]])
+		puzzle_invalid.emit(puzzle.id, validation["reason"])
+		return false
 
 	current_puzzle = puzzle
 	move_index = 0
@@ -112,6 +123,8 @@ func load_puzzle(puzzle: PuzzleData) -> void:
 		await _play_opponent_move()
 	else:
 		_set_state(PuzzleState.PLAYER_TURN)
+
+	return true
 
 
 ## Check if the first move should be played by opponent.
@@ -334,9 +347,10 @@ func _handle_puzzle_failed(reason: String) -> void:
 
 
 ## Reset the current puzzle for retry.
-func reset_puzzle() -> void:
+func reset_puzzle() -> bool:
 	if current_puzzle:
-		await load_puzzle(current_puzzle)
+		return await load_puzzle(current_puzzle)
+	return false
 
 
 ## Show the solution (remaining moves).

@@ -102,15 +102,22 @@ func start_daily() -> void:
 
 ## Load the current puzzle.
 func _load_current_puzzle() -> void:
-	if current_puzzle_index >= daily_puzzles.size():
-		_finish_daily()
-		return
+	# Skip any invalid puzzles
+	while current_puzzle_index < daily_puzzles.size():
+		is_first_move = true
+		had_wrong_move = false
 
-	is_first_move = true
-	had_wrong_move = false
+		var puzzle = daily_puzzles[current_puzzle_index]
+		next_puzzle_started.emit(current_puzzle_index, daily_puzzles.size())
+		var loaded = await puzzle_controller.load_puzzle(puzzle)
+		if loaded:
+			return  # Success
+		# Validation failed, skip to next puzzle
+		push_warning("Daily puzzle %s failed validation, skipping" % puzzle.id)
+		current_puzzle_index += 1
 
-	next_puzzle_started.emit(current_puzzle_index, daily_puzzles.size())
-	puzzle_controller.load_puzzle(daily_puzzles[current_puzzle_index])
+	# All puzzles exhausted
+	_finish_daily()
 
 
 ## Handle move result.

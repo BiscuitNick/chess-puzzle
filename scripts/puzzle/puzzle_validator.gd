@@ -126,3 +126,55 @@ func get_best_move(fen: String) -> String:
 	if bridge and bridge.engine:
 		return bridge.engine.get_best_move(fen)
 	return ""
+
+
+## Validate that a puzzle's solution actually delivers checkmate.
+## Returns a Dictionary with: valid, reason
+func validate_puzzle(puzzle) -> Dictionary:
+	var result = {
+		"valid": false,
+		"reason": ""
+	}
+
+	if not puzzle:
+		result["reason"] = "Puzzle is null"
+		return result
+
+	if puzzle.solution_moves.is_empty():
+		result["reason"] = "Puzzle has no solution moves"
+		return result
+
+	# Create temp logic to apply moves
+	var temp_logic = ChessLogicScript.new()
+	temp_logic._ready()
+
+	# Parse initial position
+	temp_logic.parse_fen(puzzle.fen)
+
+	# Check if already checkmate before any moves
+	if temp_logic.is_checkmate():
+		result["reason"] = "Position is already checkmate before puzzle starts"
+		return result
+
+	# Apply all solution moves
+	for i in range(puzzle.solution_moves.size()):
+		var move_uci = puzzle.solution_moves[i]
+		var move_data = temp_logic.uci_to_squares(move_uci)
+
+		if move_data["from"] < 0 or move_data["to"] < 0:
+			result["reason"] = "Invalid move format at index %d: %s" % [i, move_uci]
+			return result
+
+		if not temp_logic.is_move_legal(move_data["from"], move_data["to"]):
+			result["reason"] = "Illegal move at index %d: %s" % [i, move_uci]
+			return result
+
+		temp_logic.make_move(move_data["from"], move_data["to"], move_data["promotion"])
+
+	# After all moves, position must be checkmate
+	if temp_logic.is_checkmate():
+		result["valid"] = true
+	else:
+		result["reason"] = "Final position is not checkmate"
+
+	return result

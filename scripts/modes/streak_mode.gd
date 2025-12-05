@@ -143,18 +143,31 @@ func get_current_stats() -> Dictionary:
 
 ## Load next puzzle at current rating.
 func _load_next_puzzle() -> void:
-	var puzzle = _query_next_puzzle()
-	if puzzle:
-		puzzle_controller.load_puzzle(puzzle)
-	else:
-		push_warning("No puzzles found near rating: %d" % current_rating)
-		# Try with wider tolerance
-		puzzle = _query_next_puzzle(100)
+	# Retry up to 5 times if puzzle fails validation
+	for _attempt in range(5):
+		var puzzle = _query_next_puzzle()
 		if puzzle:
-			puzzle_controller.load_puzzle(puzzle)
+			var loaded = await puzzle_controller.load_puzzle(puzzle)
+			if loaded:
+				return  # Success
+			push_warning("Puzzle %s failed validation, trying another" % puzzle.id)
 		else:
-			# No puzzles available, end game
-			end_game()
+			break
+
+	push_warning("No puzzles found near rating: %d" % current_rating)
+	# Try with wider tolerance
+	for _attempt in range(5):
+		var puzzle = _query_next_puzzle(100)
+		if puzzle:
+			var loaded = await puzzle_controller.load_puzzle(puzzle)
+			if loaded:
+				return  # Success
+			push_warning("Puzzle %s failed validation, trying another" % puzzle.id)
+		else:
+			break
+
+	# No puzzles available, end game
+	end_game()
 
 
 ## Query database for next puzzle near current rating.

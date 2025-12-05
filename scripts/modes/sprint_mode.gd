@@ -178,13 +178,20 @@ static func format_time(seconds: float) -> String:
 
 ## Load next puzzle based on current difficulty.
 func _load_next_puzzle() -> void:
-	var puzzle = _query_next_puzzle()
-	if puzzle:
-		puzzle_controller.load_puzzle(puzzle)
-	else:
-		push_warning("No puzzles found for difficulty: %s" % current_difficulty.name)
-		# End game if no puzzles available
-		end_game("no_puzzles")
+	# Retry up to 5 times if puzzle fails validation
+	for _attempt in range(5):
+		var puzzle = _query_next_puzzle()
+		if puzzle:
+			var loaded = await puzzle_controller.load_puzzle(puzzle)
+			if loaded:
+				return  # Success
+			push_warning("Puzzle %s failed validation, trying another" % puzzle.id)
+		else:
+			break
+
+	push_warning("No puzzles found for difficulty: %s" % current_difficulty.name)
+	# End game if no puzzles available
+	end_game("no_puzzles")
 
 
 ## Query database for next puzzle within rating range.
@@ -253,7 +260,7 @@ func _on_move_made(_from: int, _to: int, is_correct: bool) -> void:
 		else:
 			# Restart current puzzle
 			puzzle_restart_requested.emit()
-			puzzle_controller.reset_puzzle()
+			await puzzle_controller.reset_puzzle()
 
 
 func _on_puzzle_completed(success: bool, _attempts: int) -> void:
