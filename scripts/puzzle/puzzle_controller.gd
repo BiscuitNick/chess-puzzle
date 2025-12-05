@@ -74,6 +74,9 @@ var puzzle_validator: PuzzleValidator
 # Animation delay for opponent moves
 @export var opponent_move_delay: float = 0.3
 
+# Guard flag to prevent re-entrant calls to _play_opponent_move
+var _opponent_move_in_progress: bool = false
+
 # Move history for undo/redo
 var _move_history: Array[Dictionary] = []  # List of {state, move_index, from, to}
 var _history_position: int = -1  # Current position in history (-1 = at start)
@@ -90,6 +93,7 @@ func _ready() -> void:
 ## Returns true if puzzle loaded successfully, false if validation failed.
 func load_puzzle(puzzle: PuzzleData) -> bool:
 	print("[PuzzleController] ========== LOADING PUZZLE ==========")
+	print("[PuzzleController] Call stack: %s" % [get_stack()])
 	print("[PuzzleController] Puzzle ID: %s, FEN: %s" % [puzzle.id if puzzle else "NULL", puzzle.fen if puzzle else "NULL"])
 	print("[PuzzleController] ChessLogic state BEFORE parse_fen: side_to_move=%d, FEN=%s" % [
 		ChessLogic.side_to_move, ChessLogic.to_fen()])
@@ -106,6 +110,7 @@ func load_puzzle(puzzle: PuzzleData) -> bool:
 	move_index = 0
 	attempt_count = 0
 	strikes = 0
+	_opponent_move_in_progress = false  # Reset re-entry guard
 
 	# Clear move history
 	_move_history.clear()
@@ -273,8 +278,19 @@ func _handle_incorrect_move(from: int, to: int, _reason: String) -> void:
 
 ## Play the opponent's response move.
 func _play_opponent_move() -> void:
+	print("[PuzzleController] _play_opponent_move CALLED: state=%d, in_progress=%s, move_index=%d" % [
+		current_state, _opponent_move_in_progress, move_index])
+
 	if current_state != PuzzleState.OPPONENT_TURN:
+		print("[PuzzleController] _play_opponent_move skipped: state is %d, not OPPONENT_TURN" % current_state)
 		return
+
+	# Guard against re-entrant calls (can happen with async/await)
+	if _opponent_move_in_progress:
+		print("[PuzzleController] _play_opponent_move skipped: already in progress")
+		return
+	_opponent_move_in_progress = true
+	print("[PuzzleController] _play_opponent_move PROCEEDING with move_index=%d" % move_index)
 
 	var opponent_move: String
 
@@ -349,9 +365,17 @@ func _play_opponent_move() -> void:
 	move_index += 1
 
 	# Check if opponent delivered checkmate (puzzle failed)
-	if ChessLogic.is_checkmate():
+	print("[PuzzleController] Before is_checkmate check: side_to_move=%d" % ChessLogic.side_to_move)
+	var is_mate = ChessLogic.is_checkmate()
+	print("[PuzzleController] After is_checkmate check: side_to_move=%d, is_mate=%s" % [ChessLogic.side_to_move, is_mate])
+
+	# Clear the re-entry guard before changing state
+	_opponent_move_in_progress = false
+
+	if is_mate:
 		_handle_puzzle_failed("Opponent delivered checkmate")
 	else:
+		print("[PuzzleController] Setting state to PLAYER_TURN, side_to_move=%d" % ChessLogic.side_to_move)
 		_set_state(PuzzleState.PLAYER_TURN)
 
 

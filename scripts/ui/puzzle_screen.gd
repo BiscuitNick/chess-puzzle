@@ -3,7 +3,7 @@ extends Control
 ## Main puzzle gameplay screen with mode-aware HUD.
 
 # BUILD NUMBER - increment this to verify you're running latest code
-const BUILD: int = 13
+const BUILD: int = 20
 
 signal main_menu_requested()
 signal back_requested()
@@ -91,8 +91,9 @@ func _ready() -> void:
 	_init_debug_panel()
 
 	# Auto-initialize in practice mode when running scene directly (for testing)
+	# Use a timer instead of call_deferred to give main.gd time to call initialize()
 	if not game_started:
-		call_deferred("_auto_init_for_testing")
+		get_tree().create_timer(0.1).timeout.connect(_auto_init_for_testing)
 
 
 func _connect_ui_signals() -> void:
@@ -131,6 +132,14 @@ func _auto_init_for_testing() -> void:
 
 ## Initialize the puzzle screen with a specific mode.
 func initialize(mode: PuzzleController.GameMode, settings: Dictionary = {}) -> void:
+	print("[PuzzleScreen] initialize() called with mode=%d, game_started=%s" % [mode, game_started])
+	# Prevent double initialization (from both _auto_init_for_testing and main.gd)
+	if game_started:
+		print("[PuzzleScreen] initialize() skipped: game already started")
+		return
+	game_started = true
+	print("[PuzzleScreen] initialize() PROCEEDING, set game_started=true")
+
 	current_mode = mode
 	mode_settings = settings
 
@@ -219,8 +228,6 @@ func _setup_mode_instance() -> void:
 
 
 func _start_game() -> void:
-	game_started = true
-
 	match current_mode:
 		PuzzleController.GameMode.PRACTICE:
 			practice_mode.set_settings(mode_settings)

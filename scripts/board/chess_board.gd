@@ -2,7 +2,7 @@ class_name ChessBoard
 extends Control
 ## Visual chess board with piece rendering, highlighting, and coordinate conversion.
 
-const BUILD_NUMBER = 3  # Increment this after each code change for debugging
+const BUILD_NUMBER = 7  # Increment this after each code change for debugging
 
 ## Emitted when a square is clicked
 signal square_clicked(square: int)
@@ -470,6 +470,9 @@ func _start_drag(square: int) -> void:
 	# Elevate the dragged piece
 	_drag_sprite.z_index = 100
 
+	# Immediately snap piece to cursor position for responsive dragging
+	_drag_sprite.position = get_local_mouse_position()
+
 
 func _update_drag(screen_pos: Vector2) -> void:
 	if _drag_sprite:
@@ -477,7 +480,9 @@ func _update_drag(screen_pos: Vector2) -> void:
 
 
 func _end_drag(square: int) -> void:
+	print("[ChessBoard] _end_drag called: square=%d, is_dragging=%s, drag_from=%d" % [square, is_dragging, drag_from])
 	if not is_dragging or not _drag_sprite:
+		print("[ChessBoard] _end_drag early return: is_dragging=%s, _drag_sprite=%s" % [is_dragging, _drag_sprite != null])
 		is_dragging = false
 		drag_from = -1
 		return
@@ -485,13 +490,16 @@ func _end_drag(square: int) -> void:
 	# Reset z-index
 	_drag_sprite.z_index = 0
 
+	print("[ChessBoard] _end_drag check: square=%d, legal_move_squares=%s, drag_from=%d" % [square, legal_move_squares, drag_from])
 	if square >= 0 and square in legal_move_squares and square != drag_from:
 		# Valid drop - attempt the move
+		print("[ChessBoard] Valid drop - emitting move_attempted from %d to %d" % [drag_from, square])
 		move_attempted.emit(drag_from, square)
 		clear_selection()
 		# Don't reset position - move_piece or animate_move will handle it
 	else:
 		# Invalid drop - animate back to original position
+		print("[ChessBoard] Invalid drop - animating back to original position")
 		var tween = create_tween()
 		tween.set_trans(Tween.TRANS_CUBIC)
 		tween.set_ease(Tween.EASE_OUT)
