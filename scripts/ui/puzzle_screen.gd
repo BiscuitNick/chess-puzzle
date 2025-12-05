@@ -17,9 +17,24 @@ var current_mode: PuzzleController.GameMode = PuzzleController.GameMode.PRACTICE
 var mode_settings: Dictionary = {}
 
 # UI References
-@onready var chess_board: ChessBoard = $GameArea/ChessBoard
+@onready var chess_board: ChessBoard = $GameArea/BoardContainer/ChessBoard
 @onready var back_btn: Button = $TopBar/BackButton
 @onready var puzzle_info_label: Label = $TopBar/PuzzleInfo
+
+# Debug panel references
+@onready var debug_db_version: Label = $GameArea/DebugPanel/VBox/DBVersion
+@onready var debug_puzzle_id: Label = $GameArea/DebugPanel/VBox/PuzzleID
+@onready var debug_puzzle_number: Label = $GameArea/DebugPanel/VBox/PuzzleNumber
+@onready var debug_fen: Label = $GameArea/DebugPanel/VBox/FEN
+@onready var debug_move_index: Label = $GameArea/DebugPanel/VBox/MoveIndex
+@onready var debug_expected_move: Label = $GameArea/DebugPanel/VBox/ExpectedMove
+@onready var debug_current_fen: Label = $GameArea/DebugPanel/VBox/CurrentFEN
+@onready var debug_moves_list: Label = $GameArea/DebugPanel/VBox/MovesList
+@onready var debug_solution_list: Label = $GameArea/DebugPanel/VBox/SolutionList
+@onready var debug_puzzle_state: Label = $GameArea/DebugPanel/VBox/PuzzleState
+@onready var debug_attempts: Label = $GameArea/DebugPanel/VBox/Attempts
+@onready var debug_rating: Label = $GameArea/DebugPanel/VBox/Rating
+@onready var debug_mate_in: Label = $GameArea/DebugPanel/VBox/MateIn
 
 # Practice HUD elements
 @onready var practice_hud: Control = $HUD/PracticeHUD
@@ -57,11 +72,14 @@ var mode_settings: Dictionary = {}
 
 # State
 var game_started: bool = false
+var puzzle_count: int = 0  # Track how many puzzles we've seen this session
+var moves_made: Array[String] = []  # Track moves made in current puzzle
 
 
 func _ready() -> void:
 	_connect_ui_signals()
 	_hide_all_huds()
+	_init_debug_panel()
 
 
 func _connect_ui_signals() -> void:
@@ -218,6 +236,98 @@ func _show_mode_hud(mode: PuzzleController.GameMode) -> void:
 				daily_hud.visible = true
 
 
+# Debug panel functions
+func _init_debug_panel() -> void:
+	# Initialize with DB version
+	if debug_db_version:
+		var version = UserData.get_puzzle_version() if UserData else "unknown"
+		debug_db_version.text = "DB Version: %s" % version
+
+
+func _update_debug_panel() -> void:
+	if not puzzle_controller:
+		return
+
+	var puzzle = puzzle_controller.current_puzzle
+	if not puzzle:
+		return
+
+	# Puzzle ID
+	if debug_puzzle_id:
+		debug_puzzle_id.text = "Puzzle ID: %s" % puzzle.id
+
+	# Puzzle number in session
+	if debug_puzzle_number:
+		debug_puzzle_number.text = "Puzzle #: %d" % puzzle_count
+
+	# Original FEN
+	if debug_fen:
+		debug_fen.text = "FEN: %s" % puzzle.fen
+
+	# Move index
+	if debug_move_index:
+		var total_moves = puzzle.solution_moves.size() if puzzle.solution_moves else 0
+		debug_move_index.text = "Move Index: %d / %d" % [puzzle_controller.move_index, total_moves]
+
+	# Expected move
+	if debug_expected_move:
+		var expected = "--"
+		if puzzle.solution_moves and puzzle_controller.move_index < puzzle.solution_moves.size():
+			expected = puzzle.solution_moves[puzzle_controller.move_index]
+		debug_expected_move.text = "Expected: %s" % expected
+
+	# Current FEN (live board state)
+	if debug_current_fen:
+		var current_fen = ChessLogic.to_fen() if ChessLogic else "unknown"
+		debug_current_fen.text = "Current FEN: %s" % current_fen
+
+	# Moves made
+	if debug_moves_list:
+		if moves_made.is_empty():
+			debug_moves_list.text = "(none)"
+		else:
+			debug_moves_list.text = " ".join(moves_made)
+
+	# Solution moves (show all for debugging)
+	if debug_solution_list:
+		if puzzle.solution_moves and not puzzle.solution_moves.is_empty():
+			debug_solution_list.text = " ".join(puzzle.solution_moves)
+		else:
+			debug_solution_list.text = "(none)"
+
+	# Puzzle state
+	if debug_puzzle_state:
+		var state_name = "UNKNOWN"
+		match puzzle_controller.current_state:
+			PuzzleController.PuzzleState.LOADING:
+				state_name = "LOADING"
+			PuzzleController.PuzzleState.PLAYER_TURN:
+				state_name = "PLAYER_TURN"
+			PuzzleController.PuzzleState.OPPONENT_TURN:
+				state_name = "OPPONENT_TURN"
+			PuzzleController.PuzzleState.COMPLETED_SUCCESS:
+				state_name = "COMPLETED_SUCCESS"
+			PuzzleController.PuzzleState.COMPLETED_FAILED:
+				state_name = "COMPLETED_FAILED"
+			PuzzleController.PuzzleState.SHOWING_SOLUTION:
+				state_name = "SHOWING_SOLUTION"
+			PuzzleController.PuzzleState.GAME_OVER:
+				state_name = "GAME_OVER"
+		debug_puzzle_state.text = "State: %s" % state_name
+
+	# Attempts
+	if debug_attempts:
+		debug_attempts.text = "Attempts: %d" % puzzle_controller.attempt_count
+
+	# Rating
+	if debug_rating:
+		debug_rating.text = "Rating: %d" % puzzle.rating
+
+	# Mate in
+	if debug_mate_in:
+		debug_mate_in.text = "Mate In: %d" % puzzle.mate_in
+
+
 # Move handling
 func _on_move_attempted(from: int, to: int) -> void:
 	if puzzle_controller:
@@ -237,10 +347,20 @@ func _on_puzzle_loaded(puzzle: PuzzleData) -> void:
 	if next_puzzle_btn:
 		next_puzzle_btn.disabled = true
 
+	# Update debug panel
+	puzzle_count += 1
+	moves_made.clear()
+	_update_debug_panel()
 
-func _on_move_made(_from: int, _to: int, _is_correct: bool) -> void:
+
+func _on_move_made(from: int, to: int, _is_correct: bool) -> void:
 	if chess_board:
 		chess_board.refresh_position()
+
+	# Track move for debug panel
+	var move_uci = ChessLogic.squares_to_uci(from, to, ChessLogic.EMPTY)
+	moves_made.append(move_uci)
+	_update_debug_panel()
 
 
 func _on_puzzle_completed(_success: bool, _attempts: int) -> void:

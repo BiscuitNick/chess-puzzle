@@ -36,3 +36,4 @@ bin/stockfish/*/stockfish.exe
 data/*.db
 data/*.csv
 data/*.csv.zst
+data/.cache/

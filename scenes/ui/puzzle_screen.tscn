@@ -59,7 +59,7 @@ theme_override_font_sizes/font_size = 16
 text = "Mate in 2  |  Rating: 1200"
 horizontal_alignment = 2
 
-[node name="GameArea" type="CenterContainer" parent="."]
+[node name="GameArea" type="HBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -68,9 +68,136 @@ offset_top = 50.0
 offset_bottom = -80.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 20
+alignment = 1
 
-[node name="ChessBoard" parent="GameArea" instance=ExtResource("2_board")]
+[node name="BoardContainer" type="CenterContainer" parent="GameArea"]
 layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="ChessBoard" parent="GameArea/BoardContainer" instance=ExtResource("2_board")]
+layout_mode = 2
+
+[node name="DebugPanel" type="PanelContainer" parent="GameArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="VBox" type="VBoxContainer" parent="GameArea/DebugPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DebugTitle" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.8, 0.8, 0.3, 1)
+text = "== DEBUG INFO =="
+
+[node name="DBVersion" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "DB Version: --"
+
+[node name="PuzzleID" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Puzzle ID: --"
+
+[node name="PuzzleNumber" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Puzzle #: --"
+
+[node name="FEN" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+text = "FEN: --"
+autowrap_mode = 3
+
+[node name="Separator1" type="HSeparator" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+
+[node name="MoveIndex" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Move Index: 0 / 0"
+
+[node name="ExpectedMove" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.5, 0.9, 0.5, 1)
+text = "Expected: --"
+
+[node name="CurrentFEN" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+text = "Current FEN: --"
+autowrap_mode = 3
+
+[node name="Separator2" type="HSeparator" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+
+[node name="MoveHistory" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Moves Made:"
+
+[node name="MovesList" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.6, 0.8, 1.0, 1)
+text = "(none)"
+autowrap_mode = 3
+
+[node name="Separator3" type="HSeparator" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+
+[node name="SolutionMoves" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Solution:"
+
+[node name="SolutionList" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.9, 0.6, 0.6, 1)
+text = "(hidden)"
+autowrap_mode = 3
+
+[node name="Separator4" type="HSeparator" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+
+[node name="PuzzleState" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "State: --"
+
+[node name="Attempts" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Attempts: 0"
+
+[node name="Rating" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Rating: --"
+
+[node name="MateIn" type="Label" parent="GameArea/DebugPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Mate In: --"
 
 [node name="MoveControls" type="HBoxContainer" parent="."]
 layout_mode = 1

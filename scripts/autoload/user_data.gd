@@ -80,7 +80,15 @@ func _init_database() -> void:
 	db.query("CREATE INDEX IF NOT EXISTS idx_history_result ON user_puzzle_history(result);")
 	db.query("CREATE INDEX IF NOT EXISTS idx_history_mode ON user_puzzle_history(mode);")
 
-	# Seed sample puzzles if the table is empty
+	# Create metadata table for version tracking
+	db.query("""
+		CREATE TABLE IF NOT EXISTS metadata (
+			key TEXT PRIMARY KEY,
+			value TEXT
+		);
+	""")
+
+	# Seed sample puzzles if needed (checks version)
 	_seed_sample_puzzles()
 
 
@@ -375,6 +383,16 @@ func get_setting(key: String, default: Variant = null) -> Variant:
 	return settings.get(key, default)
 
 
+## Get the current puzzle database version.
+func get_puzzle_version() -> String:
+	if not db:
+		return "unknown"
+	db.query("SELECT value FROM metadata WHERE key = 'puzzle_version'")
+	if db.query_result.size() > 0:
+		return db.query_result[0].get("value", "unknown")
+	return "unknown"
+
+
 ## Validate a setting value.
 func _validate_setting(key: String, value: Variant) -> bool:
 	match key:
@@ -397,29 +415,60 @@ func _merge_dict(target: Dictionary, source: Dictionary) -> void:
 
 
 ## Seed puzzles from bundled JSON file or fallback to minimal sample set.
+## Now includes version checking to auto-reseed when puzzle data is updated.
 func _seed_sample_puzzles() -> void:
-	# Check if puzzles already exist and have enough entries
-	db.query("SELECT COUNT(*) as count FROM puzzles")
-	var current_count = 0
-	if db.query_result.size() > 0:
-		current_count = db.query_result[0].get("count", 0)
+	var json_path = "res://data/puzzles.json"
 
-	# If we have more than 50 puzzles, assume we're using the real database
-	if current_count >= 50:
-		print("[UserData] Puzzles table has %d puzzles, skipping seed" % current_count)
+	# Try to load JSON to get version
+	var json_version = "1.0"  # Default version
+	if FileAccess.file_exists(json_path):
+		var file = FileAccess.open(json_path, FileAccess.READ)
+		if file:
+			var json = JSON.new()
+			var error = json.parse(file.get_as_text())
+			file.close()
+			if error == OK and json.data is Dictionary:
+				json_version = json.data.get("version", "1.0")
+
+	# Get stored version from metadata
+	db.query("SELECT value FROM metadata WHERE key = 'puzzle_version'")
+	var stored_version = ""
+	if db.query_result.size() > 0:
+		stored_version = db.query_result[0].get("value", "")
+
+	# Check if we need to reseed due to version change
+	var needs_reseed = false
+	if json_version != stored_version:
+		print("[UserData] Puzzle version changed: '%s' -> '%s'" % [stored_version, json_version])
+		needs_reseed = true
+	else:
+		# Also check puzzle count for backwards compatibility
+		db.query("SELECT COUNT(*) as count FROM puzzles")
+		var current_count = 0
+		if db.query_result.size() > 0:
+			current_count = db.query_result[0].get("count", 0)
+
+		if current_count < 50:
+			print("[UserData] Puzzle count too low (%d), reseeding..." % current_count)
+			needs_reseed = true
+
+	if not needs_reseed:
+		print("[UserData] Puzzles up to date (version %s)" % stored_version)
 		return
 
-	# If we have some old puzzles but less than 50, clear and re-seed
-	if current_count > 0:
-		print("[UserData] Upgrading puzzle database from %d to full set..." % current_count)
-		db.query("DELETE FROM puzzles;")
-
-	print("[UserData] Seeding puzzles...")
+	# Clear existing puzzles and reseed
+	print("[UserData] Reseeding puzzles...")
+	db.query("DELETE FROM puzzles;")
 
 	# Try to load from bundled JSON first
-	var json_path = "res://data/puzzles.json"
 	if FileAccess.file_exists(json_path):
 		_load_puzzles_from_json(json_path)
+		# Store the version
+		db.query_with_bindings(
+			"INSERT OR REPLACE INTO metadata (key, value) VALUES (?, ?)",
+			["puzzle_version", json_version]
+		)
+		print("[UserData] Stored puzzle version: %s" % json_version)
 		return
 
 	# Fallback to minimal hardcoded puzzles for development
