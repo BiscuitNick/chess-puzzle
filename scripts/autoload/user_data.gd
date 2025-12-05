@@ -396,58 +396,40 @@ func _merge_dict(target: Dictionary, source: Dictionary) -> void:
 			target[key] = source[key]
 
 
-## Seed sample puzzles for development/testing.
-## These are real verified mate puzzles.
+## Seed puzzles from bundled JSON file or fallback to minimal sample set.
 func _seed_sample_puzzles() -> void:
-	# Check if puzzles already exist
+	# Check if puzzles already exist and have enough entries
 	db.query("SELECT COUNT(*) as count FROM puzzles")
-	if db.query_result.size() > 0 and db.query_result[0].get("count", 0) > 0:
-		print("[UserData] Puzzles table already has data, skipping seed")
+	var current_count = 0
+	if db.query_result.size() > 0:
+		current_count = db.query_result[0].get("count", 0)
+
+	# If we have more than 50 puzzles, assume we're using the real database
+	if current_count >= 50:
+		print("[UserData] Puzzles table has %d puzzles, skipping seed" % current_count)
 		return
 
-	print("[UserData] Seeding sample puzzles...")
+	# If we have some old puzzles but less than 50, clear and re-seed
+	if current_count > 0:
+		print("[UserData] Upgrading puzzle database from %d to full set..." % current_count)
+		db.query("DELETE FROM puzzles;")
 
-	# Real verified mate puzzles
-	# Format: [id, fen, moves, rating, themes, mate_in]
-	# Moves: space-separated UCI moves, player moves first
+	print("[UserData] Seeding puzzles...")
+
+	# Try to load from bundled JSON first
+	var json_path = "res://data/puzzles.json"
+	if FileAccess.file_exists(json_path):
+		_load_puzzles_from_json(json_path)
+		return
+
+	# Fallback to minimal hardcoded puzzles for development
+	print("[UserData] No bundled puzzles found, using minimal sample set")
 	var puzzles = [
-		# === MATE IN 1 ===
-		# Scholar's mate position - Qxf7#
 		["m1_001", "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 4 4", "f3f7", 600, "mateIn1", 1],
-		# Back rank mate - Qe8# or Re8#
 		["m1_002", "6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1", "e1e8", 700, "mateIn1 backRankMate", 1],
-		# Queen delivers mate
-		["m1_003", "r1bqk2r/pppp1Qpp/2n2n2/2b1p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 5", "f7f6", 650, "mateIn1", 1],
-		# Simple queen mate
-		["m1_004", "k7/8/1K6/8/8/8/8/7Q w - - 0 1", "h1a1", 500, "mateIn1", 1],
-		# Rook and king mate
-		["m1_005", "k7/8/1K6/8/8/8/8/R7 w - - 0 1", "a1a8", 550, "mateIn1", 1],
-		# Two rook mate
-		["m1_006", "k7/8/8/8/8/8/1R6/RK6 w - - 0 1", "a1a8", 600, "mateIn1", 1],
-		# Knight and bishop checkmate setup
-		["m1_007", "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4", "h5f7", 800, "mateIn1", 1],
-		# Back rank with queen
-		["m1_008", "6k1/5ppp/8/8/8/8/5PPP/3Q2K1 w - - 0 1", "d1d8", 750, "mateIn1 backRankMate", 1],
-
-		# === MATE IN 2 ===
-		# Classic Qxf7+ Qxe7# pattern
-		["m2_001", "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4", "c4f7 e8e7 h5e5", 1000, "mateIn2", 2],
-		# Back rank threat
-		["m2_002", "r5k1/5ppp/8/8/8/8/5PPP/RR4K1 w - - 0 1", "a1a8 f8a8 b1a1", 1100, "mateIn2 backRankMate", 2],
-		# Queen sacrifice mate
-		["m2_003", "r1b1k2r/ppppqppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 4 6", "c4f7 e8d8 f7e6", 1200, "mateIn2", 2],
-		# Smothered mate pattern
-		["m2_004", "r1b1kb1r/pppp1ppp/5q2/4n3/3nP3/2N3P1/PPP1NP1P/R1BQKB1R b KQkq - 0 7", "d4f3 e1f1 f6b2", 1150, "mateIn2 smotheredMate", 2],
-
-		# === MATE IN 3 ===
-		# Queen and knight coordination
-		["m3_001", "r1bqkb1r/pppp1Npp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNBQK2R b KQkq - 0 5", "e8e7 c4d5 c6d4 d5f7", 1300, "mateIn3", 3],
-		# Back rank exploitation
-		["m3_002", "r4rk1/5ppp/8/8/8/8/5PPP/RR4K1 w - - 0 1", "b1b8 a8b8 a1b1 b8a8 b1a1", 1400, "mateIn3 backRankMate", 3],
-
-		# === MATE IN 4 ===
-		# Complex queen maneuver
-		["m4_001", "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 4 4", "f3f7 e8e7 f7d5 d7d6 d5c6 b7c6 c4d5", 1600, "mateIn4", 4],
+		["m1_003", "k7/8/1K6/8/8/8/8/7R w - - 0 1", "h1h8", 400, "mateIn1", 1],
+		["m2_001", "r5k1/5ppp/8/8/8/8/5PPP/RR4K1 w - - 0 1", "a1a8 f8a8 b1a1", 1100, "mateIn2 backRankMate", 2],
+		["m2_002", "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4", "c4f7 e8e7 h5e5", 1000, "mateIn2", 2],
 	]
 
 	for p in puzzles:
@@ -457,6 +439,51 @@ func _seed_sample_puzzles() -> void:
 		)
 
 	print("[UserData] Seeded %d sample puzzles" % puzzles.size())
+
+
+## Load puzzles from a JSON file.
+func _load_puzzles_from_json(json_path: String) -> void:
+	var file = FileAccess.open(json_path, FileAccess.READ)
+	if not file:
+		push_error("[UserData] Failed to open puzzle file: %s" % json_path)
+		return
+
+	var json = JSON.new()
+	var error = json.parse(file.get_as_text())
+	file.close()
+
+	if error != OK:
+		push_error("[UserData] Failed to parse puzzle JSON: %s" % json.get_error_message())
+		return
+
+	var data = json.data
+	if not data is Dictionary or not data.has("puzzles"):
+		push_error("[UserData] Invalid puzzle JSON format")
+		return
+
+	var puzzles = data.puzzles
+	var count = 0
+
+	for p in puzzles:
+		if not p is Dictionary:
+			continue
+		if not p.has("id") or not p.has("fen") or not p.has("moves"):
+			continue
+
+		db.query_with_bindings(
+			"INSERT OR REPLACE INTO puzzles (id, fen, moves, rating, themes, mate_in) VALUES (?, ?, ?, ?, ?, ?)",
+			[
+				p.get("id", ""),
+				p.get("fen", ""),
+				p.get("moves", ""),
+				p.get("rating", 1000),
+				p.get("themes", ""),
+				p.get("mate_in", 1)
+			]
+		)
+		count += 1
+
+	print("[UserData] Loaded %d puzzles from %s" % [count, json_path])
 
 
 ## Reset all user data (for debugging/testing).

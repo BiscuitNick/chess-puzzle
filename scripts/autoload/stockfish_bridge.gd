@@ -11,7 +11,7 @@ func _ready() -> void:
 	if os_name in ["Windows", "macOS", "Linux"]:
 		engine = StockfishProcess.new()
 		add_child(engine)
-		engine.ready.connect(_on_engine_ready)
+		engine.engine_ready.connect(_on_engine_ready)
 		engine.analysis_complete.connect(_on_analysis_complete)
 		engine.thinking_started.connect(_on_thinking_started)
 		engine.thinking_finished.connect(_on_thinking_finished)

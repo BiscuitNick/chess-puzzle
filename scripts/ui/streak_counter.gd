@@ -2,7 +2,7 @@ class_name StreakCounter
 extends HBoxContainer
 ## In-game streak counter component showing current streak and rating.
 
-@onready var streak_label: Label = $StreakLabel
+@onready var streak_label: Label = $StreakContainer/StreakLabel
 @onready var rating_label: Label = $RatingLabel
 
 var current_streak: int = 0
@@ -59,3 +59,8 @@ func reset() -> void:
 	current_streak = 0
 	current_rating = 0
 	update_display(0, 0)
+
+
+## Set the streak count (alias for update_streak).
+func set_streak(count: int) -> void:
+	update_streak(count)

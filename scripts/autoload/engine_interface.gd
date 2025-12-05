@@ -8,7 +8,7 @@ extends Node
 signal analysis_complete(result: Dictionary)
 
 ## Emitted when the engine is ready to receive commands.
-signal ready
+signal engine_ready
 
 ## Emitted when the engine starts thinking (after threshold delay).
 signal thinking_started

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/board/chess_board.gd" id="1_chess"]
 
-[node name="ChessBoard" type="Node2D"]
+[node name="ChessBoard" type="Control"]
 script = ExtResource("1_chess")
 square_size = 80
 light_color = Color(0.941176, 0.85098, 0.709804, 1)

@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 ChessLogic="*res://scripts/autoload/chess_logic.gd"
 StockfishBridge="*res://scripts/autoload/stockfish_bridge.gd"
 UserData="*res://scripts/autoload/user_data.gd"
+AudioManager="*res://scripts/autoload/audio_manager.gd"
 
 [rendering]
 

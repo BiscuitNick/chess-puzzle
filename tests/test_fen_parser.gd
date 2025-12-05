@@ -1,16 +1,19 @@
 extends GutTest
 ## Tests for ChessLogic FEN parsing and board state representation.
 
-var chess_logic: ChessLogic
+const ChessLogicScript = preload("res://scripts/autoload/chess_logic.gd")
+
+var chess_logic
 
 
 func before_each() -> void:
-	chess_logic = ChessLogic.new()
+	chess_logic = ChessLogicScript.new()
+	add_child(chess_logic)
 	chess_logic._ready()
 
 
 func after_each() -> void:
-	chess_logic.free()
+	chess_logic.queue_free()
 
 
 func test_starting_position() -> void:
@@ -18,39 +21,39 @@ func test_starting_position() -> void:
 	# Verify piece placement
 
 	# Rank 8 (black pieces)
-	assert_eq(chess_logic.board[0], ChessLogic.B_ROOK, "a8 should be black rook")
-	assert_eq(chess_logic.board[1], ChessLogic.B_KNIGHT, "b8 should be black knight")
-	assert_eq(chess_logic.board[2], ChessLogic.B_BISHOP, "c8 should be black bishop")
-	assert_eq(chess_logic.board[3], ChessLogic.B_QUEEN, "d8 should be black queen")
-	assert_eq(chess_logic.board[4], ChessLogic.B_KING, "e8 should be black king")
-	assert_eq(chess_logic.board[5], ChessLogic.B_BISHOP, "f8 should be black bishop")
-	assert_eq(chess_logic.board[6], ChessLogic.B_KNIGHT, "g8 should be black knight")
-	assert_eq(chess_logic.board[7], ChessLogic.B_ROOK, "h8 should be black rook")
+	assert_eq(chess_logic.board[0], ChessLogicScript.B_ROOK, "a8 should be black rook")
+	assert_eq(chess_logic.board[1], ChessLogicScript.B_KNIGHT, "b8 should be black knight")
+	assert_eq(chess_logic.board[2], ChessLogicScript.B_BISHOP, "c8 should be black bishop")
+	assert_eq(chess_logic.board[3], ChessLogicScript.B_QUEEN, "d8 should be black queen")
+	assert_eq(chess_logic.board[4], ChessLogicScript.B_KING, "e8 should be black king")
+	assert_eq(chess_logic.board[5], ChessLogicScript.B_BISHOP, "f8 should be black bishop")
+	assert_eq(chess_logic.board[6], ChessLogicScript.B_KNIGHT, "g8 should be black knight")
+	assert_eq(chess_logic.board[7], ChessLogicScript.B_ROOK, "h8 should be black rook")
 
 	# Rank 7 (black pawns)
 	for i in range(8, 16):
-		assert_eq(chess_logic.board[i], ChessLogic.B_PAWN, "Rank 7 should be black pawns")
+		assert_eq(chess_logic.board[i], ChessLogicScript.B_PAWN, "Rank 7 should be black pawns")
 
 	# Ranks 3-6 (empty)
 	for i in range(16, 48):
-		assert_eq(chess_logic.board[i], ChessLogic.EMPTY, "Middle ranks should be empty")
+		assert_eq(chess_logic.board[i], ChessLogicScript.EMPTY, "Middle ranks should be empty")
 
 	# Rank 2 (white pawns)
 	for i in range(48, 56):
-		assert_eq(chess_logic.board[i], ChessLogic.W_PAWN, "Rank 2 should be white pawns")
+		assert_eq(chess_logic.board[i], ChessLogicScript.W_PAWN, "Rank 2 should be white pawns")
 
 	# Rank 1 (white pieces)
-	assert_eq(chess_logic.board[56], ChessLogic.W_ROOK, "a1 should be white rook")
-	assert_eq(chess_logic.board[57], ChessLogic.W_KNIGHT, "b1 should be white knight")
-	assert_eq(chess_logic.board[58], ChessLogic.W_BISHOP, "c1 should be white bishop")
-	assert_eq(chess_logic.board[59], ChessLogic.W_QUEEN, "d1 should be white queen")
-	assert_eq(chess_logic.board[60], ChessLogic.W_KING, "e1 should be white king")
-	assert_eq(chess_logic.board[61], ChessLogic.W_BISHOP, "f1 should be white bishop")
-	assert_eq(chess_logic.board[62], ChessLogic.W_KNIGHT, "g1 should be white knight")
-	assert_eq(chess_logic.board[63], ChessLogic.W_ROOK, "h1 should be white rook")
+	assert_eq(chess_logic.board[56], ChessLogicScript.W_ROOK, "a1 should be white rook")
+	assert_eq(chess_logic.board[57], ChessLogicScript.W_KNIGHT, "b1 should be white knight")
+	assert_eq(chess_logic.board[58], ChessLogicScript.W_BISHOP, "c1 should be white bishop")
+	assert_eq(chess_logic.board[59], ChessLogicScript.W_QUEEN, "d1 should be white queen")
+	assert_eq(chess_logic.board[60], ChessLogicScript.W_KING, "e1 should be white king")
+	assert_eq(chess_logic.board[61], ChessLogicScript.W_BISHOP, "f1 should be white bishop")
+	assert_eq(chess_logic.board[62], ChessLogicScript.W_KNIGHT, "g1 should be white knight")
+	assert_eq(chess_logic.board[63], ChessLogicScript.W_ROOK, "h1 should be white rook")
 
 	# Side to move
-	assert_eq(chess_logic.side_to_move, ChessLogic.PieceColor.WHITE, "White should move first")
+	assert_eq(chess_logic.side_to_move, ChessLogicScript.PieceColor.WHITE, "White should move first")
 
 	# Castling rights (all available)
 	assert_eq(chess_logic.castling_rights, 15, "All castling rights should be set (K+Q+k+q = 1+2+4+8 = 15)")
@@ -66,17 +69,17 @@ func test_starting_position() -> void:
 func test_castling_rights_partial() -> void:
 	# Test with only kingside castling
 	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w Kk - 0 1")
-	assert_eq(chess_logic.castling_rights & ChessLogic.CASTLE_K, ChessLogic.CASTLE_K, "White kingside should be set")
-	assert_eq(chess_logic.castling_rights & ChessLogic.CASTLE_Q, 0, "White queenside should not be set")
-	assert_eq(chess_logic.castling_rights & ChessLogic.CASTLE_k, ChessLogic.CASTLE_k, "Black kingside should be set")
-	assert_eq(chess_logic.castling_rights & ChessLogic.CASTLE_q, 0, "Black queenside should not be set")
+	assert_eq(chess_logic.castling_rights & ChessLogicScript.CASTLE_K, ChessLogicScript.CASTLE_K, "White kingside should be set")
+	assert_eq(chess_logic.castling_rights & ChessLogicScript.CASTLE_Q, 0, "White queenside should not be set")
+	assert_eq(chess_logic.castling_rights & ChessLogicScript.CASTLE_k, ChessLogicScript.CASTLE_k, "Black kingside should be set")
+	assert_eq(chess_logic.castling_rights & ChessLogicScript.CASTLE_q, 0, "Black queenside should not be set")
 
 	# Test with only queenside castling
 	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w Qq - 0 1")
-	assert_eq(chess_logic.castling_rights & ChessLogic.CASTLE_K, 0, "White kingside should not be set")
-	assert_eq(chess_logic.castling_rights & ChessLogic.CASTLE_Q, ChessLogic.CASTLE_Q, "White queenside should be set")
-	assert_eq(chess_logic.castling_rights & ChessLogic.CASTLE_k, 0, "Black kingside should not be set")
-	assert_eq(chess_logic.castling_rights & ChessLogic.CASTLE_q, ChessLogic.CASTLE_q, "Black queenside should be set")
+	assert_eq(chess_logic.castling_rights & ChessLogicScript.CASTLE_K, 0, "White kingside should not be set")
+	assert_eq(chess_logic.castling_rights & ChessLogicScript.CASTLE_Q, ChessLogicScript.CASTLE_Q, "White queenside should be set")
+	assert_eq(chess_logic.castling_rights & ChessLogicScript.CASTLE_k, 0, "Black kingside should not be set")
+	assert_eq(chess_logic.castling_rights & ChessLogicScript.CASTLE_q, ChessLogicScript.CASTLE_q, "Black queenside should be set")
 
 	# Test with no castling rights
 	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w - - 0 1")
@@ -150,19 +153,19 @@ func test_uci_to_squares() -> void:
 	var move = chess_logic.uci_to_squares("e2e4")
 	assert_eq(move["from"], chess_logic.algebraic_to_index("e2"), "Source should be e2")
 	assert_eq(move["to"], chess_logic.algebraic_to_index("e4"), "Destination should be e4")
-	assert_eq(move["promotion"], ChessLogic.EMPTY, "No promotion")
+	assert_eq(move["promotion"], ChessLogicScript.EMPTY, "No promotion")
 
 	# Promotion to queen (white)
 	move = chess_logic.uci_to_squares("e7e8q")
 	assert_eq(move["from"], chess_logic.algebraic_to_index("e7"), "Source should be e7")
 	assert_eq(move["to"], chess_logic.algebraic_to_index("e8"), "Destination should be e8")
-	assert_eq(move["promotion"], ChessLogic.W_QUEEN, "Should promote to white queen")
+	assert_eq(move["promotion"], ChessLogicScript.W_QUEEN, "Should promote to white queen")
 
 	# Promotion to knight (black)
 	move = chess_logic.uci_to_squares("d2d1n")
 	assert_eq(move["from"], chess_logic.algebraic_to_index("d2"), "Source should be d2")
 	assert_eq(move["to"], chess_logic.algebraic_to_index("d1"), "Destination should be d1")
-	assert_eq(move["promotion"], ChessLogic.B_KNIGHT, "Should promote to black knight")
+	assert_eq(move["promotion"], ChessLogicScript.B_KNIGHT, "Should promote to black knight")
 
 	# Castling notation
 	move = chess_logic.uci_to_squares("e1g1")  # White kingside castle
@@ -182,7 +185,7 @@ func test_squares_to_uci() -> void:
 	uci = chess_logic.squares_to_uci(
 		chess_logic.algebraic_to_index("e7"),
 		chess_logic.algebraic_to_index("e8"),
-		ChessLogic.W_QUEEN
+		ChessLogicScript.W_QUEEN
 	)
 	assert_eq(uci, "e7e8q", "Should be e7e8q")
 
@@ -190,11 +193,11 @@ func test_squares_to_uci() -> void:
 func test_side_to_move() -> void:
 	# White to move
 	chess_logic.parse_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-	assert_eq(chess_logic.side_to_move, ChessLogic.PieceColor.WHITE, "White should move")
+	assert_eq(chess_logic.side_to_move, ChessLogicScript.PieceColor.WHITE, "White should move")
 
 	# Black to move
 	chess_logic.parse_fen("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1")
-	assert_eq(chess_logic.side_to_move, ChessLogic.PieceColor.BLACK, "Black should move")
+	assert_eq(chess_logic.side_to_move, ChessLogicScript.PieceColor.BLACK, "Black should move")
 
 
 func test_halfmove_and_fullmove() -> void:
@@ -205,33 +208,33 @@ func test_halfmove_and_fullmove() -> void:
 
 func test_get_piece() -> void:
 	# Starting position
-	assert_eq(chess_logic.get_piece(0), ChessLogic.B_ROOK, "a8 should be black rook")
-	assert_eq(chess_logic.get_piece(60), ChessLogic.W_KING, "e1 should be white king")
-	assert_eq(chess_logic.get_piece(28), ChessLogic.EMPTY, "e5 should be empty")
+	assert_eq(chess_logic.get_piece(0), ChessLogicScript.B_ROOK, "a8 should be black rook")
+	assert_eq(chess_logic.get_piece(60), ChessLogicScript.W_KING, "e1 should be white king")
+	assert_eq(chess_logic.get_piece(28), ChessLogicScript.EMPTY, "e5 should be empty")
 
 	# Invalid squares
-	assert_eq(chess_logic.get_piece(-1), ChessLogic.EMPTY, "Invalid square should return EMPTY")
-	assert_eq(chess_logic.get_piece(64), ChessLogic.EMPTY, "Invalid square should return EMPTY")
+	assert_eq(chess_logic.get_piece(-1), ChessLogicScript.EMPTY, "Invalid square should return EMPTY")
+	assert_eq(chess_logic.get_piece(64), ChessLogicScript.EMPTY, "Invalid square should return EMPTY")
 
 
 func test_piece_color_helpers() -> void:
-	assert_true(chess_logic.is_white_piece(ChessLogic.W_PAWN), "W_PAWN should be white")
-	assert_true(chess_logic.is_white_piece(ChessLogic.W_KING), "W_KING should be white")
-	assert_false(chess_logic.is_white_piece(ChessLogic.B_PAWN), "B_PAWN should not be white")
-	assert_false(chess_logic.is_white_piece(ChessLogic.EMPTY), "EMPTY should not be white")
+	assert_true(chess_logic.is_white_piece(ChessLogicScript.W_PAWN), "W_PAWN should be white")
+	assert_true(chess_logic.is_white_piece(ChessLogicScript.W_KING), "W_KING should be white")
+	assert_false(chess_logic.is_white_piece(ChessLogicScript.B_PAWN), "B_PAWN should not be white")
+	assert_false(chess_logic.is_white_piece(ChessLogicScript.EMPTY), "EMPTY should not be white")
 
-	assert_true(chess_logic.is_black_piece(ChessLogic.B_PAWN), "B_PAWN should be black")
-	assert_true(chess_logic.is_black_piece(ChessLogic.B_KING), "B_KING should be black")
-	assert_false(chess_logic.is_black_piece(ChessLogic.W_PAWN), "W_PAWN should not be black")
-	assert_false(chess_logic.is_black_piece(ChessLogic.EMPTY), "EMPTY should not be black")
+	assert_true(chess_logic.is_black_piece(ChessLogicScript.B_PAWN), "B_PAWN should be black")
+	assert_true(chess_logic.is_black_piece(ChessLogicScript.B_KING), "B_KING should be black")
+	assert_false(chess_logic.is_black_piece(ChessLogicScript.W_PAWN), "W_PAWN should not be black")
+	assert_false(chess_logic.is_black_piece(ChessLogicScript.EMPTY), "EMPTY should not be black")
 
 
 func test_king_position_tracking() -> void:
 	# Starting position
-	assert_eq(chess_logic.get_king_square(ChessLogic.PieceColor.WHITE), chess_logic.algebraic_to_index("e1"), "White king should be on e1")
-	assert_eq(chess_logic.get_king_square(ChessLogic.PieceColor.BLACK), chess_logic.algebraic_to_index("e8"), "Black king should be on e8")
+	assert_eq(chess_logic.get_king_square(ChessLogicScript.PieceColor.WHITE), chess_logic.algebraic_to_index("e1"), "White king should be on e1")
+	assert_eq(chess_logic.get_king_square(ChessLogicScript.PieceColor.BLACK), chess_logic.algebraic_to_index("e8"), "Black king should be on e8")
 
 	# After parsing a different position
 	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1")
-	assert_eq(chess_logic.get_king_square(ChessLogic.PieceColor.WHITE), chess_logic.algebraic_to_index("e1"), "White king should still be on e1")
-	assert_eq(chess_logic.get_king_square(ChessLogic.PieceColor.BLACK), chess_logic.algebraic_to_index("e8"), "Black king should still be on e8")
+	assert_eq(chess_logic.get_king_square(ChessLogicScript.PieceColor.WHITE), chess_logic.algebraic_to_index("e1"), "White king should still be on e1")
+	assert_eq(chess_logic.get_king_square(ChessLogicScript.PieceColor.BLACK), chess_logic.algebraic_to_index("e8"), "Black king should still be on e8")

@@ -27,7 +27,7 @@ func _ready() -> void:
 	# Verify engine works
 	if _test_engine():
 		_is_ready = true
-		ready.emit()
+		engine_ready.emit()
 	else:
 		push_error("Failed to initialize Stockfish engine")
 

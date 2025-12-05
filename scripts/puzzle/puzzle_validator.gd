@@ -3,6 +3,8 @@ extends RefCounted
 ## Validates puzzle moves using Stockfish analysis.
 ## Checks that moves maintain forced mate and verifies checkmate delivery.
 
+const ChessLogicScript = preload("res://scripts/autoload/chess_logic.gd")
+
 
 ## Validate a player move in a puzzle.
 ## Returns a Dictionary with: valid, is_checkmate, new_mate_in, reason
@@ -15,7 +17,7 @@ func validate_move(fen: String, move_uci: String, expected_mate_in: int) -> Dict
 	}
 
 	# Make the move in a temporary state to check the resulting position
-	var temp_logic = ChessLogic.new()
+	var temp_logic = ChessLogicScript.new()
 	temp_logic._ready()
 	temp_logic.parse_fen(fen)
 
@@ -97,7 +99,7 @@ func _get_stockfish_bridge():
 
 ## Check if a position is checkmate.
 func is_checkmate(fen: String) -> bool:
-	var temp_logic = ChessLogic.new()
+	var temp_logic = ChessLogicScript.new()
 	temp_logic._ready()
 	temp_logic.parse_fen(fen)
 	return temp_logic.is_checkmate()

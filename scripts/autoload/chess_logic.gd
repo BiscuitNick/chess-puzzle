@@ -1,4 +1,3 @@
-class_name ChessLogic
 extends Node
 ## Chess logic autoload singleton for board state representation and FEN parsing.
 ## Provides core chess data structures and notation conversion utilities.
@@ -442,22 +441,27 @@ func get_knight_moves(square: int, color: PieceColor) -> Array[int]:
 ## Get moves along a ray (for sliding pieces).
 func _get_ray_moves(square: int, direction: int, color: PieceColor) -> Array[int]:
 	var moves: Array[int] = []
-	var file = get_file(square)
+	var start_file = get_file(square)
+	var prev_file = start_file
 	var current = square + direction
 
 	while current >= 0 and current < 64:
 		var current_file = get_file(current)
 
-		# Check for file wrapping on horizontal moves
-		if direction == DIR_E or direction == DIR_W:
-			if abs(current_file - file) != abs((current - square) / direction):
+		# Check for file wrapping: file should change by at most 1 per step for diagonals
+		# For horizontal moves, file changes by 1 per step
+		# For vertical moves, file doesn't change
+		if direction == DIR_N or direction == DIR_S:
+			# Vertical: file should not change
+			if current_file != start_file:
 				break
-		# Check for diagonal file wrapping
-		elif direction == DIR_NE or direction == DIR_SE:
-			if current_file != file + ((current - square) / direction):
+		elif direction == DIR_E or direction == DIR_W:
+			# Horizontal: file should change by exactly 1 from previous
+			if abs(current_file - prev_file) != 1:
 				break
-		elif direction == DIR_NW or direction == DIR_SW:
-			if current_file != file - abs((current - square) / direction):
+		else:
+			# Diagonal: file should change by exactly 1 from previous
+			if abs(current_file - prev_file) != 1:
 				break
 
 		var target_piece = board[current]
@@ -469,8 +473,8 @@ func _get_ray_moves(square: int, direction: int, color: PieceColor) -> Array[int
 		else:
 			break  # Blocked by friendly piece
 
+		prev_file = current_file
 		current += direction
-		file = current_file
 
 	return moves
 
@@ -957,14 +961,26 @@ func has_legal_moves() -> bool:
 	return false
 
 
-## Check if the current position is checkmate.
-func is_checkmate() -> bool:
-	return is_in_check() and not has_legal_moves()
+## Check if the current position is checkmate for the given color.
+## If no color is specified, checks the side_to_move.
+func is_checkmate(color: PieceColor = side_to_move) -> bool:
+	# Temporarily set side_to_move to check the specified color
+	var original_side = side_to_move
+	side_to_move = color
+	var result = is_in_check() and not has_legal_moves()
+	side_to_move = original_side
+	return result
 
 
-## Check if the current position is stalemate.
-func is_stalemate() -> bool:
-	return not is_in_check() and not has_legal_moves()
+## Check if the current position is stalemate for the given color.
+## If no color is specified, checks the side_to_move.
+func is_stalemate(color: PieceColor = side_to_move) -> bool:
+	# Temporarily set side_to_move to check the specified color
+	var original_side = side_to_move
+	side_to_move = color
+	var result = not is_in_check() and not has_legal_moves()
+	side_to_move = original_side
+	return result
 
 
 ## Get all legal moves for the current side.

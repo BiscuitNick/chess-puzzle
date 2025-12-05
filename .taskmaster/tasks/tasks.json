@@ -1366,7 +1366,7 @@
         "dependencies": [
           "14"
         ],
-        "status": "pending",
+        "status": "deferred",
         "subtasks": [
           {
             "id": 1,
@@ -1423,7 +1423,8 @@
         ],
         "complexity": 4,
         "recommendedSubtasks": 5,
-        "expansionPrompt": "Break down into subtasks: 1) Create audio_manager.gd autoload with sound playback, 2) Acquire and integrate 6 sound effect assets, 3) Implement piece movement animation with Tween, 4) Add screen transition animations, 5) Create thinking_indicator.tscn with timer threshold"
+        "expansionPrompt": "Break down into subtasks: 1) Create audio_manager.gd autoload with sound playback, 2) Acquire and integrate 6 sound effect assets, 3) Implement piece movement animation with Tween, 4) Add screen transition animations, 5) Create thinking_indicator.tscn with timer threshold",
+        "updatedAt": "2025-12-05T02:03:48.487Z"
       },
       {
         "id": "16",
@@ -1439,7 +1440,7 @@
           "6",
           "8"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -1447,9 +1448,10 @@
             "description": "Install the GUT (Godot Unit Test) plugin, configure test directories, and establish the test runner command for headless execution.",
             "dependencies": [],
             "details": "Install GUT addon from AssetLib or manually copy to addons/gut/. Create tests/ directory at project root. Configure gut_config.json with test directory path 'res://tests/', set exit_on_finish to true for CI compatibility. Add GUT to autoloads in project.godot if needed. Create a .gutconfig.json file specifying test prefix 'test_', script suffix '.gd', and directory 'res://tests/'. Verify GUT can be invoked with: godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/ -gexit. Create base test class tests/base_test.gd extending GutTest with common setup/teardown helpers for chess testing scenarios.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run empty test suite to verify GUT executes without errors. Confirm headless mode exits properly with return code 0 when no tests fail.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-05T00:41:14.109Z"
           },
           {
             "id": 2,
@@ -1459,9 +1461,10 @@
               1
             ],
             "details": "Create tests/test_fen_parser.gd extending GutTest. Implement test_starting_position() to verify standard starting FEN 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1' parses correctly with all 32 pieces in proper squares. Implement test_castling_rights_partial() testing FENs with partial castling rights (e.g., 'Kq' means white kingside only, black queenside only). Implement test_en_passant_square() verifying positions like 'e3' or 'd6' are correctly identified. Implement test_invalid_fen_throws() ensuring malformed FENs (wrong piece count, invalid characters, missing fields) return appropriate errors or null. Add test_to_fen_roundtrip() verifying parse then export returns equivalent FEN string.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run tests with known good and bad FEN strings. Verify 100% pass rate and proper error handling for edge cases.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-05T01:53:34.416Z"
           },
           {
             "id": 3,
@@ -1471,9 +1474,10 @@
               1
             ],
             "details": "Create tests/test_move_generation.gd extending GutTest. Test each piece type individually: test_pawn_moves() for single push, double push from start, diagonal captures; test_knight_moves() for L-shaped movement including corner/edge cases; test_bishop_moves() for diagonal sliding until blocked; test_rook_moves() for orthogonal sliding; test_queen_moves() combining bishop and rook patterns; test_king_moves() for single square all directions. Add test_blocked_pieces() verifying friendly pieces block movement. Add test_captures() ensuring enemy pieces can be captured and stops further movement. Add test_no_self_capture() preventing capturing own pieces. Include boundary tests for pieces on board edges.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Use specific FEN positions designed to isolate each piece type. Verify move counts and specific legal moves match expected values.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-05T01:53:34.420Z"
           },
           {
             "id": 4,
@@ -1483,9 +1487,10 @@
               1
             ],
             "details": "Create tests/test_check_detection.gd extending GutTest. Implement test_simple_check() with positions where king is attacked by single piece (each piece type attacking). Implement test_double_check() with positions where two pieces simultaneously give check. Implement test_not_in_check() verifying standard positions and positions with nearby but non-attacking pieces are not flagged as check. Implement test_pins() verifying pieces pinned to king cannot move illegally - a pinned piece blocks check but moving it would expose king. Test discovered check scenarios. Add test_in_check_must_escape() verifying moves that don't address check are filtered out.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Create specific FEN positions for each check scenario. Verify is_in_check() returns correct boolean and legal moves are properly restricted.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-05T01:53:34.422Z"
           },
           {
             "id": 5,
@@ -1496,9 +1501,10 @@
               4
             ],
             "details": "Create tests/test_checkmate_detection.gd extending GutTest. Implement test_back_rank_mate() using FEN for classic back rank checkmate pattern (rook/queen delivering mate on 8th rank with pawns blocking escape). Implement test_smothered_mate() with knight delivering checkmate to king trapped by own pieces. Implement test_can_block() verifying positions where check can be blocked are not checkmate. Implement test_stalemate_not_checkmate() with classic stalemate positions (king not in check but no legal moves) returns stalemate, not checkmate. Add test_can_capture_attacker() ensuring positions where attacking piece can be captured are not mate. Test multi-piece checkmate patterns.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Use famous checkmate positions from chess history. Verify is_checkmate() and is_stalemate() return mutually exclusive correct results.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-05T01:53:34.424Z"
           },
           {
             "id": 6,
@@ -1509,9 +1515,10 @@
               3
             ],
             "details": "Create tests/test_special_moves.gd extending GutTest. Implement test_kingside_castle() and test_queenside_castle() for both colors verifying king and rook end positions. Implement test_castle_blocked() when pieces between king and rook. Implement test_castle_through_check() preventing castling when passing through attacked squares. Implement test_castle_from_check() preventing castling while in check. Implement test_castle_rights_lost() after king or rook moves. Implement test_en_passant_capture() verifying pawn can capture en passant on correct square immediately after opponent's double pawn push. Implement test_en_passant_expires() after one move. Implement test_promotion_queen/rook/bishop/knight() verifying pawn reaching 8th rank can promote to any piece except king or pawn.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test each special move in isolation with crafted FEN positions. Verify board state after move execution matches expected outcome.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-05T01:53:34.427Z"
           },
           {
             "id": 7,
@@ -1521,14 +1528,16 @@
               1
             ],
             "details": "Create tests/test_stockfish_integration.gd extending GutTest. Implement test_engine_starts() verifying Stockfish process spawns and responds to UCI commands. Implement test_mate_detection() using known mate-in-1 positions confirming engine finds mate. Implement test_best_move_parsing() ensuring UCI 'bestmove' response is correctly parsed. Implement test_no_mate_returns_null() for positions without forced mate. Use await for async engine calls. Create tests/test_puzzle_validation.gd extending GutTest. Implement test_correct_move_accepted() verifying player's move matching solution is accepted. Implement test_alternate_mates_accepted() allowing equivalent checkmate moves. Implement test_non_mating_rejected() ensuring non-checkmate moves are rejected. Implement test_slower_mate_rejected() verifying longer mate sequences are rejected when shorter exists. Handle engine timeout scenarios gracefully.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Use known mate puzzle positions for predictable engine responses. Mock Stockfish responses for unit tests, use real engine for integration tests. Verify all puzzle acceptance/rejection logic works correctly.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-12-05T01:53:34.429Z"
           }
         ],
         "complexity": 6,
         "recommendedSubtasks": 7,
-        "expansionPrompt": "Break down into subtasks: 1) Set up GUT framework and test runner, 2) Implement test_fen_parser.gd tests, 3) Implement test_move_generation.gd tests, 4) Implement test_check_detection.gd tests, 5) Implement test_checkmate_detection.gd tests, 6) Implement test_special_moves.gd tests, 7) Implement test_stockfish_integration.gd and test_puzzle_validation.gd"
+        "expansionPrompt": "Break down into subtasks: 1) Set up GUT framework and test runner, 2) Implement test_fen_parser.gd tests, 3) Implement test_move_generation.gd tests, 4) Implement test_check_detection.gd tests, 5) Implement test_checkmate_detection.gd tests, 6) Implement test_special_moves.gd tests, 7) Implement test_stockfish_integration.gd and test_puzzle_validation.gd",
+        "updatedAt": "2025-12-05T01:53:34.429Z"
       },
       {
         "id": "17",
@@ -1611,9 +1620,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-12-04T21:49:35.931Z",
+      "lastModified": "2025-12-05T02:03:48.488Z",
       "taskCount": 17,
-      "completedCount": 14,
+      "completedCount": 15,
       "tags": [
         "master"
       ]

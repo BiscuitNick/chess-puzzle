@@ -1,16 +1,19 @@
 extends GutTest
 ## Tests for special chess moves: castling, en passant, and pawn promotion.
 
-var chess_logic: ChessLogic
+const ChessLogicScript = preload("res://scripts/autoload/chess_logic.gd")
+
+var chess_logic
 
 
 func before_each() -> void:
-	chess_logic = ChessLogic.new()
+	chess_logic = ChessLogicScript.new()
+	add_child(chess_logic)
 	chess_logic._ready()
 
 
 func after_each() -> void:
-	chess_logic.free()
+	chess_logic.queue_free()
 
 
 # =============================================================================
@@ -21,7 +24,7 @@ func test_white_kingside_castle() -> void:
 	# Position with castling rights, empty squares between king and rook
 	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1")
 
-	assert_true(chess_logic.can_castle_kingside(ChessLogic.PieceColor.WHITE), "White should be able to castle kingside")
+	assert_true(chess_logic.can_castle_kingside(ChessLogicScript.PieceColor.WHITE), "White should be able to castle kingside")
 
 	var e1 = chess_logic.algebraic_to_index("e1")
 	var g1 = chess_logic.algebraic_to_index("g1")
@@ -34,23 +37,23 @@ func test_white_kingside_castle() -> void:
 	assert_true(chess_logic.make_move(e1, g1), "Kingside castling should succeed")
 
 	# Verify king moved to g1
-	assert_eq(chess_logic.board[g1], ChessLogic.W_KING, "White king should be on g1")
-	assert_eq(chess_logic.board[e1], ChessLogic.EMPTY, "e1 should be empty")
+	assert_eq(chess_logic.board[g1], ChessLogicScript.W_KING, "White king should be on g1")
+	assert_eq(chess_logic.board[e1], ChessLogicScript.EMPTY, "e1 should be empty")
 
 	# Verify rook moved to f1
 	var f1 = chess_logic.algebraic_to_index("f1")
 	var h1 = chess_logic.algebraic_to_index("h1")
-	assert_eq(chess_logic.board[f1], ChessLogic.W_ROOK, "White rook should be on f1")
-	assert_eq(chess_logic.board[h1], ChessLogic.EMPTY, "h1 should be empty")
+	assert_eq(chess_logic.board[f1], ChessLogicScript.W_ROOK, "White rook should be on f1")
+	assert_eq(chess_logic.board[h1], ChessLogicScript.EMPTY, "h1 should be empty")
 
 	# Verify castling rights cleared
-	assert_eq(chess_logic.castling_rights & (ChessLogic.CASTLE_K | ChessLogic.CASTLE_Q), 0, "White castling rights should be cleared")
+	assert_eq(chess_logic.castling_rights & (ChessLogicScript.CASTLE_K | ChessLogicScript.CASTLE_Q), 0, "White castling rights should be cleared")
 
 
 func test_black_kingside_castle() -> void:
 	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R b KQkq - 0 1")
 
-	assert_true(chess_logic.can_castle_kingside(ChessLogic.PieceColor.BLACK), "Black should be able to castle kingside")
+	assert_true(chess_logic.can_castle_kingside(ChessLogicScript.PieceColor.BLACK), "Black should be able to castle kingside")
 
 	var e8 = chess_logic.algebraic_to_index("e8")
 	var g8 = chess_logic.algebraic_to_index("g8")
@@ -58,9 +61,9 @@ func test_black_kingside_castle() -> void:
 	assert_true(chess_logic.make_move(e8, g8), "Black kingside castling should succeed")
 
 	# Verify positions
-	assert_eq(chess_logic.board[g8], ChessLogic.B_KING, "Black king should be on g8")
+	assert_eq(chess_logic.board[g8], ChessLogicScript.B_KING, "Black king should be on g8")
 	var f8 = chess_logic.algebraic_to_index("f8")
-	assert_eq(chess_logic.board[f8], ChessLogic.B_ROOK, "Black rook should be on f8")
+	assert_eq(chess_logic.board[f8], ChessLogicScript.B_ROOK, "Black rook should be on f8")
 
 
 # =============================================================================
@@ -70,7 +73,7 @@ func test_black_kingside_castle() -> void:
 func test_white_queenside_castle() -> void:
 	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1")
 
-	assert_true(chess_logic.can_castle_queenside(ChessLogic.PieceColor.WHITE), "White should be able to castle queenside")
+	assert_true(chess_logic.can_castle_queenside(ChessLogicScript.PieceColor.WHITE), "White should be able to castle queenside")
 
 	var e1 = chess_logic.algebraic_to_index("e1")
 	var c1 = chess_logic.algebraic_to_index("c1")
@@ -78,28 +81,28 @@ func test_white_queenside_castle() -> void:
 	assert_true(chess_logic.make_move(e1, c1), "Queenside castling should succeed")
 
 	# Verify king moved to c1
-	assert_eq(chess_logic.board[c1], ChessLogic.W_KING, "White king should be on c1")
+	assert_eq(chess_logic.board[c1], ChessLogicScript.W_KING, "White king should be on c1")
 
 	# Verify rook moved to d1
 	var d1 = chess_logic.algebraic_to_index("d1")
 	var a1 = chess_logic.algebraic_to_index("a1")
-	assert_eq(chess_logic.board[d1], ChessLogic.W_ROOK, "White rook should be on d1")
-	assert_eq(chess_logic.board[a1], ChessLogic.EMPTY, "a1 should be empty")
+	assert_eq(chess_logic.board[d1], ChessLogicScript.W_ROOK, "White rook should be on d1")
+	assert_eq(chess_logic.board[a1], ChessLogicScript.EMPTY, "a1 should be empty")
 
 
 func test_black_queenside_castle() -> void:
 	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R b KQkq - 0 1")
 
-	assert_true(chess_logic.can_castle_queenside(ChessLogic.PieceColor.BLACK), "Black should be able to castle queenside")
+	assert_true(chess_logic.can_castle_queenside(ChessLogicScript.PieceColor.BLACK), "Black should be able to castle queenside")
 
 	var e8 = chess_logic.algebraic_to_index("e8")
 	var c8 = chess_logic.algebraic_to_index("c8")
 
 	assert_true(chess_logic.make_move(e8, c8), "Black queenside castling should succeed")
 
-	assert_eq(chess_logic.board[c8], ChessLogic.B_KING, "Black king should be on c8")
+	assert_eq(chess_logic.board[c8], ChessLogicScript.B_KING, "Black king should be on c8")
 	var d8 = chess_logic.algebraic_to_index("d8")
-	assert_eq(chess_logic.board[d8], ChessLogic.B_ROOK, "Black rook should be on d8")
+	assert_eq(chess_logic.board[d8], ChessLogicScript.B_ROOK, "Black rook should be on d8")
 
 
 # =============================================================================
@@ -109,39 +112,39 @@ func test_black_queenside_castle() -> void:
 func test_castle_blocked_by_piece() -> void:
 	# Knight blocking kingside
 	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3KN1R w KQkq - 0 1")
-	assert_false(chess_logic.can_castle_kingside(ChessLogic.PieceColor.WHITE), "Cannot castle with piece in the way")
+	assert_false(chess_logic.can_castle_kingside(ChessLogicScript.PieceColor.WHITE), "Cannot castle with piece in the way")
 
 
 func test_castle_no_rights() -> void:
 	# No castling rights
 	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w - - 0 1")
-	assert_false(chess_logic.can_castle_kingside(ChessLogic.PieceColor.WHITE), "Cannot castle without rights")
-	assert_false(chess_logic.can_castle_queenside(ChessLogic.PieceColor.WHITE), "Cannot castle without rights")
+	assert_false(chess_logic.can_castle_kingside(ChessLogicScript.PieceColor.WHITE), "Cannot castle without rights")
+	assert_false(chess_logic.can_castle_queenside(ChessLogicScript.PieceColor.WHITE), "Cannot castle without rights")
 
 
 func test_castle_through_check_illegal() -> void:
-	# Rook attacks f1 - king would pass through check
-	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/5r2/PPPPPPPP/R3K2R w KQkq - 0 1")
-	assert_false(chess_logic.can_castle_kingside(ChessLogic.PieceColor.WHITE), "Cannot castle through check")
+	# Rook attacks f1 - king would pass through check (no pawn on f2 to block)
+	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/5r2/PPPPP1PP/R3K2R w KQkq - 0 1")
+	assert_false(chess_logic.can_castle_kingside(ChessLogicScript.PieceColor.WHITE), "Cannot castle through check")
 
 
 func test_castle_into_check_illegal() -> void:
-	# Rook attacks g1 - king would land in check
-	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/6r1/PPPPPPPP/R3K2R w KQkq - 0 1")
-	assert_false(chess_logic.can_castle_kingside(ChessLogic.PieceColor.WHITE), "Cannot castle into check")
+	# Rook attacks g1 - king would land in check (no pawn on g2 to block)
+	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/6r1/PPPPPP1P/R3K2R w KQkq - 0 1")
+	assert_false(chess_logic.can_castle_kingside(ChessLogicScript.PieceColor.WHITE), "Cannot castle into check")
 
 
 func test_castle_while_in_check_illegal() -> void:
-	# Rook attacks e1 - king is in check
-	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/4r3/PPPPPPPP/R3K2R w KQkq - 0 1")
-	assert_false(chess_logic.can_castle_kingside(ChessLogic.PieceColor.WHITE), "Cannot castle while in check")
-	assert_false(chess_logic.can_castle_queenside(ChessLogic.PieceColor.WHITE), "Cannot castle while in check")
+	# Rook attacks e1 - king is in check (no pawn on e2 to block)
+	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/4r3/PPPP1PPP/R3K2R w KQkq - 0 1")
+	assert_false(chess_logic.can_castle_kingside(ChessLogicScript.PieceColor.WHITE), "Cannot castle while in check")
+	assert_false(chess_logic.can_castle_queenside(ChessLogicScript.PieceColor.WHITE), "Cannot castle while in check")
 
 
 func test_castle_rook_missing() -> void:
 	# Missing kingside rook
 	chess_logic.parse_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K3 w KQkq - 0 1")
-	assert_false(chess_logic.can_castle_kingside(ChessLogic.PieceColor.WHITE), "Cannot castle without rook")
+	assert_false(chess_logic.can_castle_kingside(ChessLogicScript.PieceColor.WHITE), "Cannot castle without rook")
 
 
 func test_castling_rights_revoked_after_king_move() -> void:
@@ -154,8 +157,8 @@ func test_castling_rights_revoked_after_king_move() -> void:
 	chess_logic.make_move(e1, d1)
 
 	# Verify castling rights cleared for white
-	assert_eq(chess_logic.castling_rights & ChessLogic.CASTLE_K, 0, "White K should be cleared")
-	assert_eq(chess_logic.castling_rights & ChessLogic.CASTLE_Q, 0, "White Q should be cleared")
+	assert_eq(chess_logic.castling_rights & ChessLogicScript.CASTLE_K, 0, "White K should be cleared")
+	assert_eq(chess_logic.castling_rights & ChessLogicScript.CASTLE_Q, 0, "White Q should be cleared")
 
 
 func test_castling_rights_revoked_after_rook_move() -> void:
@@ -169,8 +172,8 @@ func test_castling_rights_revoked_after_rook_move() -> void:
 	chess_logic.make_move(h1, g1)
 
 	# Verify only kingside castling right cleared
-	assert_eq(chess_logic.castling_rights & ChessLogic.CASTLE_K, 0, "White K should be cleared")
-	assert_ne(chess_logic.castling_rights & ChessLogic.CASTLE_Q, 0, "White Q should still be set")
+	assert_eq(chess_logic.castling_rights & ChessLogicScript.CASTLE_K, 0, "White K should be cleared")
+	assert_ne(chess_logic.castling_rights & ChessLogicScript.CASTLE_Q, 0, "White Q should still be set")
 
 
 # =============================================================================
@@ -196,10 +199,10 @@ func test_en_passant_capture() -> void:
 	assert_true(chess_logic.make_move(e5, d6), "En passant capture should succeed")
 
 	# Verify pawn moved to d6
-	assert_eq(chess_logic.board[d6], ChessLogic.W_PAWN, "White pawn should be on d6")
+	assert_eq(chess_logic.board[d6], ChessLogicScript.W_PAWN, "White pawn should be on d6")
 
 	# Verify captured pawn removed from d5
-	assert_eq(chess_logic.board[d5], ChessLogic.EMPTY, "Black pawn should be captured from d5")
+	assert_eq(chess_logic.board[d5], ChessLogicScript.EMPTY, "Black pawn should be captured from d5")
 
 
 func test_en_passant_black_capture() -> void:
@@ -217,8 +220,8 @@ func test_en_passant_black_capture() -> void:
 
 	assert_true(chess_logic.make_move(d4, e3), "Black en passant capture should succeed")
 
-	assert_eq(chess_logic.board[e3], ChessLogic.B_PAWN, "Black pawn should be on e3")
-	assert_eq(chess_logic.board[e4], ChessLogic.EMPTY, "White pawn should be captured from e4")
+	assert_eq(chess_logic.board[e3], ChessLogicScript.B_PAWN, "Black pawn should be on e3")
+	assert_eq(chess_logic.board[e4], ChessLogicScript.EMPTY, "White pawn should be captured from e4")
 
 
 func test_double_push_sets_en_passant() -> void:
@@ -271,7 +274,7 @@ func test_pawn_promotion_default_queen() -> void:
 	# Promote without specifying piece (defaults to queen)
 	chess_logic.make_move(a7, a8)
 
-	assert_eq(chess_logic.board[a8], ChessLogic.W_QUEEN, "Pawn should promote to queen by default")
+	assert_eq(chess_logic.board[a8], ChessLogicScript.W_QUEEN, "Pawn should promote to queen by default")
 
 
 func test_pawn_promotion_to_knight() -> void:
@@ -280,9 +283,9 @@ func test_pawn_promotion_to_knight() -> void:
 	var a7 = chess_logic.algebraic_to_index("a7")
 	var a8 = chess_logic.algebraic_to_index("a8")
 
-	chess_logic.make_move(a7, a8, ChessLogic.W_KNIGHT)
+	chess_logic.make_move(a7, a8, ChessLogicScript.W_KNIGHT)
 
-	assert_eq(chess_logic.board[a8], ChessLogic.W_KNIGHT, "Pawn should promote to knight")
+	assert_eq(chess_logic.board[a8], ChessLogicScript.W_KNIGHT, "Pawn should promote to knight")
 
 
 func test_pawn_promotion_to_rook() -> void:
@@ -291,9 +294,9 @@ func test_pawn_promotion_to_rook() -> void:
 	var a7 = chess_logic.algebraic_to_index("a7")
 	var a8 = chess_logic.algebraic_to_index("a8")
 
-	chess_logic.make_move(a7, a8, ChessLogic.W_ROOK)
+	chess_logic.make_move(a7, a8, ChessLogicScript.W_ROOK)
 
-	assert_eq(chess_logic.board[a8], ChessLogic.W_ROOK, "Pawn should promote to rook")
+	assert_eq(chess_logic.board[a8], ChessLogicScript.W_ROOK, "Pawn should promote to rook")
 
 
 func test_pawn_promotion_to_bishop() -> void:
@@ -302,9 +305,9 @@ func test_pawn_promotion_to_bishop() -> void:
 	var a7 = chess_logic.algebraic_to_index("a7")
 	var a8 = chess_logic.algebraic_to_index("a8")
 
-	chess_logic.make_move(a7, a8, ChessLogic.W_BISHOP)
+	chess_logic.make_move(a7, a8, ChessLogicScript.W_BISHOP)
 
-	assert_eq(chess_logic.board[a8], ChessLogic.W_BISHOP, "Pawn should promote to bishop")
+	assert_eq(chess_logic.board[a8], ChessLogicScript.W_BISHOP, "Pawn should promote to bishop")
 
 
 func test_black_pawn_promotion() -> void:
@@ -313,9 +316,9 @@ func test_black_pawn_promotion() -> void:
 	var a2 = chess_logic.algebraic_to_index("a2")
 	var a1 = chess_logic.algebraic_to_index("a1")
 
-	chess_logic.make_move(a2, a1, ChessLogic.B_QUEEN)
+	chess_logic.make_move(a2, a1, ChessLogicScript.B_QUEEN)
 
-	assert_eq(chess_logic.board[a1], ChessLogic.B_QUEEN, "Black pawn should promote to queen")
+	assert_eq(chess_logic.board[a1], ChessLogicScript.B_QUEEN, "Black pawn should promote to queen")
 
 
 func test_promotion_with_capture() -> void:
@@ -328,9 +331,9 @@ func test_promotion_with_capture() -> void:
 	var pawn_moves = chess_logic.get_legal_moves(a7)
 	assert_true(b8 in pawn_moves, "Pawn should be able to capture and promote on b8")
 
-	chess_logic.make_move(a7, b8, ChessLogic.W_QUEEN)
+	chess_logic.make_move(a7, b8, ChessLogicScript.W_QUEEN)
 
-	assert_eq(chess_logic.board[b8], ChessLogic.W_QUEEN, "Pawn should capture and promote to queen")
+	assert_eq(chess_logic.board[b8], ChessLogicScript.W_QUEEN, "Pawn should capture and promote to queen")
 
 
 # =============================================================================
