@@ -31,6 +31,7 @@ var hint_square: int = -1
 
 # Animation state
 var is_animating: bool = false
+var input_blocked: bool = false  # External flag to block input (e.g., during opponent turn)
 signal move_animation_finished
 
 # Drag state
@@ -61,6 +62,9 @@ const PIECE_FILES = {
 func _ready() -> void:
 	# Set minimum size for proper layout in containers
 	custom_minimum_size = Vector2(square_size * 8, square_size * 8)
+
+	# Enable mouse input on this Control
+	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	# Create board background that draws behind pieces
 	# We use a separate Node2D for board drawing so pieces appear on top
@@ -112,6 +116,14 @@ func set_square_size(new_size: int) -> void:
 
 	# Redraw board
 	_board_background.queue_redraw()
+
+
+## GLOBAL input handler to debug if clicks are reaching the board area at all
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		var local_pos = get_local_mouse_position()
+		var in_bounds = Rect2(Vector2.ZERO, size).has_point(local_pos)
+		print("[ChessBoard] _input (GLOBAL): click at local=%s, size=%s, in_bounds=%s" % [local_pos, size, in_bounds])
 
 
 ## Toggle board visibility for debugging (press B key).
@@ -359,8 +371,26 @@ func clear_selection() -> void:
 
 
 ## Handle input for square clicking and drag-and-drop.
-func _input(event: InputEvent) -> void:
+func _gui_input(event: InputEvent) -> void:
+	# SUPER DEBUG - log ANY input event
+	if event is InputEventMouseButton:
+		print("[ChessBoard] _gui_input received MouseButton event: pressed=%s, button=%d" % [event.pressed, event.button_index])
+
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		# Debug: Always log click attempt
+		var local_pos = get_local_mouse_position()
+		var global_pos = get_global_mouse_position()
+		print("[ChessBoard] === CLICK DEBUG ===")
+		print("[ChessBoard] is_animating=%s, input_blocked=%s, local_pos=%s" % [is_animating, input_blocked, local_pos])
+		print("[ChessBoard] Control size=%s, square_size=%d, flipped=%s" % [size, square_size, flipped])
+		print("[ChessBoard] _piece_sprites keys: %s" % [_piece_sprites.keys()])
+
 	if is_animating:
+		print("[ChessBoard] Input blocked - animation in progress")
+		return
+
+	if input_blocked:
+		print("[ChessBoard] Input blocked - external block active (opponent turn)")
 		return
 
 	if event is InputEventMouseButton:
@@ -369,30 +399,43 @@ func _input(event: InputEvent) -> void:
 			var square = screen_to_board(local_pos)
 
 			if event.pressed:
+				print("[ChessBoard] Computed square=%d from local_pos=%s" % [square, local_pos])
+
 				# Mouse down - start drag or select
 				if square >= 0:
 					square_clicked.emit(square)
 
-					if _piece_sprites.has(square):
+					var has_sprite = _piece_sprites.has(square)
+					var logic_piece = ChessLogic.get_piece(square)
+					print("[ChessBoard] Square %d: has_sprite=%s, ChessLogic.piece=%d" % [square, has_sprite, logic_piece])
+
+					if has_sprite:
 						# Check if this piece belongs to the side to move
 						var piece = ChessLogic.get_piece(square)
 						var piece_color = ChessLogic.get_piece_color(piece)
+						print("[ChessBoard] Piece at square %d: piece=%d, color=%d, side_to_move=%d" % [square, piece, piece_color, ChessLogic.side_to_move])
 						if piece_color == ChessLogic.side_to_move:
 							# Get legal moves for this piece
 							var legal_moves = ChessLogic.get_legal_moves(square)
+							print("[ChessBoard] Legal moves for square %d: %s" % [square, legal_moves])
 							set_selection(square, legal_moves)
 							# Start dragging this piece
 							_start_drag(square)
 							piece_selected.emit(square)
 						else:
+							print("[ChessBoard] Piece color %d != side_to_move %d, clearing selection" % [piece_color, ChessLogic.side_to_move])
 							# Clicked on opponent's piece - clear selection
 							clear_selection()
 					elif selected_square >= 0 and square in legal_move_squares:
 						# Click on legal move square
+						print("[ChessBoard] Moving from %d to %d" % [selected_square, square])
 						move_attempted.emit(selected_square, square)
 						clear_selection()
 					else:
+						print("[ChessBoard] No piece sprite at square %d, clearing selection" % square)
 						clear_selection()
+				else:
+					print("[ChessBoard] Invalid square (outside board)")
 			else:
 				# Mouse up - end drag
 				if is_dragging:
@@ -406,9 +449,13 @@ func _start_drag(square: int) -> void:
 	if not _piece_sprites.has(square):
 		return
 
+	var sprite = _piece_sprites.get(square)
+	if not sprite or not is_instance_valid(sprite):
+		return
+
 	is_dragging = true
 	drag_from = square
-	_drag_sprite = _piece_sprites[square]
+	_drag_sprite = sprite
 	_original_sprite_pos = _drag_sprite.position
 
 	# Elevate the dragged piece
@@ -474,10 +521,14 @@ func move_piece(from: int, to: int) -> void:
 
 ## Animate a piece move with smooth tweening.
 func animate_move(from: int, to: int, duration: float = 0.15) -> void:
+	print("[ChessBoard] animate_move called: from=%d to=%d, is_animating=%s" % [from, to, is_animating])
+
 	if not _piece_sprites.has(from):
+		print("[ChessBoard] WARNING: No sprite at 'from' square %d, _piece_sprites=%s" % [from, _piece_sprites.keys()])
 		return
 
 	if is_animating:
+		print("[ChessBoard] WARNING: Already animating, skipping move")
 		return
 
 	is_animating = true
@@ -487,7 +538,12 @@ func animate_move(from: int, to: int, duration: float = 0.15) -> void:
 		_piece_sprites[to].queue_free()
 		_piece_sprites.erase(to)
 
-	var sprite = _piece_sprites[from]
+	var sprite = _piece_sprites.get(from)
+	if not sprite or not is_instance_valid(sprite):
+		print("[ChessBoard] ERROR: Sprite at 'from' square %d is invalid" % from)
+		is_animating = false
+		return
+
 	var target_pos = board_to_screen(to)
 
 	# Elevate z-index during animation
@@ -500,10 +556,13 @@ func animate_move(from: int, to: int, duration: float = 0.15) -> void:
 	tween.set_ease(Tween.EASE_OUT)
 	tween.tween_property(sprite, "position", target_pos, duration)
 	tween.tween_callback(func():
-		sprite.z_index = original_z
-		_piece_sprites.erase(from)
-		_piece_sprites[to] = sprite
+		if is_instance_valid(sprite):
+			sprite.z_index = original_z
+			_piece_sprites.erase(from)
+			_piece_sprites[to] = sprite
 		is_animating = false
+		print("[ChessBoard] animate_move completed: from=%d to=%d, is_animating=%s" % [from, to, is_animating])
+		print("[ChessBoard] After animation, _piece_sprites keys: %s" % [_piece_sprites.keys()])
 		move_animation_finished.emit()
 	)
 
@@ -533,12 +592,14 @@ func animate_castle(king_from: int, king_to: int, rook_from: int, rook_to: int, 
 	tween.tween_property(rook_sprite, "position", board_to_screen(rook_to), duration)
 	tween.set_parallel(false)
 	tween.tween_callback(func():
-		king_sprite.z_index = 0
-		rook_sprite.z_index = 0
-		_piece_sprites.erase(king_from)
-		_piece_sprites.erase(rook_from)
-		_piece_sprites[king_to] = king_sprite
-		_piece_sprites[rook_to] = rook_sprite
+		if is_instance_valid(king_sprite):
+			king_sprite.z_index = 0
+			_piece_sprites.erase(king_from)
+			_piece_sprites[king_to] = king_sprite
+		if is_instance_valid(rook_sprite):
+			rook_sprite.z_index = 0
+			_piece_sprites.erase(rook_from)
+			_piece_sprites[rook_to] = rook_sprite
 		is_animating = false
 		move_animation_finished.emit()
 	)
@@ -571,5 +632,8 @@ func setup_position(fen: String) -> void:
 ## Refresh the board to match ChessLogic state.
 func refresh_position() -> void:
 	var fen = ChessLogic.to_fen()
+	print("[ChessBoard] refresh_position called with FEN: %s" % fen)
+	print("[ChessBoard] ChessLogic.side_to_move = %d" % ChessLogic.side_to_move)
 	set_board_position(fen)
+	print("[ChessBoard] After refresh, _piece_sprites keys: %s" % [_piece_sprites.keys()])
 	_board_background.queue_redraw()

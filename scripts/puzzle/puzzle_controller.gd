@@ -89,7 +89,10 @@ func _ready() -> void:
 ## Load a puzzle and set up the position.
 ## Returns true if puzzle loaded successfully, false if validation failed.
 func load_puzzle(puzzle: PuzzleData) -> bool:
-	print("[PuzzleController] load_puzzle called, FEN: ", puzzle.fen if puzzle else "NULL")
+	print("[PuzzleController] ========== LOADING PUZZLE ==========")
+	print("[PuzzleController] Puzzle ID: %s, FEN: %s" % [puzzle.id if puzzle else "NULL", puzzle.fen if puzzle else "NULL"])
+	print("[PuzzleController] ChessLogic state BEFORE parse_fen: side_to_move=%d, FEN=%s" % [
+		ChessLogic.side_to_move, ChessLogic.to_fen()])
 	_set_state(PuzzleState.LOADING)
 
 	# Runtime validation - verify puzzle solution delivers checkmate
@@ -111,6 +114,8 @@ func load_puzzle(puzzle: PuzzleData) -> bool:
 
 	# Set initial position from FEN
 	ChessLogic.parse_fen(puzzle.fen)
+	print("[PuzzleController] ChessLogic state AFTER parse_fen: side_to_move=%d, FEN=%s" % [
+		ChessLogic.side_to_move, ChessLogic.to_fen()])
 
 	# Emit signal for UI to update
 	print("[PuzzleController] Emitting puzzle_loaded signal")
@@ -303,7 +308,44 @@ func _play_opponent_move() -> void:
 	_save_to_history(move_data["from"], move_data["to"])
 
 	# Make the move
-	ChessLogic.make_move(move_data["from"], move_data["to"], move_data["promotion"])
+	var from_sq = move_data["from"]
+	var to_sq = move_data["to"]
+	var piece_at_from = ChessLogic.get_piece(from_sq)
+	var piece_at_to = ChessLogic.get_piece(to_sq)
+	var piece_color = ChessLogic.get_piece_color(piece_at_from)
+	print("[PuzzleController] About to make opponent move: from=%d, to=%d, current FEN=%s, side_to_move=%d" % [
+		from_sq, to_sq, ChessLogic.to_fen(), ChessLogic.side_to_move])
+	print("[PuzzleController] Piece at from(%d): %d, color: %d | Piece at to(%d): %d | Expected puzzle FEN: %s" % [
+		from_sq, piece_at_from, piece_color, to_sq, piece_at_to, current_puzzle.fen])
+
+	# Check if piece color matches side_to_move before attempting
+	if piece_at_from == ChessLogic.EMPTY:
+		push_error("[PuzzleController] NO PIECE at from square %d! Board may be in wrong state." % from_sq)
+	elif piece_color != ChessLogic.side_to_move:
+		push_error("[PuzzleController] Piece color (%d) != side_to_move (%d)! Likely stale board state." % [
+			piece_color, ChessLogic.side_to_move])
+		# Re-parse the FEN to fix the state
+		print("[PuzzleController] Re-parsing FEN to fix state: %s" % current_puzzle.fen)
+		ChessLogic.parse_fen(current_puzzle.fen)
+		print("[PuzzleController] After re-parse: FEN=%s, side_to_move=%d" % [
+			ChessLogic.to_fen(), ChessLogic.side_to_move])
+
+	var move_success = ChessLogic.make_move(from_sq, to_sq, move_data["promotion"])
+	print("[PuzzleController] make_move returned: %s, new FEN=%s, side_to_move=%d" % [
+		move_success, ChessLogic.to_fen(), ChessLogic.side_to_move])
+	if not move_success:
+		push_error("[PuzzleController] Opponent move failed! move=%s, from=%d, to=%d" % [
+			current_puzzle.solution_moves[move_index] if move_index < current_puzzle.solution_moves.size() else "?",
+			from_sq, to_sq])
+		# Check legal moves for the piece
+		var legal = ChessLogic.get_legal_moves(from_sq)
+		print("[PuzzleController] Legal moves for square %d: %s" % [from_sq, legal])
+		# Force the side to move to swap anyway so player can continue
+		if ChessLogic.side_to_move == ChessLogic.PieceColor.WHITE:
+			ChessLogic.side_to_move = ChessLogic.PieceColor.BLACK
+		else:
+			ChessLogic.side_to_move = ChessLogic.PieceColor.WHITE
+		print("[PuzzleController] Forced side_to_move to %d" % ChessLogic.side_to_move)
 	move_index += 1
 
 	# Check if opponent delivered checkmate (puzzle failed)

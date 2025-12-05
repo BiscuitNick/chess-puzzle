@@ -2,6 +2,9 @@ class_name PuzzleScreen
 extends Control
 ## Main puzzle gameplay screen with mode-aware HUD.
 
+# BUILD NUMBER - increment this to verify you're running latest code
+const BUILD: int = 11
+
 signal main_menu_requested()
 signal back_requested()
 
@@ -36,6 +39,7 @@ var mode_settings: Dictionary = {}
 @onready var flip_board_btn: Button = $MainLayout/ContentArea/RightPanel/Options/FlipBoardButton
 
 # Debug panel references (in Debug tab)
+@onready var debug_build_time: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/BuildTime
 @onready var debug_db_version: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/DBVersion
 @onready var debug_puzzle_id: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/PuzzleID
 @onready var debug_puzzle_number: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/PuzzleNumber
@@ -86,6 +90,10 @@ func _ready() -> void:
 	_hide_all_huds()
 	_init_debug_panel()
 
+	# Auto-initialize in practice mode when running scene directly (for testing)
+	if not game_started:
+		call_deferred("_auto_init_for_testing")
+
 
 func _connect_ui_signals() -> void:
 	if back_btn:
@@ -113,6 +121,14 @@ func _connect_ui_signals() -> void:
 		flip_board_btn.pressed.connect(_on_flip_board_pressed)
 
 
+func _auto_init_for_testing() -> void:
+	# Only auto-init if running scene directly and not already initialized
+	if game_started:
+		return
+	print("[PuzzleScreen] Auto-initializing in PRACTICE mode for testing")
+	initialize(PuzzleController.GameMode.PRACTICE, {})
+
+
 ## Initialize the puzzle screen with a specific mode.
 func initialize(mode: PuzzleController.GameMode, settings: Dictionary = {}) -> void:
 	current_mode = mode
@@ -134,10 +150,12 @@ func _setup_puzzle_controller() -> void:
 	puzzle_controller.move_made.connect(_on_move_made)
 	puzzle_controller.puzzle_completed.connect(_on_puzzle_completed)
 	puzzle_controller.opponent_moving.connect(_on_opponent_moving)
+	puzzle_controller.state_changed.connect(_on_state_changed)
 
 	# Connect chess board signals
 	if chess_board:
-		chess_board.move_attempted.connect(_on_move_attempted)
+		if not chess_board.move_attempted.is_connected(_on_move_attempted):
+			chess_board.move_attempted.connect(_on_move_attempted)
 	else:
 		push_error("[PuzzleScreen] chess_board is null during setup!")
 
@@ -154,9 +172,12 @@ func _setup_puzzle_controller() -> void:
 
 	# Connect modal button signals
 	if result_modal:
-		result_modal.try_again_pressed.connect(_on_modal_try_again)
-		result_modal.next_puzzle_pressed.connect(_on_modal_next_puzzle)
-		result_modal.show_solution_pressed.connect(_on_modal_show_solution)
+		if not result_modal.try_again_pressed.is_connected(_on_modal_try_again):
+			result_modal.try_again_pressed.connect(_on_modal_try_again)
+		if not result_modal.next_puzzle_pressed.is_connected(_on_modal_next_puzzle):
+			result_modal.next_puzzle_pressed.connect(_on_modal_next_puzzle)
+		if not result_modal.show_solution_pressed.is_connected(_on_modal_show_solution):
+			result_modal.show_solution_pressed.connect(_on_modal_show_solution)
 	else:
 		push_error("[PuzzleScreen] result_modal is null during setup!")
 
@@ -270,6 +291,11 @@ func _update_buttons_for_mode(mode: PuzzleController.GameMode) -> void:
 
 # Debug panel functions
 func _init_debug_panel() -> void:
+	# Show build number to verify we're running latest code
+	if debug_build_time:
+		debug_build_time.text = "Build: %d" % BUILD
+		print("[PuzzleScreen] Build: %d" % BUILD)
+
 	# Initialize with DB version
 	if debug_db_version:
 		var version = UserData.get_puzzle_version() if UserData else "unknown"
@@ -375,7 +401,7 @@ func _on_puzzle_loaded(puzzle: PuzzleData) -> void:
 
 	# Then set up the position with correct orientation
 	if chess_board:
-		chess_board.setup_position(puzzle.fen)
+		chess_board.set_board_position(puzzle.fen)
 	else:
 		print("[PuzzleScreen] ERROR: chess_board is null!")
 
@@ -426,7 +452,43 @@ func _on_puzzle_completed(_success: bool, _attempts: int) -> void:
 
 func _on_opponent_moving(from: int, to: int) -> void:
 	if chess_board:
+		# Block input during opponent's animation
+		chess_board.input_blocked = true
 		chess_board.animate_move(from, to)
+
+
+func _on_state_changed(_old_state: PuzzleController.PuzzleState, new_state: PuzzleController.PuzzleState) -> void:
+	# Update debug panel to show current state
+	_update_debug_panel()
+
+	if not chess_board:
+		return
+
+	var state_names = ["LOADING", "PLAYER_TURN", "OPPONENT_TURN", "COMPLETED_SUCCESS",
+					   "COMPLETED_FAILED", "SHOWING_SOLUTION", "GAME_OVER"]
+	var state_name = state_names[new_state] if new_state < state_names.size() else str(new_state)
+	print("[PuzzleScreen] State changed to %s, input_blocked=%s" % [state_name, chess_board.input_blocked])
+
+	match new_state:
+		PuzzleController.PuzzleState.PLAYER_TURN:
+			# Unblock input when it becomes the player's turn
+			print("[PuzzleScreen] Unblocking input for player turn")
+			chess_board.input_blocked = false
+			# Also refresh the board to ensure it's in sync with ChessLogic
+			chess_board.refresh_position()
+			print("[PuzzleScreen] After unblock: input_blocked=%s" % chess_board.input_blocked)
+
+		PuzzleController.PuzzleState.OPPONENT_TURN:
+			# Block input during opponent's turn
+			print("[PuzzleScreen] Blocking input for opponent turn")
+			chess_board.input_blocked = true
+
+		PuzzleController.PuzzleState.LOADING:
+			# Block input while loading
+			chess_board.input_blocked = true
+
+		_:
+			pass  # Other states don't change input blocking
 
 
 func _update_puzzle_info(puzzle: PuzzleData) -> void:
