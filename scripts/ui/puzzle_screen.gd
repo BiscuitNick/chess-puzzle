@@ -369,10 +369,17 @@ func _on_move_attempted(from: int, to: int) -> void:
 
 func _on_puzzle_loaded(puzzle: PuzzleData) -> void:
 	print("[PuzzleScreen] _on_puzzle_loaded called, FEN: ", puzzle.fen if puzzle else "NULL PUZZLE")
+
+	# First determine player color and set board orientation
+	_setup_board_orientation(puzzle)
+
+	# Then set up the position with correct orientation
 	if chess_board:
 		chess_board.setup_position(puzzle.fen)
 	else:
 		print("[PuzzleScreen] ERROR: chess_board is null!")
+
+	# Update the puzzle info display
 	_update_puzzle_info(puzzle)
 
 	# Disable Next button when new puzzle loads (re-enabled when solved)
@@ -383,6 +390,24 @@ func _on_puzzle_loaded(puzzle: PuzzleData) -> void:
 	puzzle_count += 1
 	moves_made.clear()
 	_update_debug_panel()
+
+
+func _setup_board_orientation(puzzle: PuzzleData) -> void:
+	if not chess_board:
+		return
+
+	# In Lichess puzzles: first move in solution is opponent's setup/blunder
+	# So player is the OPPOSITE of who moves first in the FEN
+	var fen_parts = puzzle.fen.split(" ")
+	var first_to_move = "w"
+	if fen_parts.size() > 1:
+		first_to_move = fen_parts[1]
+
+	# Player is opposite of who moves first (opponent makes setup move)
+	var player_is_black = (first_to_move == "w")
+
+	# Flip board so player's pieces are at the bottom
+	chess_board.flipped = player_is_black
 
 
 func _on_move_made(from: int, to: int, _is_correct: bool) -> void:
@@ -406,14 +431,19 @@ func _on_opponent_moving(from: int, to: int) -> void:
 
 func _update_puzzle_info(puzzle: PuzzleData) -> void:
 	if puzzle_info_label:
-		# Extract whose turn it is from FEN (second field: 'w' = white, 'b' = black)
-		var turn = "White"
+		# Determine the player's color
+		# In Lichess puzzles: first move in solution is opponent's setup/blunder
+		# So player is the OPPOSITE of who moves first in the FEN
 		var fen_parts = puzzle.fen.split(" ")
-		if fen_parts.size() > 1 and fen_parts[1] == "b":
-			turn = "Black"
+		var first_to_move = "w"
+		if fen_parts.size() > 1:
+			first_to_move = fen_parts[1]
 
-		puzzle_info_label.text = "#%s  |  %s to move  |  Mate in %d  |  Rating: %d" % [
-			puzzle.id, turn, puzzle.mate_in, puzzle.rating
+		# Player is opposite of who moves first (opponent makes setup move)
+		var player_color = "White" if first_to_move == "b" else "Black"
+
+		puzzle_info_label.text = "#%s  |  Play as %s  |  Mate in %d  |  Rating: %d" % [
+			puzzle.id, player_color, puzzle.mate_in, puzzle.rating
 		]
 
 
