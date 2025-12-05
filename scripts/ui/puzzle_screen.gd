@@ -26,6 +26,7 @@ var mode_settings: Dictionary = {}
 @onready var hint_btn: Button = $HUD/PracticeHUD/HintButton
 @onready var solution_btn: Button = $HUD/PracticeHUD/SolutionButton
 @onready var skip_btn: Button = $HUD/PracticeHUD/SkipButton
+@onready var next_puzzle_btn: Button = $HUD/PracticeHUD/NextPuzzleButton
 
 # Sprint HUD elements
 @onready var sprint_hud: Control = $HUD/SprintHUD
@@ -72,6 +73,9 @@ func _connect_ui_signals() -> void:
 		solution_btn.pressed.connect(_on_solution_pressed)
 	if skip_btn:
 		skip_btn.pressed.connect(_on_skip_pressed)
+	if next_puzzle_btn:
+		next_puzzle_btn.pressed.connect(_on_next_puzzle_pressed)
+		next_puzzle_btn.disabled = true  # Initially disabled until puzzle is solved
 
 	# Move navigation buttons
 	if move_back_btn:
@@ -229,6 +233,10 @@ func _on_puzzle_loaded(puzzle: PuzzleData) -> void:
 		print("[PuzzleScreen] ERROR: chess_board is null!")
 	_update_puzzle_info(puzzle)
 
+	# Disable Next button when new puzzle loads (re-enabled when solved)
+	if next_puzzle_btn:
+		next_puzzle_btn.disabled = true
+
 
 func _on_move_made(_from: int, _to: int, _is_correct: bool) -> void:
 	if chess_board:
@@ -270,6 +278,17 @@ func _on_solution_pressed() -> void:
 func _on_skip_pressed() -> void:
 	if practice_mode:
 		practice_mode.skip_puzzle()
+	# Disable Next button when skipping to a new puzzle
+	if next_puzzle_btn:
+		next_puzzle_btn.disabled = true
+
+
+func _on_next_puzzle_pressed() -> void:
+	if practice_mode:
+		practice_mode.load_next_puzzle()
+	# Disable the button after clicking
+	if next_puzzle_btn:
+		next_puzzle_btn.disabled = true
 
 
 func _on_hint_displayed(_square: int) -> void:
@@ -278,10 +297,9 @@ func _on_hint_displayed(_square: int) -> void:
 
 
 func _on_solution_completed() -> void:
-	# Auto-advance disabled - show modal instead for user to click Next
-	# TODO: Re-enable auto-advance once modal issues are resolved (see BACKLOG.md)
-	if result_modal:
-		result_modal.show_correct("Solution shown", true)
+	# Enable Next button after solution is shown
+	if next_puzzle_btn:
+		next_puzzle_btn.disabled = false
 
 
 # Sprint mode handlers
@@ -459,40 +477,32 @@ func _on_history_changed(can_undo: bool, can_redo: bool) -> void:
 
 
 # Modal handlers
-func _on_incorrect_move(can_retry: bool, can_skip: bool) -> void:
-	if not result_modal:
+func _on_incorrect_move(_can_retry: bool, _can_skip: bool) -> void:
+	# For practice mode, automatically revert the incorrect move and let player try again
+	if current_mode == PuzzleController.GameMode.PRACTICE:
+		# Wait briefly to show the incorrect move, then revert
+		await get_tree().create_timer(0.5).timeout
+		if puzzle_controller:
+			puzzle_controller.revert_incorrect_move()
+		if chess_board:
+			chess_board.refresh_position()
 		return
 
-	var message = "That's not the best move."
-	if current_mode == PuzzleController.GameMode.STREAK:
-		message = "Streak ended!"
-	elif current_mode == PuzzleController.GameMode.DAILY:
-		var strikes = puzzle_controller.strikes if puzzle_controller else 0
-		if strikes >= PuzzleController.MAX_STRIKES:
-			message = "Three strikes - puzzle failed!"
-		else:
-			message = "Strike %d of 3" % strikes
-
-	result_modal.show_incorrect(message, can_retry, can_skip, can_retry)
+	# For other modes, show modal (disabled for now, focusing on practice mode)
+	# TODO: Re-enable modal for other modes once practice mode is working
+	pass
 
 
 func _on_puzzle_solved() -> void:
-	if not result_modal:
+	# For practice mode, just enable the Next button instead of showing modal
+	if current_mode == PuzzleController.GameMode.PRACTICE:
+		if next_puzzle_btn:
+			next_puzzle_btn.disabled = false
 		return
 
-	var message = "Well done!"
-	var show_next = true
-
-	# TODO: Re-enable auto-advance for Sprint mode once issues are resolved (see backlog)
-	match current_mode:
-		PuzzleController.GameMode.SPRINT:
-			message = "Correct!"
-		PuzzleController.GameMode.STREAK:
-			message = "Streak continues!"
-		PuzzleController.GameMode.DAILY:
-			message = "Puzzle solved!"
-
-	result_modal.show_correct(message, show_next)
+	# For other modes, show modal (disabled for now, focusing on practice mode)
+	# TODO: Re-enable modal for other modes once practice mode is working
+	pass
 
 
 func _on_modal_try_again() -> void:

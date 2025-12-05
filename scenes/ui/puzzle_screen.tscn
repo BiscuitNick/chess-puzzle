@@ -115,9 +115,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -180.0
+offset_left = -240.0
 offset_top = -20.0
-offset_right = 180.0
+offset_right = 240.0
 offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -137,6 +137,11 @@ text = "Solution"
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Skip"
+
+[node name="NextPuzzleButton" type="Button" parent="HUD/PracticeHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Next"
 
 [node name="SprintHUD" type="HBoxContainer" parent="HUD"]
 visible = false
