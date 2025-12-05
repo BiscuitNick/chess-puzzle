@@ -332,6 +332,13 @@ func _on_move_made(from: int, to: int, is_correct: bool) -> void:
 
 
 func _on_puzzle_completed(success: bool, attempts: int) -> void:
+	# Save result to database so the puzzle is tracked as solved/failed
+	if puzzle_controller and puzzle_controller.current_puzzle:
+		var puzzle = puzzle_controller.current_puzzle
+		var result = "solved" if success else "failed"
+		UserData.save_puzzle_result(puzzle.id, result, "practice", attempts, 0, puzzle.rating)
+		print("[PracticeMode] Saved puzzle result: id=%s, result=%s, attempts=%d" % [puzzle.id, result, attempts])
+
 	if success:
 		puzzles_solved += 1
 		current_streak += 1
