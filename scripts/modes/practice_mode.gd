@@ -73,6 +73,19 @@ func initialize(controller: PuzzleController, board: ChessBoard, database: SQLit
 	puzzle_controller.state_changed.connect(_on_state_changed)
 
 
+## Set practice mode settings.
+func set_settings(settings: Dictionary) -> void:
+	for key in settings:
+		if current_settings.has(key):
+			current_settings[key] = settings[key]
+	settings_changed.emit(current_settings)
+
+
+## Start a new practice session.
+func start_practice() -> void:
+	start_game(current_settings)
+
+
 ## Start a new practice session with the given settings.
 func start_game(settings: Dictionary) -> void:
 	current_settings = settings.duplicate()
