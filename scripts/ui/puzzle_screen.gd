@@ -3,7 +3,7 @@ extends Control
 ## Main puzzle gameplay screen with mode-aware HUD.
 
 # BUILD NUMBER - increment this to verify you're running latest code
-const BUILD: int = 12
+const BUILD: int = 13
 
 signal main_menu_requested()
 signal back_requested()
