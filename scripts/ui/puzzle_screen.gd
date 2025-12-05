@@ -97,13 +97,17 @@ func _setup_puzzle_controller() -> void:
 	puzzle_controller = PuzzleController.new()
 	add_child(puzzle_controller)
 
-	# Connect to chess board
+	# Connect puzzle controller signals (always connect these)
+	puzzle_controller.puzzle_loaded.connect(_on_puzzle_loaded)
+	puzzle_controller.move_made.connect(_on_move_made)
+	puzzle_controller.puzzle_completed.connect(_on_puzzle_completed)
+	puzzle_controller.opponent_moving.connect(_on_opponent_moving)
+
+	# Connect chess board signals
 	if chess_board:
 		chess_board.move_attempted.connect(_on_move_attempted)
-		puzzle_controller.puzzle_loaded.connect(_on_puzzle_loaded)
-		puzzle_controller.move_made.connect(_on_move_made)
-		puzzle_controller.puzzle_completed.connect(_on_puzzle_completed)
-		puzzle_controller.opponent_moving.connect(_on_opponent_moving)
+	else:
+		push_error("[PuzzleScreen] chess_board is null during setup!")
 
 	# Connect thinking indicator
 	puzzle_controller.analysis_started.connect(_on_analysis_started)
@@ -121,6 +125,8 @@ func _setup_puzzle_controller() -> void:
 		result_modal.try_again_pressed.connect(_on_modal_try_again)
 		result_modal.next_puzzle_pressed.connect(_on_modal_next_puzzle)
 		result_modal.show_solution_pressed.connect(_on_modal_show_solution)
+	else:
+		push_error("[PuzzleScreen] result_modal is null during setup!")
 
 
 func _setup_mode_instance() -> void:

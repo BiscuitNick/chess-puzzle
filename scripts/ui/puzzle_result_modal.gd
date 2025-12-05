@@ -16,7 +16,7 @@ signal show_solution_pressed()
 
 
 func _ready() -> void:
-	visible = false
+	hide_modal()
 
 	if try_again_btn:
 		try_again_btn.pressed.connect(_on_try_again)
@@ -36,6 +36,7 @@ func show_correct(message: String = "Well done!", show_next: bool = true) -> voi
 	solution_btn.visible = false
 	next_puzzle_btn.visible = show_next
 
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	visible = true
 
 
@@ -49,12 +50,14 @@ func show_incorrect(message: String = "That's not the best move.", show_try_agai
 	next_puzzle_btn.visible = show_next
 	solution_btn.visible = show_solution
 
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	visible = true
 
 
 ## Hide the modal.
 func hide_modal() -> void:
 	visible = false
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func _on_try_again() -> void:
