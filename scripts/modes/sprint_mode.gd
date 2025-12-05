@@ -264,6 +264,7 @@ func _on_puzzle_completed(success: bool, _attempts: int) -> void:
 		puzzle_completed.emit(puzzles_solved, puzzles_attempted)
 		puzzles_solved_updated.emit(puzzles_solved)
 
-		# Load next puzzle immediately
-		next_puzzle_requested.emit()
-		_load_next_puzzle()
+		# Auto-advance disabled - modal handles progression
+		# TODO: Re-enable auto-advance once modal issues are resolved (see BACKLOG.md)
+		# next_puzzle_requested.emit()
+		# _load_next_puzzle()

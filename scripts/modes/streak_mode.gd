@@ -103,9 +103,10 @@ func _on_puzzle_solved() -> void:
 	# Get next rating
 	current_rating = get_next_rating()
 
-	# Load next puzzle
-	next_puzzle_requested.emit()
-	_load_next_puzzle()
+	# Auto-advance disabled - modal handles progression
+	# TODO: Re-enable auto-advance once modal issues are resolved (see BACKLOG.md)
+	# next_puzzle_requested.emit()
+	# _load_next_puzzle()
 
 
 ## End the streak run.

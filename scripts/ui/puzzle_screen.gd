@@ -272,10 +272,10 @@ func _on_hint_displayed(_square: int) -> void:
 
 
 func _on_solution_completed() -> void:
-	# Auto-advance to next puzzle after brief delay
-	await get_tree().create_timer(1.0).timeout
-	if practice_mode:
-		practice_mode.load_next_puzzle()
+	# Auto-advance disabled - show modal instead for user to click Next
+	# TODO: Re-enable auto-advance once modal issues are resolved (see BACKLOG.md)
+	if result_modal:
+		result_modal.show_correct("Solution shown", true)
 
 
 # Sprint mode handlers
