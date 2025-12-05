@@ -477,12 +477,10 @@ func _on_puzzle_solved() -> void:
 	var message = "Well done!"
 	var show_next = true
 
-	# In some modes, auto-advance without showing modal
+	# TODO: Re-enable auto-advance for Sprint mode once issues are resolved (see backlog)
 	match current_mode:
 		PuzzleController.GameMode.SPRINT:
-			# Sprint: auto-advance immediately
-			_advance_to_next_puzzle()
-			return
+			message = "Correct!"
 		PuzzleController.GameMode.STREAK:
 			message = "Streak continues!"
 		PuzzleController.GameMode.DAILY:
