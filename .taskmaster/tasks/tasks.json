@@ -1551,7 +1551,7 @@
           "15",
           "16"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -1615,14 +1615,15 @@
         ],
         "complexity": 5,
         "recommendedSubtasks": 5,
-        "expansionPrompt": "Break down into subtasks: 1) Configure export_presets.cfg for Windows/macOS/Linux, 2) Set up Stockfish binary bundling per platform, 3) Handle macOS code signing for Stockfish binary, 4) Test exports on each platform for Stockfish spawning, 5) Create distribution packages (.zip, .dmg, .tar.gz)"
+        "expansionPrompt": "Break down into subtasks: 1) Configure export_presets.cfg for Windows/macOS/Linux, 2) Set up Stockfish binary bundling per platform, 3) Handle macOS code signing for Stockfish binary, 4) Test exports on each platform for Stockfish spawning, 5) Create distribution packages (.zip, .dmg, .tar.gz)",
+        "updatedAt": "2025-12-06T03:43:36.101Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-12-05T02:03:48.488Z",
+      "lastModified": "2025-12-06T03:43:36.102Z",
       "taskCount": 17,
-      "completedCount": 15,
+      "completedCount": 16,
       "tags": [
         "master"
       ]
