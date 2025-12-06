@@ -38,6 +38,14 @@ var mode_settings: Dictionary = {}
 @onready var options_tab: VBoxContainer = $MainLayout/VBoxLayout/ContentArea/RightPanel/Options
 @onready var flip_board_btn: Button = $MainLayout/VBoxLayout/ContentArea/RightPanel/Options/FlipBoardButton
 
+# Dev settings sliders
+@onready var shake_slider: HSlider = $MainLayout/VBoxLayout/ContentArea/RightPanel/Options/ShakeIntensityContainer/ShakeSlider
+@onready var shake_value_label: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Options/ShakeIntensityContainer/ShakeValue
+@onready var revert_slider: HSlider = $MainLayout/VBoxLayout/ContentArea/RightPanel/Options/RevertDelayContainer/RevertSlider
+@onready var revert_value_label: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Options/RevertDelayContainer/RevertValue
+@onready var move_slider: HSlider = $MainLayout/VBoxLayout/ContentArea/RightPanel/Options/MoveSpeedContainer/MoveSlider
+@onready var move_value_label: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Options/MoveSpeedContainer/MoveValue
+
 # Debug panel references (in Debug tab)
 @onready var debug_build_time: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/BuildTime
 @onready var debug_db_version: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/DBVersion
@@ -121,6 +129,9 @@ func _connect_ui_signals() -> void:
 	# Options panel signals
 	if flip_board_btn:
 		flip_board_btn.pressed.connect(_on_flip_board_pressed)
+
+	# Dev settings sliders
+	_init_dev_settings_sliders()
 
 
 func _auto_init_for_testing() -> void:
@@ -750,7 +761,7 @@ func _on_history_changed(can_undo: bool, can_redo: bool) -> void:
 
 
 # Modal handlers
-func _on_incorrect_move(can_retry: bool, _can_skip: bool) -> void:
+func _on_incorrect_move(can_retry: bool, can_skip: bool) -> void:
 	# Play visual feedback for wrong move
 	if chess_board:
 		chess_board.play_wrong_move_shake()
@@ -774,29 +785,62 @@ func _on_incorrect_move(can_retry: bool, _can_skip: bool) -> void:
 			chess_board.refresh_position()
 		return
 
-	# For sprint mode with strikes remaining
+	# For sprint mode
 	if current_mode == PuzzleController.GameMode.SPRINT:
 		if can_retry:
+			# Still have strikes left - auto revert and continue
 			await get_tree().create_timer(GameSettings.wrong_move_revert_delay).timeout
 			if puzzle_controller:
 				puzzle_controller.revert_incorrect_move()
 			if chess_board:
 				chess_board.refresh_position()
+		else:
+			# Max strikes reached - show modal before game over
+			if result_modal:
+				result_modal.show_incorrect(
+					"3 strikes - Game Over!",
+					false,  # no retry
+					false,  # no next
+					false   # no solution
+				)
+				await get_tree().create_timer(1.5).timeout
+				result_modal.hide_modal()
+			# Sprint mode will handle transitioning to results
 		return
 
-	# For streak mode - game ends on wrong move (handled by streak_mode)
+	# For streak mode - game ends on wrong move
 	if current_mode == PuzzleController.GameMode.STREAK:
-		# Visual feedback already played, streak_mode will handle game over
+		# Show brief "wrong move" feedback before game over
+		if result_modal:
+			result_modal.show_incorrect(
+				"Streak ended!",
+				false,  # no retry
+				false,  # no next
+				false   # no solution
+			)
+			await get_tree().create_timer(1.0).timeout
+			result_modal.hide_modal()
+		# streak_mode will handle game over transition
 		return
 
 	# For daily mode - track strikes
 	if current_mode == PuzzleController.GameMode.DAILY:
 		if can_retry:
+			# Still have strikes left - auto revert and continue
 			await get_tree().create_timer(GameSettings.wrong_move_revert_delay).timeout
 			if puzzle_controller:
 				puzzle_controller.revert_incorrect_move()
 			if chess_board:
 				chess_board.refresh_position()
+		else:
+			# Max strikes on this puzzle - show modal then skip to next
+			if result_modal:
+				result_modal.show_incorrect(
+					"3 strikes on this puzzle!",
+					false,  # no retry
+					true,   # show next
+					true    # show solution
+				)
 		return
 
 
@@ -855,3 +899,55 @@ func _advance_to_next_puzzle() -> void:
 		PuzzleController.GameMode.DAILY:
 			if daily_mode:
 				daily_mode._load_current_puzzle()
+
+
+# ============================================================================
+# Dev Settings
+# ============================================================================
+
+func _init_dev_settings_sliders() -> void:
+	# Initialize slider values from GameSettings
+	if shake_slider:
+		shake_slider.value = GameSettings.wrong_move_shake_intensity
+		shake_slider.value_changed.connect(_on_shake_slider_changed)
+		_update_shake_label()
+
+	if revert_slider:
+		revert_slider.value = GameSettings.wrong_move_revert_delay
+		revert_slider.value_changed.connect(_on_revert_slider_changed)
+		_update_revert_label()
+
+	if move_slider:
+		move_slider.value = GameSettings.piece_move_duration
+		move_slider.value_changed.connect(_on_move_slider_changed)
+		_update_move_label()
+
+
+func _on_shake_slider_changed(value: float) -> void:
+	GameSettings.wrong_move_shake_intensity = value
+	_update_shake_label()
+
+
+func _on_revert_slider_changed(value: float) -> void:
+	GameSettings.wrong_move_revert_delay = value
+	_update_revert_label()
+
+
+func _on_move_slider_changed(value: float) -> void:
+	GameSettings.piece_move_duration = value
+	_update_move_label()
+
+
+func _update_shake_label() -> void:
+	if shake_value_label:
+		shake_value_label.text = str(int(GameSettings.wrong_move_shake_intensity))
+
+
+func _update_revert_label() -> void:
+	if revert_value_label:
+		revert_value_label.text = "%.1fs" % GameSettings.wrong_move_revert_delay
+
+
+func _update_move_label() -> void:
+	if move_value_label:
+		move_value_label.text = "%.2fs" % GameSettings.piece_move_duration
