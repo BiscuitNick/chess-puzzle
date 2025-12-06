@@ -4,6 +4,7 @@ extends Control
 
 signal scene_change_requested(scene_name: String)
 signal scene_push_requested(scene_name: String)
+signal daily_start_requested()
 
 @onready var practice_btn: Button = $VBoxContainer/ModeButtons/PracticeButton
 @onready var sprint_btn: Button = $VBoxContainer/ModeButtons/SprintButton
@@ -55,8 +56,8 @@ func _on_streak_pressed() -> void:
 
 
 func _on_daily_pressed() -> void:
-	# Go directly to puzzle screen in daily mode
-	scene_change_requested.emit("puzzle_screen")
+	# Emit daily start signal - main.gd handles setting up daily mode
+	daily_start_requested.emit()
 
 
 func _on_stats_pressed() -> void:

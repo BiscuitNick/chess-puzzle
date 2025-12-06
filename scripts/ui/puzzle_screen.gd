@@ -25,7 +25,9 @@ var mode_settings: Dictionary = {}
 @onready var mode_indicator: Label = $MainLayout/VBoxLayout/TopBar/HBoxContainer/ModeIndicator
 
 # Game tab references
-@onready var game_puzzle_id: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection/PuzzleIDLabel
+@onready var game_puzzle_id: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection/PuzzleIDRow/PuzzleIDLabel
+@onready var copy_id_btn: Button = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection/PuzzleIDRow/CopyIDButton
+@onready var favorite_btn: Button = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection/PuzzleIDRow/FavoriteButton
 @onready var game_player_color: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection/PlayerColorLabel
 @onready var game_mate_in: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection/MateInLabel
 @onready var game_rating: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection/RatingLabel
@@ -149,6 +151,12 @@ func _connect_ui_signals() -> void:
 	# Options panel signals
 	if flip_board_btn:
 		flip_board_btn.pressed.connect(_on_flip_board_pressed)
+
+	# Puzzle info buttons
+	if copy_id_btn:
+		copy_id_btn.pressed.connect(_on_copy_id_pressed)
+	if favorite_btn:
+		favorite_btn.toggled.connect(_on_favorite_toggled)
 
 	# Dev settings sliders
 	_init_dev_settings_sliders()
@@ -569,9 +577,27 @@ func _update_puzzle_info(puzzle: PuzzleData) -> void:
 	if game_rating:
 		game_rating.text = "Rating: %d" % puzzle.rating
 
+	# Update favorite button state
+	_update_favorite_button_state(puzzle.id)
+
 	# Reset current puzzle stats
 	current_puzzle_attempts = 0
 	_update_game_tab_stats()
+
+
+func _update_favorite_button_state(puzzle_id: String) -> void:
+	if not favorite_btn:
+		return
+
+	var is_favorited = UserData.is_puzzle_favorited(puzzle_id)
+	# Update button without triggering the toggled signal
+	favorite_btn.set_pressed_no_signal(is_favorited)
+	if is_favorited:
+		favorite_btn.text = "★"
+		favorite_btn.tooltip_text = "Remove from Favorites"
+	else:
+		favorite_btn.text = "☆"
+		favorite_btn.tooltip_text = "Add to Favorites"
 
 
 func _update_game_tab_stats() -> void:
@@ -630,6 +656,32 @@ func _on_redo_pressed() -> void:
 func _on_flip_board_pressed() -> void:
 	if chess_board:
 		chess_board.flip_board()
+
+
+func _on_copy_id_pressed() -> void:
+	if puzzle_controller and puzzle_controller.current_puzzle:
+		var puzzle_id = puzzle_controller.current_puzzle.id
+		DisplayServer.clipboard_set(puzzle_id)
+		# Brief visual feedback - change button text temporarily
+		if copy_id_btn:
+			copy_id_btn.text = "✓"
+			await get_tree().create_timer(1.0).timeout
+			copy_id_btn.text = "📋"
+
+
+func _on_favorite_toggled(toggled_on: bool) -> void:
+	if not puzzle_controller or not puzzle_controller.current_puzzle:
+		return
+
+	var puzzle_id = puzzle_controller.current_puzzle.id
+	if toggled_on:
+		UserData.favorite_puzzle(puzzle_id)
+		favorite_btn.text = "★"
+		favorite_btn.tooltip_text = "Remove from Favorites"
+	else:
+		UserData.unfavorite_puzzle(puzzle_id)
+		favorite_btn.text = "☆"
+		favorite_btn.tooltip_text = "Add to Favorites"
 
 
 func _on_hint_pressed() -> void:

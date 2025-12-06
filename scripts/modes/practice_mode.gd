@@ -108,6 +108,19 @@ func load_next_puzzle() -> void:
 	hint_shown = false
 	showing_solution = false
 
+	# Check if we should load a specific puzzle
+	if current_settings.has("specific_puzzle_id") and not current_settings.specific_puzzle_id.is_empty():
+		var puzzle = _load_puzzle_by_id(current_settings.specific_puzzle_id)
+		if puzzle:
+			puzzles_attempted += 1
+			var loaded = await puzzle_controller.load_puzzle(puzzle)
+			if loaded:
+				# Clear specific puzzle after loading so next puzzle is random
+				current_settings.specific_puzzle_id = ""
+				return
+		# Clear the specific_puzzle_id since we couldn't load it
+		current_settings.specific_puzzle_id = ""
+
 	# Retry up to 5 times if puzzle fails validation
 	for _attempt in range(5):
 		var puzzle = _query_next_puzzle()
@@ -123,6 +136,20 @@ func load_next_puzzle() -> void:
 
 	push_warning("No puzzles found matching criteria")
 	no_puzzles_available.emit()
+
+
+## Load a specific puzzle by ID.
+func _load_puzzle_by_id(puzzle_id: String) -> PuzzleData:
+	if not db:
+		push_error("Database not initialized")
+		return null
+
+	db.query_with_bindings("SELECT * FROM puzzles WHERE id = ?", [puzzle_id])
+
+	if db.query_result.size() > 0:
+		return _row_to_puzzle_data(db.query_result[0])
+
+	return null
 
 
 ## Query database for next puzzle matching filters.

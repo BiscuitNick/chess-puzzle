@@ -178,6 +178,10 @@ func _connect_scene_signals(scene: Control) -> void:
 	if scene.has_signal("start_requested"):
 		_connect_start_signal(scene)
 
+	# Connect main menu signals
+	if current_scene_name == "main_menu":
+		_connect_main_menu_signals(scene)
+
 
 ## Connect start_requested signal based on scene type.
 func _connect_start_signal(scene: Control) -> void:
@@ -188,6 +192,12 @@ func _connect_start_signal(scene: Control) -> void:
 			scene.connect("start_requested", _on_sprint_start_requested)
 		"streak_setup":
 			scene.connect("start_requested", _on_streak_start_requested)
+
+
+## Connect main menu specific signals.
+func _connect_main_menu_signals(scene: Control) -> void:
+	if scene.has_signal("daily_start_requested"):
+		scene.connect("daily_start_requested", _on_daily_start_requested)
 
 
 ## Animate transition out.
@@ -281,6 +291,15 @@ func _on_sprint_start_requested(settings: Dictionary) -> void:
 func _on_streak_start_requested(settings: Dictionary) -> void:
 	pending_game_mode = PuzzleController.GameMode.STREAK
 	pending_game_settings = settings
+	scene_stack.clear()
+	await change_scene("puzzle_screen")
+	_initialize_puzzle_screen()
+
+
+## Start daily mode (no settings needed).
+func _on_daily_start_requested() -> void:
+	pending_game_mode = PuzzleController.GameMode.DAILY
+	pending_game_settings = {}
 	scene_stack.clear()
 	await change_scene("puzzle_screen")
 	_initialize_puzzle_screen()

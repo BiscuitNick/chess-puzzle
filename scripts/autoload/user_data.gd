@@ -80,6 +80,16 @@ func _init_database() -> void:
 	db.query("CREATE INDEX IF NOT EXISTS idx_history_result ON user_puzzle_history(result);")
 	db.query("CREATE INDEX IF NOT EXISTS idx_history_mode ON user_puzzle_history(mode);")
 
+	# Create favorites table
+	db.query("""
+		CREATE TABLE IF NOT EXISTS user_favorites (
+			puzzle_id TEXT PRIMARY KEY,
+			favorited_at DATETIME,
+			note TEXT
+		);
+	""")
+	db.query("CREATE INDEX IF NOT EXISTS idx_fav_puzzle ON user_favorites(puzzle_id);")
+
 	# Create metadata table for version tracking
 	db.query("""
 		CREATE TABLE IF NOT EXISTS metadata (
@@ -115,6 +125,116 @@ func get_puzzle_history(puzzle_id: String) -> Dictionary:
 func is_puzzle_solved(puzzle_id: String) -> bool:
 	db.query_with_bindings("SELECT result FROM user_puzzle_history WHERE puzzle_id = ? AND result = 'solved'", [puzzle_id])
 	return db.query_result.size() > 0
+
+
+# =============================================================================
+# FAVORITES SYSTEM
+# =============================================================================
+
+## Add a puzzle to favorites.
+func favorite_puzzle(puzzle_id: String, note: String = "") -> void:
+	var now = Time.get_datetime_string_from_system()
+	db.query_with_bindings("""
+		INSERT OR REPLACE INTO user_favorites (puzzle_id, favorited_at, note)
+		VALUES (?, ?, ?)
+	""", [puzzle_id, now, note])
+
+
+## Remove a puzzle from favorites.
+func unfavorite_puzzle(puzzle_id: String) -> void:
+	db.query_with_bindings("DELETE FROM user_favorites WHERE puzzle_id = ?", [puzzle_id])
+
+
+## Check if a puzzle is favorited.
+func is_puzzle_favorited(puzzle_id: String) -> bool:
+	db.query_with_bindings("SELECT puzzle_id FROM user_favorites WHERE puzzle_id = ?", [puzzle_id])
+	return db.query_result.size() > 0
+
+
+## Toggle favorite status of a puzzle.
+func toggle_favorite(puzzle_id: String) -> bool:
+	if is_puzzle_favorited(puzzle_id):
+		unfavorite_puzzle(puzzle_id)
+		return false
+	else:
+		favorite_puzzle(puzzle_id)
+		return true
+
+
+## Get all favorite puzzle IDs.
+func get_favorite_puzzle_ids() -> Array[String]:
+	db.query("SELECT puzzle_id FROM user_favorites ORDER BY favorited_at DESC")
+	var result: Array[String] = []
+	for row in db.query_result:
+		result.append(str(row.puzzle_id))
+	return result
+
+
+## Get favorite puzzles with full puzzle data.
+func get_favorite_puzzles() -> Array[Dictionary]:
+	db.query("""
+		SELECT p.*, f.favorited_at, f.note
+		FROM user_favorites f
+		JOIN puzzles p ON f.puzzle_id = p.id
+		ORDER BY f.favorited_at DESC
+	""")
+	var result: Array[Dictionary] = []
+	for row in db.query_result:
+		result.append(row)
+	return result
+
+
+## Get count of favorite puzzles.
+func get_favorite_count() -> int:
+	db.query("SELECT COUNT(*) as count FROM user_favorites")
+	if db.query_result.size() > 0:
+		return db.query_result[0].get("count", 0)
+	return 0
+
+
+## Get a random favorite puzzle with optional filters.
+func get_random_favorite_puzzle(filters: Dictionary = {}) -> String:
+	var query = """
+		SELECT p.id
+		FROM user_favorites f
+		JOIN puzzles p ON f.puzzle_id = p.id
+		WHERE 1=1
+	"""
+	var params: Array = []
+
+	# Apply optional filters
+	if filters.has("min_rating"):
+		query += " AND p.rating >= ?"
+		params.append(filters.min_rating)
+	if filters.has("max_rating"):
+		query += " AND p.rating <= ?"
+		params.append(filters.max_rating)
+	if filters.has("mate_in") and filters.mate_in > 0:
+		query += " AND p.mate_in = ?"
+		params.append(filters.mate_in)
+
+	query += " ORDER BY RANDOM() LIMIT 1"
+
+	db.query_with_bindings(query, params)
+	if db.query_result.size() > 0:
+		return str(db.query_result[0].id)
+	return ""
+
+
+## Get a specific puzzle by ID.
+func get_puzzle_by_id(puzzle_id: String) -> Dictionary:
+	db.query_with_bindings("SELECT * FROM puzzles WHERE id = ?", [puzzle_id])
+	if db.query_result.size() > 0:
+		return db.query_result[0]
+	return {}
+
+
+## Get total number of puzzles in the database.
+func get_total_puzzle_count() -> int:
+	db.query("SELECT COUNT(*) as count FROM puzzles")
+	if db.query_result.size() > 0:
+		return db.query_result[0].get("count", 0)
+	return 0
 
 
 ## Get accuracy by rating range.

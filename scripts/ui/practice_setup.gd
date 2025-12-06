@@ -17,6 +17,10 @@ signal back_requested()
 @onready var max_rating_label: Label = $VBoxContainer/RatingSection/MaxRatingContainer/MaxRatingLabel
 @onready var random_button: Button = $VBoxContainer/OrderSection/OrderButtons/RandomButton
 @onready var progressive_button: Button = $VBoxContainer/OrderSection/OrderButtons/ProgressiveButton
+@onready var puzzle_id_edit: LineEdit = $VBoxContainer/PuzzleSelectSection/PuzzleIDContainer/PuzzleIDEdit
+@onready var load_id_btn: Button = $VBoxContainer/PuzzleSelectSection/PuzzleIDContainer/LoadIDButton
+@onready var load_favorite_btn: Button = $VBoxContainer/PuzzleSelectSection/FavoritesContainer/LoadFavoriteButton
+@onready var favorite_count_label: Label = $VBoxContainer/PuzzleSelectSection/FavoritesContainer/FavoriteCountLabel
 @onready var start_button: Button = $VBoxContainer/StartButton
 @onready var back_button: Button = $VBoxContainer/BackButton
 
@@ -32,6 +36,7 @@ func _ready() -> void:
 	_setup_mate_depth_options()
 	_setup_rating_sliders()
 	_setup_order_buttons()
+	_setup_puzzle_select()
 	_connect_signals()
 
 
@@ -66,6 +71,15 @@ func _setup_order_buttons() -> void:
 	progressive_button.button_pressed = false
 
 
+func _setup_puzzle_select() -> void:
+	# Update favorite count
+	var fav_count = UserData.get_favorite_count()
+	if favorite_count_label:
+		favorite_count_label.text = "(%d saved)" % fav_count
+	if load_favorite_btn:
+		load_favorite_btn.disabled = (fav_count == 0)
+
+
 func _connect_signals() -> void:
 	min_rating_slider.value_changed.connect(_on_min_rating_changed)
 	max_rating_slider.value_changed.connect(_on_max_rating_changed)
@@ -75,6 +89,12 @@ func _connect_signals() -> void:
 	start_button.pressed.connect(_on_start_pressed)
 	if back_button:
 		back_button.pressed.connect(_on_back_pressed)
+	if load_id_btn:
+		load_id_btn.pressed.connect(_on_load_id_pressed)
+	if load_favorite_btn:
+		load_favorite_btn.pressed.connect(_on_load_favorite_pressed)
+	if puzzle_id_edit:
+		puzzle_id_edit.text_submitted.connect(_on_puzzle_id_submitted)
 
 
 func _update_rating_labels() -> void:
@@ -127,6 +147,52 @@ func _on_start_pressed() -> void:
 
 func _on_back_pressed() -> void:
 	back_requested.emit()
+
+
+func _on_load_id_pressed() -> void:
+	if puzzle_id_edit:
+		var puzzle_id = puzzle_id_edit.text.strip_edges()
+		_load_specific_puzzle(puzzle_id)
+
+
+func _on_puzzle_id_submitted(puzzle_id: String) -> void:
+	_load_specific_puzzle(puzzle_id.strip_edges())
+
+
+func _on_load_favorite_pressed() -> void:
+	var settings = get_settings()
+	var puzzle_id = UserData.get_random_favorite_puzzle({
+		"min_rating": settings.min_rating,
+		"max_rating": settings.max_rating,
+		"mate_in": settings.mate_depth if settings.mate_depth > 0 else 0
+	})
+	if puzzle_id.is_empty():
+		# No favorites matching filters, try without filters
+		puzzle_id = UserData.get_random_favorite_puzzle({})
+
+	if not puzzle_id.is_empty():
+		_load_specific_puzzle(puzzle_id)
+
+
+func _load_specific_puzzle(puzzle_id: String) -> void:
+	if puzzle_id.is_empty():
+		return
+
+	# Check if puzzle exists
+	var puzzle_data = UserData.get_puzzle_by_id(puzzle_id)
+	if puzzle_data.is_empty():
+		# Show feedback that puzzle wasn't found
+		if puzzle_id_edit:
+			puzzle_id_edit.placeholder_text = "Puzzle not found!"
+			puzzle_id_edit.text = ""
+			await get_tree().create_timer(1.5).timeout
+			puzzle_id_edit.placeholder_text = "Enter Puzzle ID..."
+		return
+
+	# Start practice with specific puzzle
+	var settings = get_settings()
+	settings["specific_puzzle_id"] = puzzle_id
+	start_requested.emit(settings)
 
 
 ## Get the current settings as a Dictionary.

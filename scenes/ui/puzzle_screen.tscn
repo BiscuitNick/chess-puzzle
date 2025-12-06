@@ -309,11 +309,31 @@ theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(1, 0.84, 0, 1)
 text = "⚓ Current Bounty"
 
-[node name="PuzzleIDLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection"]
+[node name="PuzzleIDRow" type="HBoxContainer" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection"]
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PuzzleIDLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection/PuzzleIDRow"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 theme_override_colors/font_color = Color(0.75, 0.75, 0.75, 1)
 text = "ID: --"
+
+[node name="CopyIDButton" type="Button" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection/PuzzleIDRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(24, 24)
+tooltip_text = "Copy Puzzle ID"
+theme_override_font_sizes/font_size = 10
+text = "📋"
+
+[node name="FavoriteButton" type="Button" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection/PuzzleIDRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(24, 24)
+toggle_mode = true
+tooltip_text = "Add to Favorites"
+theme_override_font_sizes/font_size = 14
+text = "☆"
 
 [node name="PlayerColorLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection"]
 layout_mode = 2

@@ -130,6 +130,42 @@ size_flags_horizontal = 3
 toggle_mode = true
 text = "Progressive"
 
+[node name="PuzzleSelectSection" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SectionLabel" type="Label" parent="VBoxContainer/PuzzleSelectSection"]
+layout_mode = 2
+text = "Load Specific Puzzle"
+
+[node name="PuzzleIDContainer" type="HBoxContainer" parent="VBoxContainer/PuzzleSelectSection"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PuzzleIDEdit" type="LineEdit" parent="VBoxContainer/PuzzleSelectSection/PuzzleIDContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Enter Puzzle ID..."
+
+[node name="LoadIDButton" type="Button" parent="VBoxContainer/PuzzleSelectSection/PuzzleIDContainer"]
+layout_mode = 2
+text = "Load"
+
+[node name="FavoritesContainer" type="HBoxContainer" parent="VBoxContainer/PuzzleSelectSection"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LoadFavoriteButton" type="Button" parent="VBoxContainer/PuzzleSelectSection/FavoritesContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "★ Random Favorite"
+
+[node name="FavoriteCountLabel" type="Label" parent="VBoxContainer/PuzzleSelectSection/FavoritesContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+text = "(0 saved)"
+
 [node name="Spacer" type="Control" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3

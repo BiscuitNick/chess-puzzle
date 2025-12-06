@@ -19,6 +19,7 @@ signal back_requested()
 @onready var daily_panel: Control = $VBoxContainer/TabContent/DailyPanel
 
 # Overall stats labels
+@onready var database_puzzles_label: Label = $VBoxContainer/TabContent/OverallPanel/DatabasePuzzlesLabel
 @onready var total_puzzles_label: Label = $VBoxContainer/TabContent/OverallPanel/TotalPuzzlesLabel
 @onready var total_solved_label: Label = $VBoxContainer/TabContent/OverallPanel/TotalSolvedLabel
 @onready var overall_accuracy_label: Label = $VBoxContainer/TabContent/OverallPanel/AccuracyLabel
@@ -132,8 +133,11 @@ func _load_stats() -> void:
 
 	# Overall stats
 	var overall = UserData.get_overall_stats()
+	if database_puzzles_label:
+		var db_count = UserData.get_total_puzzle_count()
+		database_puzzles_label.text = "Puzzles in Database: %d" % db_count
 	if total_puzzles_label:
-		total_puzzles_label.text = "Total Puzzles: %d" % overall.get("total_puzzles", 0)
+		total_puzzles_label.text = "Total Attempted: %d" % overall.get("total_puzzles", 0)
 	if total_solved_label:
 		total_solved_label.text = "Puzzles Solved: %d" % overall.get("total_solved", 0)
 	if overall_accuracy_label:
