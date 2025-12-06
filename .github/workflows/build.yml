@@ -1,0 +1,137 @@
+name: Build Game
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: false
+        default: 'dev'
+
+env:
+  GODOT_VERSION: 4.5.1
+  EXPORT_NAME: chess-puzzle
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - platform: Windows Desktop
+            output: chess-puzzle.exe
+            artifact: windows
+            stockfish_dir: windows
+          - platform: Linux
+            output: chess-puzzle.x86_64
+            artifact: linux
+            stockfish_dir: linux
+          - platform: macOS
+            output: chess-puzzle.app
+            artifact: macos
+            stockfish_dir: macos
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          use-dotnet: false
+          include-templates: true
+
+      - name: Verify Godot installation
+        run: |
+          godot --version
+          echo "Export templates location:"
+          ls -la ~/.local/share/godot/export_templates/ || true
+
+      - name: Import project
+        run: |
+          godot --headless --import
+
+      - name: Create build directory
+        run: mkdir -p builds/${{ matrix.artifact }}
+
+      - name: Build ${{ matrix.platform }}
+        run: |
+          if [ "${{ matrix.platform }}" = "macOS" ]; then
+            godot --headless --export-release "${{ matrix.platform }}" builds/${{ matrix.artifact }}/${{ matrix.output }}
+          else
+            godot --headless --export-release "${{ matrix.platform }}" builds/${{ matrix.artifact }}/${{ matrix.output }}
+          fi
+
+      - name: Copy Stockfish binary
+        run: |
+          if [ "${{ matrix.platform }}" = "macOS" ]; then
+            mkdir -p builds/${{ matrix.artifact }}/${{ matrix.output }}/Contents/MacOS/bin/stockfish/${{ matrix.stockfish_dir }}
+            cp bin/stockfish/${{ matrix.stockfish_dir }}/* builds/${{ matrix.artifact }}/${{ matrix.output }}/Contents/MacOS/bin/stockfish/${{ matrix.stockfish_dir }}/
+          else
+            mkdir -p builds/${{ matrix.artifact }}/bin/stockfish/${{ matrix.stockfish_dir }}
+            cp bin/stockfish/${{ matrix.stockfish_dir }}/* builds/${{ matrix.artifact }}/bin/stockfish/${{ matrix.stockfish_dir }}/
+          fi
+
+      - name: Make Stockfish executable (Linux/macOS)
+        if: matrix.platform != 'Windows Desktop'
+        run: |
+          if [ "${{ matrix.platform }}" = "macOS" ]; then
+            chmod +x builds/${{ matrix.artifact }}/${{ matrix.output }}/Contents/MacOS/bin/stockfish/${{ matrix.stockfish_dir }}/*
+          else
+            chmod +x builds/${{ matrix.artifact }}/bin/stockfish/${{ matrix.stockfish_dir }}/*
+            chmod +x builds/${{ matrix.artifact }}/${{ matrix.output }}
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.EXPORT_NAME }}-${{ matrix.artifact }}
+          path: builds/${{ matrix.artifact }}
+          retention-days: 14
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create release packages
+        run: |
+          cd artifacts
+
+          # Windows ZIP
+          cd chess-puzzle-windows
+          zip -r ../chess-puzzle-windows.zip .
+          cd ..
+
+          # Linux tar.gz
+          cd chess-puzzle-linux
+          tar -czvf ../chess-puzzle-linux.tar.gz .
+          cd ..
+
+          # macOS ZIP
+          cd chess-puzzle-macos
+          zip -r ../chess-puzzle-macos.zip .
+          cd ..
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/chess-puzzle-windows.zip
+            artifacts/chess-puzzle-linux.tar.gz
+            artifacts/chess-puzzle-macos.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
