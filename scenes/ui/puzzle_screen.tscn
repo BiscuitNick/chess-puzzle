@@ -306,8 +306,8 @@ theme_override_constants/separation = 6
 [node name="SectionLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.8, 0.7, 0.3, 1)
-text = "Current Puzzle"
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+text = "⚓ Current Bounty"
 
 [node name="PuzzleIDLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection"]
 layout_mode = 2
@@ -343,32 +343,32 @@ theme_override_constants/separation = 6
 [node name="SectionLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/SessionStatsSection"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.8, 0.7, 0.3, 1)
-text = "Session Stats"
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+text = "🗺️ Voyage Stats"
 
 [node name="PuzzlesSolvedLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/SessionStatsSection"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-theme_override_colors/font_color = Color(0.75, 0.75, 0.75, 1)
-text = "Puzzles Solved: 0"
+theme_override_colors/font_color = Color(0.96, 0.87, 0.7, 1)
+text = "Treasures Found: 0"
 
 [node name="TotalPointsLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/SessionStatsSection"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
-theme_override_colors/font_color = Color(0.9, 0.8, 0.2, 1)
-text = "Total Points: 0"
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+text = "💰 Doubloons: 0"
 
 [node name="CurrentStreakLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/SessionStatsSection"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-theme_override_colors/font_color = Color(0.75, 0.75, 0.75, 1)
-text = "Current Streak: 0"
+theme_override_colors/font_color = Color(0.96, 0.87, 0.7, 1)
+text = "🪙 Plunder Streak: 0"
 
 [node name="AccuracyLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/SessionStatsSection"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-theme_override_colors/font_color = Color(0.75, 0.75, 0.75, 1)
-text = "Accuracy: --%"
+theme_override_colors/font_color = Color(0.96, 0.87, 0.7, 1)
+text = "🎯 Precision: --%"
 
 [node name="Separator2" type="HSeparator" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox"]
 layout_mode = 2
@@ -380,19 +380,19 @@ theme_override_constants/separation = 6
 [node name="SectionLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/CurrentPuzzleSection"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.8, 0.7, 0.3, 1)
-text = "This Puzzle"
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+text = "⚔️ This Quest"
 
 [node name="MovesMadeLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/CurrentPuzzleSection"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-theme_override_colors/font_color = Color(0.75, 0.75, 0.75, 1)
-text = "Moves: 0"
+theme_override_colors/font_color = Color(0.96, 0.87, 0.7, 1)
+text = "Maneuvers: 0"
 
 [node name="AttemptsLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/CurrentPuzzleSection"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-theme_override_colors/font_color = Color(0.75, 0.75, 0.75, 1)
+theme_override_colors/font_color = Color(0.96, 0.87, 0.7, 1)
 text = "Attempts: 0"
 
 [node name="Options" type="VBoxContainer" parent="MainLayout/VBoxLayout/ContentArea/RightPanel"]

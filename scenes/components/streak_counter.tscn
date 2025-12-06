@@ -11,17 +11,18 @@ script = ExtResource("1_counter")
 layout_mode = 2
 theme_override_constants/separation = 5
 
-[node name="FlameIcon" type="Label" parent="StreakContainer"]
+[node name="CoinIcon" type="Label" parent="StreakContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "🔥"
+text = "🪙"
 
 [node name="StreakLabel" type="Label" parent="StreakContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
 text = "0"
 
 [node name="RatingLabel" type="Label" parent="."]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_colors/font_color = Color(0.83, 0.69, 0.22, 1)
 text = "Rating: 1200"

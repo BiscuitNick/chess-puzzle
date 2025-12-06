@@ -575,23 +575,23 @@ func _update_puzzle_info(puzzle: PuzzleData) -> void:
 
 
 func _update_game_tab_stats() -> void:
-	# Update session stats in Game tab
+	# Update session stats in Game tab (pirate themed labels)
 	if game_puzzles_solved:
-		game_puzzles_solved.text = "Puzzles Solved: %d" % session_puzzles_solved
+		game_puzzles_solved.text = "Treasures Found: %d" % session_puzzles_solved
 	if game_total_points:
-		game_total_points.text = "Total Points: %d" % session_total_points
+		game_total_points.text = "💰 Doubloons: %d" % session_total_points
 	if game_current_streak:
-		game_current_streak.text = "Current Streak: %d" % session_current_streak
+		game_current_streak.text = "🪙 Plunder Streak: %d" % session_current_streak
 	if game_accuracy:
 		if session_total_attempts > 0:
 			var accuracy = float(session_correct_attempts) / float(session_total_attempts) * 100.0
-			game_accuracy.text = "Accuracy: %.0f%%" % accuracy
+			game_accuracy.text = "🎯 Precision: %.0f%%" % accuracy
 		else:
-			game_accuracy.text = "Accuracy: --%"
+			game_accuracy.text = "🎯 Precision: --%"
 
 	# Update current puzzle stats
 	if game_moves_made:
-		game_moves_made.text = "Moves: %d" % moves_made.size()
+		game_moves_made.text = "Maneuvers: %d" % moves_made.size()
 	if game_attempts:
 		game_attempts.text = "Attempts: %d" % current_puzzle_attempts
 
@@ -600,15 +600,16 @@ func _update_mode_indicator() -> void:
 	if not mode_indicator:
 		return
 
+	# Pirate-themed mode names
 	match current_mode:
 		PuzzleController.GameMode.PRACTICE:
-			mode_indicator.text = "Practice Mode"
+			mode_indicator.text = "⚓ Practice Voyage"
 		PuzzleController.GameMode.SPRINT:
-			mode_indicator.text = "Sprint Mode"
+			mode_indicator.text = "⏳ Speed Plunder"
 		PuzzleController.GameMode.STREAK:
-			mode_indicator.text = "Streak Mode"
+			mode_indicator.text = "🏴‍☠️ Treasure Hunt"
 		PuzzleController.GameMode.DAILY:
-			mode_indicator.text = "Daily Challenge"
+			mode_indicator.text = "📜 Daily Bounty"
 
 
 # Button handlers

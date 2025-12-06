@@ -1,15 +1,19 @@
 class_name StrikeIndicator
 extends HBoxContainer
 ## Visual strike indicator showing strike slots for Sprint/Daily modes.
-## Uses X symbols to clearly show used strikes.
+## Uses skull icons (pirate theme) to show used strikes.
 
-# Strike icon references (Labels displaying X)
+# Strike icon references (Labels displaying skulls)
 var strike_labels: Array[Label] = []
 
-# Colors for strike states
-var unused_color: Color = Color(0.4, 0.4, 0.4, 0.4)  # Gray, semi-transparent
-var used_color: Color = Color(0.95, 0.2, 0.2, 1.0)   # Bright red
-var danger_color: Color = Color(1.0, 0.4, 0.1, 1.0)  # Orange-red for danger state
+# Pirate theme icons
+const ICON_SKULL := "💀"
+const ICON_EMPTY := "○"
+
+# Colors for strike states (pirate themed)
+var unused_color: Color = Color(0.4, 0.4, 0.45, 0.5)  # Gray, semi-transparent
+var used_color: Color = Color(0.85, 0.15, 0.15, 1.0)  # Dark red (danger)
+var danger_color: Color = Color(1.0, 0.3, 0.1, 1.0)   # Orange-red for danger state
 
 # Current strike count
 var current_strikes: int = 0
@@ -30,15 +34,15 @@ func _setup_strike_labels() -> void:
 	for child in get_children():
 		child.queue_free()
 
-	# Create X labels for each strike slot
+	# Create skull/empty labels for each strike slot
 	for i in range(MAX_STRIKES):
 		var label = Label.new()
-		label.text = "X"
-		label.add_theme_font_size_override("font_size", 24)
+		label.text = ICON_EMPTY
+		label.add_theme_font_size_override("font_size", 22)
 		label.add_theme_color_override("font_color", unused_color)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.custom_minimum_size = Vector2(28, 28)
+		label.custom_minimum_size = Vector2(30, 30)
 		add_child(label)
 		strike_labels.append(label)
 
@@ -50,10 +54,12 @@ func set_strikes(count: int) -> void:
 	for i in range(strike_labels.size()):
 		var label = strike_labels[i]
 		if i < current_strikes:
-			# Used strike - red
+			# Used strike - show skull in red
+			label.text = ICON_SKULL
 			label.add_theme_color_override("font_color", used_color)
 		else:
-			# Unused strike - gray
+			# Unused strike - empty circle in gray
+			label.text = ICON_EMPTY
 			label.add_theme_color_override("font_color", unused_color)
 
 	# Add danger state visual when at 2/3 strikes
