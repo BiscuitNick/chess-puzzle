@@ -22,7 +22,19 @@ var mode_settings: Dictionary = {}
 # UI References - new layout paths
 @onready var chess_board: ChessBoard = $MainLayout/VBoxLayout/ContentArea/LeftPanel/BoardWrapper/ChessBoard
 @onready var back_btn: Button = $MainLayout/VBoxLayout/TopBar/HBoxContainer/BackButton
-@onready var puzzle_info_label: Label = $MainLayout/VBoxLayout/TopBar/HBoxContainer/PuzzleInfo
+@onready var mode_indicator: Label = $MainLayout/VBoxLayout/TopBar/HBoxContainer/ModeIndicator
+
+# Game tab references
+@onready var game_puzzle_id: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection/PuzzleIDLabel
+@onready var game_player_color: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection/PlayerColorLabel
+@onready var game_mate_in: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection/MateInLabel
+@onready var game_rating: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/PuzzleInfoSection/RatingLabel
+@onready var game_puzzles_solved: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/SessionStatsSection/PuzzlesSolvedLabel
+@onready var game_total_points: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/SessionStatsSection/TotalPointsLabel
+@onready var game_current_streak: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/SessionStatsSection/CurrentStreakLabel
+@onready var game_accuracy: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/SessionStatsSection/AccuracyLabel
+@onready var game_moves_made: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/CurrentPuzzleSection/MovesMadeLabel
+@onready var game_attempts: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Game/VBox/CurrentPuzzleSection/AttemptsLabel
 
 # Button bar references
 @onready var button_bar: HBoxContainer = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar
@@ -93,6 +105,14 @@ var game_started: bool = false
 var puzzle_count: int = 0  # Track how many puzzles we've seen this session
 var moves_made: Array[String] = []  # Track moves made in current puzzle
 
+# Session stats
+var session_puzzles_solved: int = 0
+var session_total_points: int = 0  # Sum of ratings of solved puzzles
+var session_current_streak: int = 0
+var session_total_attempts: int = 0  # Total move attempts across session
+var session_correct_attempts: int = 0  # Correct first attempts
+var current_puzzle_attempts: int = 0  # Attempts on current puzzle
+
 
 func _ready() -> void:
 	_connect_ui_signals()
@@ -155,10 +175,19 @@ func initialize(mode: PuzzleController.GameMode, settings: Dictionary = {}) -> v
 	current_mode = mode
 	mode_settings = settings
 
+	# Reset session stats
+	session_puzzles_solved = 0
+	session_total_points = 0
+	session_current_streak = 0
+	session_total_attempts = 0
+	session_correct_attempts = 0
+
 	_setup_puzzle_controller()
 	_setup_mode_instance()
 	_show_mode_hud(mode)
 	_update_buttons_for_mode(mode)
+	_update_mode_indicator()
+	_update_game_tab_stats()
 	_start_game()
 
 
@@ -455,14 +484,22 @@ func _setup_board_orientation(puzzle: PuzzleData) -> void:
 	chess_board.flipped = player_is_black
 
 
-func _on_move_made(from: int, to: int, _is_correct: bool) -> void:
+func _on_move_made(from: int, to: int, is_correct: bool) -> void:
 	if chess_board:
 		chess_board.refresh_position()
 
 	# Track move for debug panel
 	var move_uci = ChessLogic.squares_to_uci(from, to, ChessLogic.EMPTY)
 	moves_made.append(move_uci)
+
+	# Track attempts for accuracy
+	current_puzzle_attempts += 1
+	session_total_attempts += 1
+	if is_correct:
+		session_correct_attempts += 1
+
 	_update_debug_panel()
+	_update_game_tab_stats()
 
 
 func _on_puzzle_completed(_success: bool, _attempts: int) -> void:
@@ -511,21 +548,67 @@ func _on_state_changed(_old_state: PuzzleController.PuzzleState, new_state: Puzz
 
 
 func _update_puzzle_info(puzzle: PuzzleData) -> void:
-	if puzzle_info_label:
-		# Determine the player's color
-		# In Lichess puzzles: first move in solution is opponent's setup/blunder
-		# So player is the OPPOSITE of who moves first in the FEN
-		var fen_parts = puzzle.fen.split(" ")
-		var first_to_move = "w"
-		if fen_parts.size() > 1:
-			first_to_move = fen_parts[1]
+	# Determine the player's color
+	# In Lichess puzzles: first move in solution is opponent's setup/blunder
+	# So player is the OPPOSITE of who moves first in the FEN
+	var fen_parts = puzzle.fen.split(" ")
+	var first_to_move = "w"
+	if fen_parts.size() > 1:
+		first_to_move = fen_parts[1]
 
-		# Player is opposite of who moves first (opponent makes setup move)
-		var player_color = "White" if first_to_move == "b" else "Black"
+	# Player is opposite of who moves first (opponent makes setup move)
+	var player_color = "White" if first_to_move == "b" else "Black"
 
-		puzzle_info_label.text = "#%s  |  Play as %s  |  Mate in %d  |  Rating: %d" % [
-			puzzle.id, player_color, puzzle.mate_in, puzzle.rating
-		]
+	# Update Game tab puzzle info
+	if game_puzzle_id:
+		game_puzzle_id.text = "ID: %s" % puzzle.id
+	if game_player_color:
+		game_player_color.text = "Play as: %s" % player_color
+	if game_mate_in:
+		game_mate_in.text = "Mate in: %d" % puzzle.mate_in
+	if game_rating:
+		game_rating.text = "Rating: %d" % puzzle.rating
+
+	# Reset current puzzle stats
+	current_puzzle_attempts = 0
+	_update_game_tab_stats()
+
+
+func _update_game_tab_stats() -> void:
+	# Update session stats in Game tab
+	if game_puzzles_solved:
+		game_puzzles_solved.text = "Puzzles Solved: %d" % session_puzzles_solved
+	if game_total_points:
+		game_total_points.text = "Total Points: %d" % session_total_points
+	if game_current_streak:
+		game_current_streak.text = "Current Streak: %d" % session_current_streak
+	if game_accuracy:
+		if session_total_attempts > 0:
+			var accuracy = float(session_correct_attempts) / float(session_total_attempts) * 100.0
+			game_accuracy.text = "Accuracy: %.0f%%" % accuracy
+		else:
+			game_accuracy.text = "Accuracy: --%"
+
+	# Update current puzzle stats
+	if game_moves_made:
+		game_moves_made.text = "Moves: %d" % moves_made.size()
+	if game_attempts:
+		game_attempts.text = "Attempts: %d" % current_puzzle_attempts
+
+
+func _update_mode_indicator() -> void:
+	if not mode_indicator:
+		return
+
+	match current_mode:
+		PuzzleController.GameMode.PRACTICE:
+			mode_indicator.text = "Practice Mode"
+		PuzzleController.GameMode.SPRINT:
+			mode_indicator.text = "Sprint Mode"
+		PuzzleController.GameMode.STREAK:
+			mode_indicator.text = "Streak Mode"
+		PuzzleController.GameMode.DAILY:
+			mode_indicator.text = "Daily Challenge"
 
 
 # Button handlers
@@ -762,6 +845,10 @@ func _on_history_changed(can_undo: bool, can_redo: bool) -> void:
 
 # Modal handlers
 func _on_incorrect_move(can_retry: bool, can_skip: bool) -> void:
+	# Reset streak on incorrect move
+	session_current_streak = 0
+	_update_game_tab_stats()
+
 	# Play visual feedback for wrong move
 	if chess_board:
 		chess_board.play_wrong_move_shake()
@@ -845,6 +932,13 @@ func _on_incorrect_move(can_retry: bool, can_skip: bool) -> void:
 
 
 func _on_puzzle_solved() -> void:
+	# Update session stats
+	session_puzzles_solved += 1
+	session_current_streak += 1
+	if puzzle_controller and puzzle_controller.current_puzzle:
+		session_total_points += puzzle_controller.current_puzzle.rating
+	_update_game_tab_stats()
+
 	# For practice mode, enable Next button and allow review navigation
 	if current_mode == PuzzleController.GameMode.PRACTICE:
 		if next_btn:
