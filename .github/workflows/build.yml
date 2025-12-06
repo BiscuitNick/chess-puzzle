@@ -16,6 +16,9 @@ env:
   EXPORT_NAME: chess-puzzle
   STOCKFISH_VERSION: stockfish-ubuntu-x86-64-avx2
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
