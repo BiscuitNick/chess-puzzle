@@ -24,6 +24,10 @@ node_modules/
 # OS specific
 .DS_Store
 
+# Large data files
+lichess_db_puzzle.csv.zst
+data/.cache/
+
 # Task files
 # tasks.json
 # tasks/
