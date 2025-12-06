@@ -14,31 +14,61 @@ on:
 env:
   GODOT_VERSION: 4.5.1
   EXPORT_NAME: chess-puzzle
+  STOCKFISH_VERSION: stockfish-ubuntu-x86-64-avx2
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - platform: Windows Desktop
             output: chess-puzzle.exe
             artifact: windows
-            stockfish_dir: windows
+            stockfish_asset: stockfish-windows-x86-64-avx2.zip
+            stockfish_binary: stockfish/stockfish-windows-x86-64-avx2.exe
+            stockfish_dest: stockfish.exe
           - platform: Linux
             output: chess-puzzle.x86_64
             artifact: linux
-            stockfish_dir: linux
+            stockfish_asset: stockfish-ubuntu-x86-64-avx2.tar
+            stockfish_binary: stockfish/stockfish-ubuntu-x86-64-avx2
+            stockfish_dest: stockfish
           - platform: macOS
             output: chess-puzzle.app
             artifact: macos
-            stockfish_dir: macos
+            stockfish_asset: stockfish-macos-x86-64-avx2.tar
+            stockfish_binary: stockfish/stockfish-macos-x86-64-avx2
+            stockfish_dest: stockfish
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           lfs: true
+
+      - name: Download Stockfish
+        run: |
+          # Download latest Stockfish release
+          STOCKFISH_URL="https://github.com/official-stockfish/Stockfish/releases/latest/download/${{ matrix.stockfish_asset }}"
+          echo "Downloading Stockfish from: $STOCKFISH_URL"
+          curl -L -o stockfish-archive "$STOCKFISH_URL"
+
+          # Extract based on file type
+          if [[ "${{ matrix.stockfish_asset }}" == *.zip ]]; then
+            unzip stockfish-archive
+          else
+            tar -xf stockfish-archive
+          fi
+
+          # Create destination directory and copy binary
+          mkdir -p bin/stockfish/${{ matrix.artifact }}
+          cp "${{ matrix.stockfish_binary }}" "bin/stockfish/${{ matrix.artifact }}/${{ matrix.stockfish_dest }}"
+          chmod +x "bin/stockfish/${{ matrix.artifact }}/${{ matrix.stockfish_dest }}"
+
+          echo "Stockfish binary:"
+          ls -la bin/stockfish/${{ matrix.artifact }}/
 
       - name: Setup Godot
         uses: chickensoft-games/setup-godot@v2
@@ -62,31 +92,26 @@ jobs:
 
       - name: Build ${{ matrix.platform }}
         run: |
-          if [ "${{ matrix.platform }}" = "macOS" ]; then
-            godot --headless --export-release "${{ matrix.platform }}" builds/${{ matrix.artifact }}/${{ matrix.output }}
-          else
-            godot --headless --export-release "${{ matrix.platform }}" builds/${{ matrix.artifact }}/${{ matrix.output }}
-          fi
+          godot --headless --export-release "${{ matrix.platform }}" builds/${{ matrix.artifact }}/${{ matrix.output }}
 
-      - name: Copy Stockfish binary
+      - name: Copy Stockfish binary to build
         run: |
           if [ "${{ matrix.platform }}" = "macOS" ]; then
-            mkdir -p builds/${{ matrix.artifact }}/${{ matrix.output }}/Contents/MacOS/bin/stockfish/${{ matrix.stockfish_dir }}
-            cp bin/stockfish/${{ matrix.stockfish_dir }}/* builds/${{ matrix.artifact }}/${{ matrix.output }}/Contents/MacOS/bin/stockfish/${{ matrix.stockfish_dir }}/
+            # macOS app bundle structure
+            mkdir -p "builds/${{ matrix.artifact }}/${{ matrix.output }}/Contents/MacOS/bin/stockfish/${{ matrix.artifact }}"
+            cp "bin/stockfish/${{ matrix.artifact }}/${{ matrix.stockfish_dest }}" \
+               "builds/${{ matrix.artifact }}/${{ matrix.output }}/Contents/MacOS/bin/stockfish/${{ matrix.artifact }}/"
+            chmod +x "builds/${{ matrix.artifact }}/${{ matrix.output }}/Contents/MacOS/bin/stockfish/${{ matrix.artifact }}/${{ matrix.stockfish_dest }}"
           else
-            mkdir -p builds/${{ matrix.artifact }}/bin/stockfish/${{ matrix.stockfish_dir }}
-            cp bin/stockfish/${{ matrix.stockfish_dir }}/* builds/${{ matrix.artifact }}/bin/stockfish/${{ matrix.stockfish_dir }}/
+            # Windows/Linux flat structure
+            mkdir -p "builds/${{ matrix.artifact }}/bin/stockfish/${{ matrix.artifact }}"
+            cp "bin/stockfish/${{ matrix.artifact }}/${{ matrix.stockfish_dest }}" \
+               "builds/${{ matrix.artifact }}/bin/stockfish/${{ matrix.artifact }}/"
+            chmod +x "builds/${{ matrix.artifact }}/bin/stockfish/${{ matrix.artifact }}/${{ matrix.stockfish_dest }}" || true
           fi
 
-      - name: Make Stockfish executable (Linux/macOS)
-        if: matrix.platform != 'Windows Desktop'
-        run: |
-          if [ "${{ matrix.platform }}" = "macOS" ]; then
-            chmod +x builds/${{ matrix.artifact }}/${{ matrix.output }}/Contents/MacOS/bin/stockfish/${{ matrix.stockfish_dir }}/*
-          else
-            chmod +x builds/${{ matrix.artifact }}/bin/stockfish/${{ matrix.stockfish_dir }}/*
-            chmod +x builds/${{ matrix.artifact }}/${{ matrix.output }}
-          fi
+          echo "Build contents:"
+          find builds/${{ matrix.artifact }} -type f | head -20
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
