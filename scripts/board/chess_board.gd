@@ -654,3 +654,36 @@ func refresh_position() -> void:
 	set_board_position(fen)
 	print("[ChessBoard] After refresh, _piece_sprites keys: %s" % [_piece_sprites.keys()])
 	_board_background.queue_redraw()
+
+
+## Play a shake animation to indicate wrong move.
+func play_wrong_move_shake() -> void:
+	var original_pos = position
+	var shake_amount = GameSettings.wrong_move_shake_intensity
+	var total_duration = GameSettings.wrong_move_shake_duration
+	var segment_duration = total_duration / 5.0
+
+	var tween = create_tween()
+	tween.tween_property(self, "position", original_pos + Vector2(shake_amount, 0), segment_duration)
+	tween.tween_property(self, "position", original_pos + Vector2(-shake_amount, 0), segment_duration)
+	tween.tween_property(self, "position", original_pos + Vector2(shake_amount * 0.5, 0), segment_duration)
+	tween.tween_property(self, "position", original_pos + Vector2(-shake_amount * 0.5, 0), segment_duration)
+	tween.tween_property(self, "position", original_pos, segment_duration)
+
+
+## Flash the board with a red tint to indicate wrong move.
+func flash_wrong_move() -> void:
+	var flash_color = GameSettings.wrong_move_flash_color
+	var flash_duration = GameSettings.wrong_move_flash_duration
+
+	# Create a temporary overlay for the flash
+	var flash_overlay = ColorRect.new()
+	flash_overlay.color = flash_color
+	flash_overlay.size = Vector2(square_size * 8, square_size * 8)
+	flash_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(flash_overlay)
+
+	# Fade out and remove
+	var tween = create_tween()
+	tween.tween_property(flash_overlay, "modulate:a", 0.0, flash_duration)
+	tween.tween_callback(flash_overlay.queue_free)

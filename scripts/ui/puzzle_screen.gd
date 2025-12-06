@@ -72,6 +72,7 @@ var mode_settings: Dictionary = {}
 @onready var daily_hud: Control = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD
 @onready var daily_progress: DailyProgress = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD/DailyProgress
 @onready var daily_puzzle_label: Label = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD/PuzzleLabel
+@onready var daily_strike_indicator: StrikeIndicator = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD/DailyStrikeIndicator
 
 # Thinking indicator
 @onready var thinking_indicator: ThinkingIndicator = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/ThinkingIndicator
@@ -727,34 +728,88 @@ func _on_analysis_completed() -> void:
 
 # Move navigation handlers (undo/redo)
 func _on_history_changed(can_undo: bool, can_redo: bool) -> void:
-	if undo_btn:
-		undo_btn.disabled = not can_undo
-	if redo_btn:
-		redo_btn.disabled = not can_redo
+	# Check if puzzle is completed (for allowing review in practice mode)
+	var puzzle_completed = puzzle_controller and puzzle_controller.current_state in [
+		PuzzleController.PuzzleState.COMPLETED_SUCCESS,
+		PuzzleController.PuzzleState.COMPLETED_FAILED,
+		PuzzleController.PuzzleState.SHOWING_SOLUTION
+	]
+
+	# In practice mode, always allow navigation for review after completion
+	if current_mode == PuzzleController.GameMode.PRACTICE and puzzle_completed:
+		if undo_btn:
+			undo_btn.disabled = not can_undo
+		if redo_btn:
+			redo_btn.disabled = not can_redo
+	else:
+		# Normal behavior during active puzzle
+		if undo_btn:
+			undo_btn.disabled = not can_undo
+		if redo_btn:
+			redo_btn.disabled = not can_redo
 
 
 # Modal handlers
-func _on_incorrect_move(_can_retry: bool, _can_skip: bool) -> void:
+func _on_incorrect_move(can_retry: bool, _can_skip: bool) -> void:
+	# Play visual feedback for wrong move
+	if chess_board:
+		chess_board.play_wrong_move_shake()
+		chess_board.flash_wrong_move()
+
+	# Update strike indicator for modes that use it
+	if current_mode == PuzzleController.GameMode.SPRINT:
+		if strike_indicator:
+			strike_indicator.add_strike()
+	elif current_mode == PuzzleController.GameMode.DAILY:
+		if daily_strike_indicator:
+			daily_strike_indicator.add_strike()
+
 	# For practice mode, automatically revert the incorrect move and let player try again
 	if current_mode == PuzzleController.GameMode.PRACTICE:
 		# Wait briefly to show the incorrect move, then revert
-		await get_tree().create_timer(0.5).timeout
+		await get_tree().create_timer(GameSettings.wrong_move_revert_delay).timeout
 		if puzzle_controller:
 			puzzle_controller.revert_incorrect_move()
 		if chess_board:
 			chess_board.refresh_position()
 		return
 
-	# For other modes, show modal (disabled for now, focusing on practice mode)
-	# TODO: Re-enable modal for other modes once practice mode is working
-	pass
+	# For sprint mode with strikes remaining
+	if current_mode == PuzzleController.GameMode.SPRINT:
+		if can_retry:
+			await get_tree().create_timer(GameSettings.wrong_move_revert_delay).timeout
+			if puzzle_controller:
+				puzzle_controller.revert_incorrect_move()
+			if chess_board:
+				chess_board.refresh_position()
+		return
+
+	# For streak mode - game ends on wrong move (handled by streak_mode)
+	if current_mode == PuzzleController.GameMode.STREAK:
+		# Visual feedback already played, streak_mode will handle game over
+		return
+
+	# For daily mode - track strikes
+	if current_mode == PuzzleController.GameMode.DAILY:
+		if can_retry:
+			await get_tree().create_timer(GameSettings.wrong_move_revert_delay).timeout
+			if puzzle_controller:
+				puzzle_controller.revert_incorrect_move()
+			if chess_board:
+				chess_board.refresh_position()
+		return
 
 
 func _on_puzzle_solved() -> void:
-	# For practice mode, just enable the Next button instead of showing modal
+	# For practice mode, enable Next button and allow review navigation
 	if current_mode == PuzzleController.GameMode.PRACTICE:
 		if next_btn:
 			next_btn.disabled = false
+		# Enable undo for review (redo will be disabled since at end)
+		if undo_btn and puzzle_controller:
+			undo_btn.disabled = not puzzle_controller.can_undo()
+		if redo_btn:
+			redo_btn.disabled = true  # At the end, can't redo
 		return
 
 	# For other modes, show modal (disabled for now, focusing on practice mode)
