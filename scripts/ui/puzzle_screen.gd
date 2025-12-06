@@ -20,61 +20,61 @@ var current_mode: PuzzleController.GameMode = PuzzleController.GameMode.PRACTICE
 var mode_settings: Dictionary = {}
 
 # UI References - new layout paths
-@onready var chess_board: ChessBoard = $MainLayout/ContentArea/LeftPanel/BoardWrapper/ChessBoard
-@onready var back_btn: Button = $MainLayout/TopBar/HBoxContainer/BackButton
-@onready var puzzle_info_label: Label = $MainLayout/TopBar/HBoxContainer/PuzzleInfo
+@onready var chess_board: ChessBoard = $MainLayout/VBoxLayout/ContentArea/LeftPanel/BoardWrapper/ChessBoard
+@onready var back_btn: Button = $MainLayout/VBoxLayout/TopBar/HBoxContainer/BackButton
+@onready var puzzle_info_label: Label = $MainLayout/VBoxLayout/TopBar/HBoxContainer/PuzzleInfo
 
 # Button bar references
-@onready var button_bar: HBoxContainer = $MainLayout/ContentArea/LeftPanel/ButtonBar
-@onready var undo_btn: Button = $MainLayout/ContentArea/LeftPanel/ButtonBar/UndoButton
-@onready var redo_btn: Button = $MainLayout/ContentArea/LeftPanel/ButtonBar/RedoButton
-@onready var hint_btn: Button = $MainLayout/ContentArea/LeftPanel/ButtonBar/HintButton
-@onready var solution_btn: Button = $MainLayout/ContentArea/LeftPanel/ButtonBar/SolutionButton
-@onready var skip_btn: Button = $MainLayout/ContentArea/LeftPanel/ButtonBar/SkipButton
-@onready var next_btn: Button = $MainLayout/ContentArea/LeftPanel/ButtonBar/NextButton
+@onready var button_bar: HBoxContainer = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar
+@onready var undo_btn: Button = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar/UndoButton
+@onready var redo_btn: Button = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar/RedoButton
+@onready var hint_btn: Button = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar/HintButton
+@onready var solution_btn: Button = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar/SolutionButton
+@onready var skip_btn: Button = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar/SkipButton
+@onready var next_btn: Button = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar/NextButton
 
 # Right panel - tabs
-@onready var right_panel: TabContainer = $MainLayout/ContentArea/RightPanel
-@onready var options_tab: VBoxContainer = $MainLayout/ContentArea/RightPanel/Options
-@onready var flip_board_btn: Button = $MainLayout/ContentArea/RightPanel/Options/FlipBoardButton
+@onready var right_panel: TabContainer = $MainLayout/VBoxLayout/ContentArea/RightPanel
+@onready var options_tab: VBoxContainer = $MainLayout/VBoxLayout/ContentArea/RightPanel/Options
+@onready var flip_board_btn: Button = $MainLayout/VBoxLayout/ContentArea/RightPanel/Options/FlipBoardButton
 
 # Debug panel references (in Debug tab)
-@onready var debug_build_time: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/BuildTime
-@onready var debug_db_version: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/DBVersion
-@onready var debug_puzzle_id: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/PuzzleID
-@onready var debug_puzzle_number: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/PuzzleNumber
-@onready var debug_fen: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/FEN
-@onready var debug_move_index: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/MoveIndex
-@onready var debug_expected_move: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/ExpectedMove
-@onready var debug_current_fen: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/CurrentFEN
-@onready var debug_moves_list: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/MovesList
-@onready var debug_solution_list: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/SolutionList
-@onready var debug_puzzle_state: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/PuzzleState
-@onready var debug_attempts: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/Attempts
-@onready var debug_rating: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/Rating
-@onready var debug_mate_in: Label = $MainLayout/ContentArea/RightPanel/Debug/VBox/MateIn
+@onready var debug_build_time: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/BuildTime
+@onready var debug_db_version: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/DBVersion
+@onready var debug_puzzle_id: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/PuzzleID
+@onready var debug_puzzle_number: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/PuzzleNumber
+@onready var debug_fen: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/FEN
+@onready var debug_move_index: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/MoveIndex
+@onready var debug_expected_move: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/ExpectedMove
+@onready var debug_current_fen: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/CurrentFEN
+@onready var debug_moves_list: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/MovesList
+@onready var debug_solution_list: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/SolutionList
+@onready var debug_puzzle_state: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/PuzzleState
+@onready var debug_attempts: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/Attempts
+@onready var debug_rating: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/Rating
+@onready var debug_mate_in: Label = $MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox/MateIn
 
 # Mode HUD elements
-@onready var mode_hud: HBoxContainer = $MainLayout/ContentArea/LeftPanel/ModeHUD
+@onready var mode_hud: HBoxContainer = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD
 
 # Sprint HUD elements
-@onready var sprint_hud: Control = $MainLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD
-@onready var timer_display: TimerDisplay = $MainLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD/TimerDisplay
-@onready var strike_indicator: StrikeIndicator = $MainLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD/StrikeIndicator
-@onready var sprint_solved_label: Label = $MainLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD/SolvedLabel
+@onready var sprint_hud: Control = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD
+@onready var timer_display: TimerDisplay = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD/TimerDisplay
+@onready var strike_indicator: StrikeIndicator = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD/StrikeIndicator
+@onready var sprint_solved_label: Label = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD/SolvedLabel
 
 # Streak HUD elements
-@onready var streak_hud: Control = $MainLayout/ContentArea/LeftPanel/ModeHUD/StreakHUD
-@onready var streak_counter: StreakCounter = $MainLayout/ContentArea/LeftPanel/ModeHUD/StreakHUD/StreakCounter
-@onready var streak_rating_label: Label = $MainLayout/ContentArea/LeftPanel/ModeHUD/StreakHUD/RatingLabel
+@onready var streak_hud: Control = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/StreakHUD
+@onready var streak_counter: StreakCounter = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/StreakHUD/StreakCounter
+@onready var streak_rating_label: Label = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/StreakHUD/RatingLabel
 
 # Daily HUD elements
-@onready var daily_hud: Control = $MainLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD
-@onready var daily_progress: DailyProgress = $MainLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD/DailyProgress
-@onready var daily_puzzle_label: Label = $MainLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD/PuzzleLabel
+@onready var daily_hud: Control = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD
+@onready var daily_progress: DailyProgress = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD/DailyProgress
+@onready var daily_puzzle_label: Label = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD/PuzzleLabel
 
 # Thinking indicator
-@onready var thinking_indicator: ThinkingIndicator = $MainLayout/ContentArea/LeftPanel/ModeHUD/ThinkingIndicator
+@onready var thinking_indicator: ThinkingIndicator = $MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/ThinkingIndicator
 
 # Result modal
 @onready var result_modal: PuzzleResultModal = $PuzzleResultModal

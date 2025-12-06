@@ -35,159 +35,166 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.1, 0.1, 0.12, 1)
 
-[node name="MainLayout" type="VBoxContainer" parent="."]
+[node name="MainLayout" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxLayout" type="VBoxContainer" parent="MainLayout"]
+layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="TopBar" type="PanelContainer" parent="MainLayout"]
+[node name="TopBar" type="PanelContainer" parent="MainLayout/VBoxLayout"]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_topbar")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MainLayout/TopBar"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MainLayout/VBoxLayout/TopBar"]
 layout_mode = 2
 
-[node name="BackButton" type="Button" parent="MainLayout/TopBar/HBoxContainer"]
+[node name="BackButton" type="Button" parent="MainLayout/VBoxLayout/TopBar/HBoxContainer"]
 layout_mode = 2
 text = "< Menu"
 
-[node name="Spacer" type="Control" parent="MainLayout/TopBar/HBoxContainer"]
+[node name="Spacer" type="Control" parent="MainLayout/VBoxLayout/TopBar/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="PuzzleInfo" type="Label" parent="MainLayout/TopBar/HBoxContainer"]
+[node name="PuzzleInfo" type="Label" parent="MainLayout/VBoxLayout/TopBar/HBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "#ID  |  White to move  |  Mate in 2  |  Rating: 1200"
 horizontal_alignment = 2
 
-[node name="ContentArea" type="HBoxContainer" parent="MainLayout"]
+[node name="ContentArea" type="HBoxContainer" parent="MainLayout/VBoxLayout"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 0
+theme_override_constants/separation = 10
 
-[node name="LeftPanel" type="VBoxContainer" parent="MainLayout/ContentArea"]
+[node name="LeftPanel" type="VBoxContainer" parent="MainLayout/VBoxLayout/ContentArea"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 2.0
 theme_override_constants/separation = 10
 
-[node name="BoardWrapper" type="AspectRatioContainer" parent="MainLayout/ContentArea/LeftPanel"]
+[node name="BoardWrapper" type="AspectRatioContainer" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel"]
 layout_mode = 2
 size_flags_vertical = 3
 ratio = 1.0
 stretch_mode = 2
 
-[node name="ChessBoard" parent="MainLayout/ContentArea/LeftPanel/BoardWrapper" instance=ExtResource("2_board")]
+[node name="ChessBoard" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/BoardWrapper" instance=ExtResource("2_board")]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 
-[node name="ButtonBar" type="HBoxContainer" parent="MainLayout/ContentArea/LeftPanel"]
+[node name="ButtonBar" type="HBoxContainer" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel"]
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="UndoButton" type="Button" parent="MainLayout/ContentArea/LeftPanel/ButtonBar"]
+[node name="UndoButton" type="Button" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "< Back"
 
-[node name="RedoButton" type="Button" parent="MainLayout/ContentArea/LeftPanel/ButtonBar"]
+[node name="RedoButton" type="Button" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Forward >"
 
-[node name="Separator1" type="VSeparator" parent="MainLayout/ContentArea/LeftPanel/ButtonBar"]
+[node name="Separator1" type="VSeparator" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar"]
 layout_mode = 2
 
-[node name="HintButton" type="Button" parent="MainLayout/ContentArea/LeftPanel/ButtonBar"]
+[node name="HintButton" type="Button" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Hint"
 
-[node name="SolutionButton" type="Button" parent="MainLayout/ContentArea/LeftPanel/ButtonBar"]
+[node name="SolutionButton" type="Button" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Solution"
 
-[node name="Separator2" type="VSeparator" parent="MainLayout/ContentArea/LeftPanel/ButtonBar"]
+[node name="Separator2" type="VSeparator" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar"]
 layout_mode = 2
 
-[node name="SkipButton" type="Button" parent="MainLayout/ContentArea/LeftPanel/ButtonBar"]
+[node name="SkipButton" type="Button" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Skip"
 
-[node name="NextButton" type="Button" parent="MainLayout/ContentArea/LeftPanel/ButtonBar"]
+[node name="NextButton" type="Button" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ButtonBar"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Next"
 
-[node name="ModeHUD" type="HBoxContainer" parent="MainLayout/ContentArea/LeftPanel"]
+[node name="ModeHUD" type="HBoxContainer" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel"]
 layout_mode = 2
 theme_override_constants/separation = 30
 alignment = 1
 
-[node name="SprintHUD" type="HBoxContainer" parent="MainLayout/ContentArea/LeftPanel/ModeHUD"]
+[node name="SprintHUD" type="HBoxContainer" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD"]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="SolvedLabel" type="Label" parent="MainLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD"]
+[node name="SolvedLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Solved: 0"
 vertical_alignment = 1
 
-[node name="TimerDisplay" parent="MainLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD" instance=ExtResource("3_timer")]
+[node name="TimerDisplay" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD" instance=ExtResource("3_timer")]
 layout_mode = 2
 
-[node name="StrikeIndicator" parent="MainLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD" instance=ExtResource("4_strike")]
+[node name="StrikeIndicator" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/SprintHUD" instance=ExtResource("4_strike")]
 layout_mode = 2
 
-[node name="StreakHUD" type="HBoxContainer" parent="MainLayout/ContentArea/LeftPanel/ModeHUD"]
+[node name="StreakHUD" type="HBoxContainer" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD"]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="StreakCounter" parent="MainLayout/ContentArea/LeftPanel/ModeHUD/StreakHUD" instance=ExtResource("5_streak")]
+[node name="StreakCounter" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/StreakHUD" instance=ExtResource("5_streak")]
 layout_mode = 2
 
-[node name="RatingLabel" type="Label" parent="MainLayout/ContentArea/LeftPanel/ModeHUD/StreakHUD"]
+[node name="RatingLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/StreakHUD"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Rating: 1200"
 vertical_alignment = 1
 
-[node name="DailyHUD" type="HBoxContainer" parent="MainLayout/ContentArea/LeftPanel/ModeHUD"]
+[node name="DailyHUD" type="HBoxContainer" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD"]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="PuzzleLabel" type="Label" parent="MainLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD"]
+[node name="PuzzleLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Puzzle 1 of 5"
 vertical_alignment = 1
 
-[node name="DailyProgress" type="HBoxContainer" parent="MainLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD"]
+[node name="DailyProgress" type="HBoxContainer" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/DailyHUD"]
 layout_mode = 2
 theme_override_constants/separation = 8
 alignment = 1
 script = ExtResource("6_dprog")
 
-[node name="ThinkingIndicator" type="Control" parent="MainLayout/ContentArea/LeftPanel/ModeHUD"]
+[node name="ThinkingIndicator" type="Control" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD"]
 visible = false
 layout_mode = 2
 custom_minimum_size = Vector2(100, 30)
 script = ExtResource("7_think")
 
-[node name="Label" type="Label" parent="MainLayout/ContentArea/LeftPanel/ModeHUD/ThinkingIndicator"]
+[node name="Label" type="Label" parent="MainLayout/VBoxLayout/ContentArea/LeftPanel/ModeHUD/ThinkingIndicator"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -199,155 +206,155 @@ text = "Thinking..."
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="RightPanel" type="TabContainer" parent="MainLayout/ContentArea"]
+[node name="RightPanel" type="TabContainer" parent="MainLayout/VBoxLayout/ContentArea"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 1.0
 
-[node name="Options" type="VBoxContainer" parent="MainLayout/ContentArea/RightPanel"]
+[node name="Options" type="VBoxContainer" parent="MainLayout/VBoxLayout/ContentArea/RightPanel"]
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="OptionsLabel" type="Label" parent="MainLayout/ContentArea/RightPanel/Options"]
+[node name="OptionsLabel" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Options"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Game Options"
 
-[node name="FlipBoardButton" type="Button" parent="MainLayout/ContentArea/RightPanel/Options"]
+[node name="FlipBoardButton" type="Button" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Options"]
 layout_mode = 2
 text = "Flip Board"
 
-[node name="SoundToggle" type="CheckButton" parent="MainLayout/ContentArea/RightPanel/Options"]
+[node name="SoundToggle" type="CheckButton" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Options"]
 layout_mode = 2
 text = "Sound Effects"
 button_pressed = true
 
-[node name="HighlightToggle" type="CheckButton" parent="MainLayout/ContentArea/RightPanel/Options"]
+[node name="HighlightToggle" type="CheckButton" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Options"]
 layout_mode = 2
 text = "Show Legal Moves"
 button_pressed = true
 
-[node name="Debug" type="ScrollContainer" parent="MainLayout/ContentArea/RightPanel"]
+[node name="Debug" type="ScrollContainer" parent="MainLayout/VBoxLayout/ContentArea/RightPanel"]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="MainLayout/ContentArea/RightPanel/Debug"]
+[node name="VBox" type="VBoxContainer" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="DebugTitle" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="DebugTitle" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.8, 0.8, 0.3, 1)
 text = "== DEBUG INFO =="
 
-[node name="BuildTime" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="BuildTime" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.5, 0.8, 0.5, 1)
 text = "Build: --"
 
-[node name="DBVersion" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="DBVersion" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "DB Version: --"
 
-[node name="PuzzleID" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="PuzzleID" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "Puzzle ID: --"
 
-[node name="PuzzleNumber" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="PuzzleNumber" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "Puzzle #: --"
 
-[node name="FEN" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="FEN" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 9
 theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
 text = "FEN: --"
 autowrap_mode = 3
 
-[node name="Separator1" type="HSeparator" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="Separator1" type="HSeparator" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 
-[node name="MoveIndex" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="MoveIndex" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "Move Index: 0 / 0"
 
-[node name="ExpectedMove" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="ExpectedMove" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.5, 0.9, 0.5, 1)
 text = "Expected: --"
 
-[node name="CurrentFEN" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="CurrentFEN" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 9
 theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
 text = "Current FEN: --"
 autowrap_mode = 3
 
-[node name="Separator2" type="HSeparator" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="Separator2" type="HSeparator" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 
-[node name="MoveHistory" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="MoveHistory" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "Moves Made:"
 
-[node name="MovesList" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="MovesList" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 10
 theme_override_colors/font_color = Color(0.6, 0.8, 1.0, 1)
 text = "(none)"
 autowrap_mode = 3
 
-[node name="Separator3" type="HSeparator" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="Separator3" type="HSeparator" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 
-[node name="SolutionMoves" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="SolutionMoves" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "Solution:"
 
-[node name="SolutionList" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="SolutionList" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 10
 theme_override_colors/font_color = Color(0.9, 0.6, 0.6, 1)
 text = "(hidden)"
 autowrap_mode = 3
 
-[node name="Separator4" type="HSeparator" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="Separator4" type="HSeparator" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 
-[node name="PuzzleState" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="PuzzleState" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "State: --"
 
-[node name="Attempts" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="Attempts" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "Attempts: 0"
 
-[node name="Rating" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="Rating" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "Rating: --"
 
-[node name="MateIn" type="Label" parent="MainLayout/ContentArea/RightPanel/Debug/VBox"]
+[node name="MateIn" type="Label" parent="MainLayout/VBoxLayout/ContentArea/RightPanel/Debug/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)

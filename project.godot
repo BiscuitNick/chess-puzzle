@@ -22,6 +22,15 @@ StockfishBridge="*res://scripts/autoload/stockfish_bridge.gd"
 UserData="*res://scripts/autoload/user_data.gd"
 AudioManager="*res://scripts/autoload/audio_manager.gd"
 
+[display]
+
+window/size/viewport_width=1024
+window/size/viewport_height=720
+window/size/mode=2
+window/size/resizable=true
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
